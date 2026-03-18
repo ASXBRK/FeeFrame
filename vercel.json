@@ -1,0 +1,8 @@
+{
+  "buildCommand": "cd advice-fee-builder && npm install && npm run build",
+  "outputDirectory": "advice-fee-builder/dist",
+  "installCommand": "echo 'skip root install'",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
