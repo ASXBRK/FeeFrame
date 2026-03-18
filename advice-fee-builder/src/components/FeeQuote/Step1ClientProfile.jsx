@@ -6,14 +6,6 @@ const LIFE_STAGES = [
   { value: 'retirement', label: 'Retirement' },
 ];
 
-const AGE_BRACKETS = [
-  { value: 'under40', label: 'Under 40' },
-  { value: '40-54', label: '40–54' },
-  { value: '55-64', label: '55–64' },
-  { value: '65-74', label: '65–74' },
-  { value: '75plus', label: '75+' },
-];
-
 export default function Step1ClientProfile({ quote, dispatch, onNext }) {
   const set = (field, value) => dispatch({ type: 'SET_QUOTE_FIELD', field, value });
 
@@ -77,32 +69,23 @@ export default function Step1ClientProfile({ quote, dispatch, onNext }) {
           </select>
         </div>
 
-        {/* Age bracket */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Age bracket</label>
-          <select
-            value={quote.ageBracket}
-            onChange={e => set('ageBracket', e.target.value)}
-            className="block w-full sm:w-56 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-          >
-            {AGE_BRACKETS.map(a => (
-              <option key={a.value} value={a.value}>{a.label}</option>
-            ))}
-          </select>
-        </div>
-
         {/* Entity count */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Number of entities in family group
           </label>
-          <p className="text-xs text-gray-400 mb-2">Drives the data collection cost in Step 2</p>
+          <p className="text-xs text-gray-400 mb-2">
+            Count each separate legal entity — individuals, SMSFs, trusts, and companies (e.g. 2 individuals + 1 SMSF = 3)
+          </p>
           <input
             type="number"
-            min={1}
+            min={0}
             max={10}
             value={quote.entityCount}
-            onChange={e => set('entityCount', Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+            onChange={e => {
+              const v = parseInt(e.target.value);
+              if (!isNaN(v)) set('entityCount', Math.max(0, Math.min(10, v)));
+            }}
             className="block w-24 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
         </div>
