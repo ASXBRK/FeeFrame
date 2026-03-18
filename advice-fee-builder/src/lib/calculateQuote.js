@@ -43,8 +43,10 @@ export function calculateQuote(state) {
     return { ...line, hours, fee, displayValue };
   });
 
+  const rawParaplannerFee = Number(state.paraplannerFee) || 0;
+  const effectiveParaplannerFee = state.paraplannerBuffer ? rawParaplannerFee * 1.1 : rawParaplannerFee;
   const baseFee = isExternal
-    ? Number(state.paraplannerFee) || 0
+    ? effectiveParaplannerFee
     : lineItems.reduce((sum, l) => sum + l.fee, 0);
   const totalBaseHours = isExternal ? 0 : lineItems.reduce((sum, l) => sum + l.hours, 0);
 

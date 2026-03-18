@@ -37,27 +37,60 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
 
         {/* External: just a quoted fee */}
         {isExternal && (
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Quoted paraplanning fee (excl GST)
-            </label>
-            <p className="text-xs text-gray-400 mb-3">Enter the fixed fee quoted by your external paraplanner.</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">$</span>
-              <input
-                type="number"
-                min={0}
-                step={50}
-                value={quote.paraplannerFee}
-                onChange={e => set('paraplannerFee', parseFloat(e.target.value) || 0)}
-                className="block w-36 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-              />
-              <span className="text-sm text-gray-400">ex GST</span>
+          <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                External paraplanning fee (excl GST)
+              </label>
+              <p className="text-xs text-gray-400 mb-3">Enter the fee quoted by your external paraplanner.</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">$</span>
+                <input
+                  type="number"
+                  min={0}
+                  step={50}
+                  value={quote.paraplannerFee}
+                  onChange={e => set('paraplannerFee', parseFloat(e.target.value) || 0)}
+                  className="block w-36 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
+                <span className="text-sm text-gray-400">ex GST</span>
+              </div>
             </div>
-            <div className="mt-4 p-3 bg-teal-50 rounded-lg border border-teal-100">
+
+            {/* Buffer toggle */}
+            <div className="border-t border-gray-100 pt-4">
+              <div className="flex items-start gap-3">
+                <Toggle
+                  checked={!!quote.paraplannerBuffer}
+                  onChange={v => set('paraplannerBuffer', v)}
+                  label="Add 10% buffer"
+                />
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Add a 10% buffer</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    If the paraplanning fee could increase before completion, a buffer protects your margin from absorbing the difference.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Fee summary */}
+            <div className="p-3 bg-teal-50 rounded-lg border border-teal-100 space-y-1.5">
               <div className="flex items-center justify-between">
+                <span className="text-xs text-teal-600">Quoted fee</span>
+                <span className="text-xs text-teal-700">{formatCurrency(quote.paraplannerFee)}</span>
+              </div>
+              {quote.paraplannerBuffer && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-teal-600">10% buffer</span>
+                  <span className="text-xs text-teal-700">+ {formatCurrency(quote.paraplannerFee * 0.1)}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between border-t border-teal-100 pt-1.5">
                 <span className="text-sm text-teal-700 font-medium">Base fee (ex GST)</span>
-                <span className="text-sm font-bold text-teal-800">{formatCurrency(quote.paraplannerFee)}</span>
+                <span className="text-sm font-bold text-teal-800">
+                  {formatCurrency(quote.paraplannerBuffer ? quote.paraplannerFee * 1.1 : quote.paraplannerFee)}
+                </span>
               </div>
             </div>
           </div>
