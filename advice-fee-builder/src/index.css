@@ -68,7 +68,6 @@ input[type=number] {
     margin: 20mm 18mm 20mm 18mm;
   }
 
-  /* Hide everything except print content */
   body {
     background: white !important;
     font-family: 'DM Sans', Arial, sans-serif;
@@ -76,21 +75,23 @@ input[type=number] {
     color: #1a1a1a;
   }
 
-  /* Hide navigation, sidebar, tabs, buttons */
+  /* Hide all navigation, sidebar, controls */
   aside,
   nav,
-  button:not(.print-show) {
+  header,
+  button,
+  input,
+  select,
+  textarea,
+  [class*="print:hidden"] {
     display: none !important;
-  }
-
-  /* Show the hidden print block */
-  .print-content {
-    display: block !important;
   }
 
   /* Full-width layout */
   #root,
-  main {
+  main,
+  .max-w-4xl,
+  .max-w-2xl {
     display: block !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -99,9 +100,14 @@ input[type=number] {
     background: white !important;
   }
 
-  /* Hide step content — only show print block */
-  main > div:not(.print-content) {
-    display: none !important;
+  /* Sidebar + flex layout → single column */
+  .flex {
+    display: block !important;
+  }
+
+  /* Show print-only blocks */
+  .hidden.print\:block {
+    display: block !important;
   }
 
   /* ── Print header ── */
@@ -215,5 +221,17 @@ input[type=number] {
     left: 0;
     color: #0d9488;
     font-weight: 700;
+  }
+
+  /* Footer on last page */
+  body::after {
+    content: 'Prepared using FeeFrame';
+    display: block;
+    text-align: center;
+    font-size: 8pt;
+    color: #94a3b8;
+    margin-top: 24pt;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 6pt;
   }
 }
