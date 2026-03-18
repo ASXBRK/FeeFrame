@@ -30,6 +30,8 @@ export const defaultQuoteState = {
   entityCount: 0,
 
   // Step 2: Scope of Advice
+  paraplanner: 'internal', // 'internal' | 'external'
+  paraplannerFee: 0,       // external quoted fee ex GST
   hourlyRate: 335,
   serviceLines: defaultServiceLines,
   scenarios: 2,

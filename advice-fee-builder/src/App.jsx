@@ -12,6 +12,7 @@ const STATE_VERSION = 2; // bump to clear stale localStorage
 const initialState = {
   view: 'landing', // 'landing' | 'quote' | 'analysis'
   quoteStep: 1,
+  maxQuoteStep: 1,
   quote: defaultQuoteState,
   analysis: defaultAnalysisState,
 };
@@ -37,7 +38,11 @@ function reducer(state, action) {
       return { ...state, view: action.view };
 
     case 'SET_QUOTE_STEP':
-      return { ...state, quoteStep: action.step };
+      return {
+        ...state,
+        quoteStep: action.step,
+        maxQuoteStep: Math.max(state.maxQuoteStep, action.step),
+      };
 
     case 'SET_QUOTE_FIELD':
       return { ...state, quote: { ...state.quote, [action.field]: action.value } };
@@ -115,6 +120,7 @@ function reducer(state, action) {
         ...state,
         quote: { ...defaultQuoteState, date: new Date().toISOString().split('T')[0] },
         quoteStep: 1,
+        maxQuoteStep: 1,
       };
 
     case 'SET_ANALYSIS_FIELD':

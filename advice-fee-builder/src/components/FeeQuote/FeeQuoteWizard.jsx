@@ -11,7 +11,7 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
   const [showReset, setShowReset] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
 
-  const { quoteStep, quote } = state;
+  const { quoteStep, maxQuoteStep, quote } = state;
 
   const goToStep = (step) => dispatch({ type: 'SET_QUOTE_STEP', step });
   const next = () => goToStep(Math.min(quoteStep + 1, 5));
@@ -28,6 +28,7 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
       <QuoteSidebar
         currentStep={quoteStep}
+        maxStep={maxQuoteStep}
         onStepClick={goToStep}
         onGoHome={onGoHome}
       />

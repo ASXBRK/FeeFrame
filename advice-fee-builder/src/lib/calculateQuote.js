@@ -9,6 +9,7 @@ export function calculateQuote(state) {
   const rate = Number(state.hourlyRate) || 335;
 
   // ── Step 2: Service line fees ──────────────────────────────────────────────
+  const isExternal = state.paraplanner === 'external';
   const strategyCount = STRATEGIES.filter(s => state.strategies[s.id]).length;
   const entityCount = Number(state.entityCount) || 1;
   const scenarios = Number(state.scenarios) || 0;
@@ -42,21 +43,23 @@ export function calculateQuote(state) {
     return { ...line, hours, fee, displayValue };
   });
 
-  const baseFee = lineItems.reduce((sum, l) => sum + l.fee, 0);
-  const totalBaseHours = lineItems.reduce((sum, l) => sum + l.hours, 0);
+  const baseFee = isExternal
+    ? Number(state.paraplannerFee) || 0
+    : lineItems.reduce((sum, l) => sum + l.fee, 0);
+  const totalBaseHours = isExternal ? 0 : lineItems.reduce((sum, l) => sum + l.hours, 0);
 
   // ── Step 3: Adjustments ────────────────────────────────────────────────────
   const complexityCount = COMPLEXITY_FACTORS.filter((_, i) => state.complexityFactors[i]).length;
   const easeCount = EASE_FACTORS.filter((_, i) => state.easeFactors[i]).length;
 
-  const complexityRate = getComplexityPremiumRate(complexityCount);
-  const easeRate = getEaseDiscountRate(easeCount);
+  const complexityRate = isExternal ? 0 : getComplexityPremiumRate(complexityCount);
+  const easeRate = isExternal ? 0 : getEaseDiscountRate(easeCount);
 
   const complexityAmount = baseFee * complexityRate;
   const easeAmount = baseFee * easeRate;
 
   const adjustedFeeExact = baseFee + complexityAmount - easeAmount;
-  const adjustedFeeRounded = roundToNearest100(adjustedFeeExact);
+  const adjustedFeeRounded = isExternal ? baseFee : roundToNearest100(adjustedFeeExact);
 
   const soaGst = adjustedFeeRounded * 0.1;
   const soaTotalInclGst = adjustedFeeRounded + soaGst;
