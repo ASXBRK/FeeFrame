@@ -27,7 +27,7 @@ export const defaultQuoteState = {
   isCouple: false,
   lifeStage: 'accumulation',
   ageBracket: 'under40',
-  entityCount: 2,
+  entityCount: 0,
 
   // Step 2: Scope of Advice
   hourlyRate: 335,
