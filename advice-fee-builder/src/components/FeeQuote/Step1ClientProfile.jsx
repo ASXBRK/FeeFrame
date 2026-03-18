@@ -77,17 +77,21 @@ export default function Step1ClientProfile({ quote, dispatch, onNext }) {
           <p className="text-xs text-gray-400 mb-2">
             Count each separate legal entity — individuals, SMSFs, trusts, and companies (e.g. 2 individuals + 1 SMSF = 3)
           </p>
-          <input
-            type="number"
-            min={0}
-            max={10}
-            value={quote.entityCount}
-            onChange={e => {
-              const v = parseInt(e.target.value);
-              if (!isNaN(v)) set('entityCount', Math.max(0, Math.min(10, v)));
-            }}
-            className="block w-24 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-          />
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => set('entityCount', Math.max(0, quote.entityCount - 1))}
+              disabled={quote.entityCount <= 0}
+              className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-30 text-lg font-medium leading-none"
+            >−</button>
+            <span className="w-8 text-center text-sm font-semibold text-gray-900">{quote.entityCount}</span>
+            <button
+              type="button"
+              onClick={() => set('entityCount', Math.min(10, quote.entityCount + 1))}
+              disabled={quote.entityCount >= 10}
+              className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-30 text-lg font-medium leading-none"
+            >+</button>
+          </div>
         </div>
       </div>
 

@@ -7,6 +7,8 @@ import { defaultAnalysisState } from './lib/analysisDefaults.js';
 import { STRATEGIES } from './lib/serviceLines.js';
 
 // ── State ──────────────────────────────────────────────────────────────────────
+const STATE_VERSION = 2; // bump to clear stale localStorage
+
 const initialState = {
   view: 'landing', // 'landing' | 'quote' | 'analysis'
   quoteStep: 1,
@@ -157,7 +159,10 @@ export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState, (init) => {
     try {
       const saved = localStorage.getItem('feeframe-state');
-      if (saved) return deepMerge(init, JSON.parse(saved));
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed._v === STATE_VERSION) return deepMerge(init, parsed);
+      }
     } catch (_) { /* ignore */ }
     return init;
   });
@@ -166,7 +171,7 @@ export default function App() {
   useEffect(() => {
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      try { localStorage.setItem('feeframe-state', JSON.stringify(state)); } catch (_) { /* ignore */ }
+      try { localStorage.setItem('feeframe-state', JSON.stringify({ ...state, _v: STATE_VERSION })); } catch (_) { /* ignore */ }
     }, 500);
     return () => clearTimeout(saveTimer.current);
   }, [state]);
