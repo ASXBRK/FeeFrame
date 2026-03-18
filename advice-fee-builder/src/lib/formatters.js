@@ -35,3 +35,10 @@ export function parseNumber(value, fallback = 0) {
   const n = parseFloat(value);
   return isNaN(n) ? fallback : n;
 }
+
+/**
+ * Round to nearest $100
+ */
+export function roundToNearest100(value) {
+  return Math.round(value / 100) * 100;
+}
