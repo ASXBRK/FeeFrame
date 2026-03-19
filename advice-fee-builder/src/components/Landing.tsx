@@ -2,58 +2,70 @@ import logoLight from '../assets/logos/feeframe-primary-light.svg';
 
 export default function Landing({ onStartQuote, onStartAnalysis }) {
   return (
-    <div className="h-screen bg-light flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden bg-white">
+
       {/* Header */}
-      <header className="bg-white border-b border-light-border px-8 py-5 flex-shrink-0">
-        <img src={logoLight} alt="FeeFrame" className="h-12" />
+      <header className="flex-shrink-0 bg-white border-b border-light-border px-8 py-4">
+        <img src={logoLight} alt="FeeFrame" className="h-10" />
       </header>
 
-      {/* Main content — takes remaining height, no justify-center */}
-      <main className="flex-1 flex flex-col items-center px-6 pt-16 pb-12 overflow-y-auto">
-        <div className="w-full max-w-4xl">
-          <h1 className="text-4xl font-semibold font-heading text-dark mb-3 text-center">
-            Advice fee tools
-          </h1>
-          <p className="text-lg text-mid text-center mb-12">
-            Built for Australian financial advisers and paraplanners. No login. No cost.
-          </p>
+      {/* Split panels — fill all remaining height */}
+      <main className="flex-1 grid grid-cols-1 md:grid-cols-2 min-h-0">
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-            {/* FeeQuote card */}
-            <div className="bg-white rounded-card border border-light-border shadow-card p-12 flex flex-col min-w-[320px]">
-              <div className="mb-6">
-                <span className="font-heading font-bold text-teal text-2xl tracking-tight">[ FeeQuote ]</span>
-              </div>
-              <h2 className="text-2xl font-semibold font-heading text-dark mb-3">What should I charge?</h2>
-              <p className="text-base text-mid mb-10 flex-1">
-                Scope a client engagement and generate a justified fee.
-              </p>
-              <button
-                onClick={onStartQuote}
-                className="w-full bg-teal hover:opacity-90 text-white font-semibold py-4 px-4 rounded-input transition-opacity text-base"
-              >
-                Start Quote →
-              </button>
+        {/* ── FeeQuote panel ─────────────────────────────── */}
+        <div className="flex flex-col justify-between p-12 lg:p-16 bg-white border-r border-light-border overflow-y-auto">
+          <div>
+            <p className="text-label font-heading uppercase tracking-widest text-mid mb-6">
+              Fee calculator
+            </p>
+            <div className="text-display-lg font-heading font-bold text-teal leading-none mb-8">
+              [ FeeQuote ]
             </div>
-
-            {/* FeeAnalysis card */}
-            <div className="bg-white rounded-card border border-light-border shadow-card p-12 flex flex-col min-w-[320px]">
-              <div className="mb-6">
-                <span className="font-heading font-bold text-teal text-2xl tracking-tight">[ FeeAnalysis ]</span>
-              </div>
-              <h2 className="text-2xl font-semibold font-heading text-dark mb-3">Am I making money?</h2>
-              <p className="text-base text-mid mb-10 flex-1">
-                Check if you're actually making money on a client.
-              </p>
-              <button
-                onClick={onStartAnalysis}
-                className="w-full bg-teal hover:opacity-90 text-white font-semibold py-4 px-4 rounded-input transition-opacity text-base"
-              >
-                Analyse →
-              </button>
-            </div>
+            <h2 className="text-h1 font-heading text-dark mb-4">
+              What should I charge?
+            </h2>
+            <p className="text-body-lg text-mid max-w-sm">
+              Scope a client engagement service by service, estimate time, and
+              arrive at a fee you can justify.
+            </p>
+          </div>
+          <div className="mt-12">
+            <button
+              onClick={onStartQuote}
+              className="bg-teal hover:opacity-90 text-white font-heading font-semibold py-4 px-8 rounded-input transition-opacity text-base"
+            >
+              Start Quote →
+            </button>
           </div>
         </div>
+
+        {/* ── FeeAnalysis panel ──────────────────────────── */}
+        <div className="flex flex-col justify-between p-12 lg:p-16 bg-light overflow-y-auto">
+          <div>
+            <p className="text-label font-heading uppercase tracking-widest text-mid mb-6">
+              Profitability check
+            </p>
+            <div className="text-display-lg font-heading font-bold text-teal leading-none mb-8">
+              [ FeeAnalysis ]
+            </div>
+            <h2 className="text-h1 font-heading text-dark mb-4">
+              Am I making money?
+            </h2>
+            <p className="text-body-lg text-mid max-w-sm">
+              Enter a client's fee and the time you actually spend. See whether
+              the implied hourly rate holds up.
+            </p>
+          </div>
+          <div className="mt-12">
+            <button
+              onClick={onStartAnalysis}
+              className="bg-teal hover:opacity-90 text-white font-heading font-semibold py-4 px-8 rounded-input transition-opacity text-base"
+            >
+              Analyse →
+            </button>
+          </div>
+        </div>
+
       </main>
     </div>
   );
