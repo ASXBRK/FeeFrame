@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { calculateProfitability } from '../../lib/calculateProfitability.js';
 import { formatCurrency, formatPercent } from '../../lib/formatters.js';
 import logoLight from '../../assets/logos/feeframe-primary-light.svg';
+import feeanalysisLogo from '../../assets/logos/feeanalysis-light.svg';
 
 export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
   const { analysis } = state;
@@ -13,24 +14,24 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-surface-200 px-6 py-3 flex items-center justify-between print:hidden">
-        <div className="flex items-center gap-3">
-          <button onClick={onGoHome} className="flex items-center">
+      <header className="bg-white border-b border-light-border px-6 py-3 flex items-center justify-between print:hidden">
+        <div className="flex items-center gap-4">
+          <button onClick={onGoHome} className="flex items-center hover:opacity-75 transition-opacity">
             <img src={logoLight} alt="FeeFrame" className="h-6" />
           </button>
-          <span className="text-gray-300">/</span>
-          <span className="text-sm font-semibold text-brand-500">FeeAnalysis</span>
+          <span className="text-light-border">|</span>
+          <img src={feeanalysisLogo} alt="FeeAnalysis" className="h-6" />
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => dispatch({ type: 'RESET_ANALYSIS' })}
-            className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+            className="text-xs text-mid hover:text-red-500 transition-colors"
           >
             Reset
           </button>
           <button
             onClick={onGoQuote}
-            className="text-xs font-medium text-brand-500 hover:text-brand-600 border border-brand-100 hover:border-brand-400 px-3 py-1.5 rounded-lg transition-colors"
+            className="text-xs font-medium text-teal hover:opacity-80 border border-teal-subtle hover:border-teal-light px-3 py-1.5 rounded-input transition-colors"
           >
             ← Back to FeeQuote
           </button>

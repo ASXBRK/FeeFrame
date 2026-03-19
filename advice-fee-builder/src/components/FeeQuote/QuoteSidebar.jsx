@@ -1,4 +1,5 @@
 import logoLight from '../../assets/logos/feeframe-primary-light.svg';
+import feequoteLogo from '../../assets/logos/feequote-light.svg';
 
 const STEPS = [
   { number: 1, label: 'Client Profile' },
@@ -12,16 +13,16 @@ export default function QuoteSidebar({ currentStep, maxStep, onStepClick, onGoHo
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-56 bg-navy-900 text-white min-h-screen flex-shrink-0">
-        <div className="px-5 py-5 border-b border-white/10">
+      <aside className="hidden md:flex flex-col w-56 bg-dark text-white min-h-screen flex-shrink-0">
+        <div className="px-5 py-5 border-b border-dark-border">
           <button
             onClick={onGoHome}
-            className="block hover:opacity-80 transition-opacity"
+            className="block hover:opacity-75 transition-opacity mb-3"
           >
-            {/* brightness(0) invert(1) renders the dark logo as white on navy */}
-            <img src={logoLight} alt="FeeFrame" className="h-6" style={{ filter: 'brightness(0) invert(1)' }} />
+            {/* invert renders the teal/dark logo white on the dark sidebar */}
+            <img src={logoLight} alt="FeeFrame" className="h-5" style={{ filter: 'brightness(0) invert(1)' }} />
           </button>
-          <div className="text-xs text-teal-400 mt-1.5 font-medium">FeeQuote</div>
+          <img src={feequoteLogo} alt="FeeQuote" className="h-5" style={{ filter: 'brightness(0) invert(1)' }} />
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1">
@@ -57,10 +58,11 @@ export default function QuoteSidebar({ currentStep, maxStep, onStepClick, onGoHo
       </aside>
 
       {/* Mobile top bar */}
-      <div className="md:hidden bg-navy-900 text-white px-4 py-3 flex items-center justify-between">
-        <button onClick={onGoHome} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <img src={logoLight} alt="FeeFrame" className="h-5" style={{ filter: 'brightness(0) invert(1)' }} />
-          <span className="text-teal-400 text-xs font-medium">/ FeeQuote</span>
+      <div className="md:hidden bg-dark text-white px-4 py-3 flex items-center justify-between">
+        <button onClick={onGoHome} className="flex items-center gap-3 hover:opacity-75 transition-opacity">
+          <img src={logoLight} alt="FeeFrame" className="h-4" style={{ filter: 'brightness(0) invert(1)' }} />
+          <span className="text-dark-border text-xs">|</span>
+          <img src={feequoteLogo} alt="FeeQuote" className="h-4" style={{ filter: 'brightness(0) invert(1)' }} />
         </button>
         <div className="flex gap-1">
           {STEPS.map((step) => {
