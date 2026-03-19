@@ -25,7 +25,7 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
   const sharedProps = { quote, dispatch, onNext: next, onBack: back };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-light-surface">
+    <div className="flex flex-col md:flex-row min-h-screen bg-light">
       <QuoteSidebar
         currentStep={quoteStep}
         maxStep={maxQuoteStep}

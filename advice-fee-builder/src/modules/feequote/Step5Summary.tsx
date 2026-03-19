@@ -29,7 +29,7 @@ export default function Step5Summary({ quote, dispatch, onBack, onGoAnalysis, on
 
   return (
     <div>
-      <h2 className="text-xl font-semibold font-heading text-dark mb-1 print:hidden">Fee Summary & Output</h2>
+      <h2 className="text-xl font-bold font-heading text-dark mb-1 print:hidden" style={{ letterSpacing: '-0.3px' }}>Fee Summary & Output</h2>
 
       {/* Print header */}
       <div className="hidden print:block mb-6">
@@ -348,7 +348,7 @@ function Tab3ClientOutput({ calc, quote, dispatch, copied, onCopy, editingParagr
             value={calc.clientParagraph}
             onChange={e => dispatch({ type: 'SET_QUOTE_FIELD', field: 'clientParagraphOverride', value: e.target.value })}
             rows={12}
-            className="w-full rounded-input border border-light-border px-3 py-2 text-sm font-mono focus:outline-none focus:shadow-input resize-y"
+            className="w-full rounded-input border border-light-border px-3 py-2.5 text-[15px] font-mono focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 resize-y"
           />
         ) : (
           <div className="bg-light-surface rounded-input p-4 text-sm text-dark whitespace-pre-wrap leading-relaxed border border-light-border">
@@ -358,7 +358,7 @@ function Tab3ClientOutput({ calc, quote, dispatch, copied, onCopy, editingParagr
 
         <button
           onClick={onCopy}
-          className={`mt-4 w-full py-2.5 px-4 rounded-input text-sm font-medium transition-colors ${
+          className={`mt-4 w-full py-3 px-6 rounded-lg text-sm font-semibold transition-colors ${
             copied
               ? 'bg-healthy text-white'
               : 'bg-teal hover:opacity-90 text-white'
@@ -392,7 +392,7 @@ function Tab4Export({ calc, quote, onReset, onGoAnalysis }) {
           <p className="text-xs text-mid mb-3">Check if you're making money on this engagement. Fees will be pre-filled.</p>
           <button
             onClick={onGoAnalysis}
-            className="bg-teal hover:opacity-90 text-white font-medium py-2.5 px-6 rounded-input transition-opacity text-sm"
+            className="bg-teal hover:opacity-90 text-white font-semibold py-3 px-6 rounded-lg transition-opacity text-sm"
           >
             Analyse Profitability →
           </button>

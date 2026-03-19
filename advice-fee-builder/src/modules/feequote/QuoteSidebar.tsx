@@ -1,6 +1,3 @@
-import logoLight from '../../assets/logos/feeframe-primary-light.svg';
-import feequoteLogo from '../../assets/logos/feequote-light.svg';
-
 const STEPS = [
   { number: 1, label: 'Client Profile' },
   { number: 2, label: 'Scope of Advice' },
@@ -14,15 +11,14 @@ export default function QuoteSidebar({ currentStep, maxStep, onStepClick, onGoHo
     <>
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-56 bg-dark text-white min-h-screen flex-shrink-0">
-        <div className="px-5 py-5 border-b border-dark-border">
+        <div className="px-5 py-6 border-b border-dark-border">
           <button
             onClick={onGoHome}
-            className="block hover:opacity-75 transition-opacity mb-3"
+            className="block hover:opacity-75 transition-opacity mb-2"
           >
-            {/* invert renders the teal/dark logo white on the dark sidebar */}
-            <img src={logoLight} alt="FeeFrame" className="h-5" style={{ filter: 'brightness(0) invert(1)' }} />
+            <span style={{ fontWeight: 700, fontSize: '18px', color: '#5eead4', fontFamily: '"DM Sans", sans-serif', letterSpacing: '-0.3px' }}>[ FeeFrame ]</span>
           </button>
-          <img src={feequoteLogo} alt="FeeQuote" className="h-5" style={{ filter: 'brightness(0) invert(1)' }} />
+          <span style={{ fontWeight: 700, fontSize: '15px', color: '#5eead4', fontFamily: '"DM Sans", sans-serif' }}>[ FeeQuote</span>
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1">
@@ -60,9 +56,9 @@ export default function QuoteSidebar({ currentStep, maxStep, onStepClick, onGoHo
       {/* Mobile top bar */}
       <div className="md:hidden bg-dark text-white px-4 py-3 flex items-center justify-between">
         <button onClick={onGoHome} className="flex items-center gap-3 hover:opacity-75 transition-opacity">
-          <img src={logoLight} alt="FeeFrame" className="h-4" style={{ filter: 'brightness(0) invert(1)' }} />
+          <span style={{ fontWeight: 700, fontSize: '15px', color: '#5eead4', fontFamily: '"DM Sans", sans-serif' }}>[ FeeFrame ]</span>
           <span className="text-dark-border text-xs">|</span>
-          <img src={feequoteLogo} alt="FeeQuote" className="h-4" style={{ filter: 'brightness(0) invert(1)' }} />
+          <span style={{ fontWeight: 700, fontSize: '13px', color: '#5eead4', fontFamily: '"DM Sans", sans-serif' }}>[ FeeQuote</span>
         </button>
         <div className="flex gap-1">
           {STEPS.map((step) => {

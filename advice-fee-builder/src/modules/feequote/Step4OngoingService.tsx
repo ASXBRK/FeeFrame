@@ -31,7 +31,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
 
   return (
     <div>
-      <h2 className="text-xl font-semibold font-heading text-dark mb-1">Ongoing Service</h2>
+      <h2 className="text-xl font-bold font-heading text-dark mb-1" style={{ letterSpacing: '-0.3px' }}>Ongoing Service</h2>
       <p className="text-sm text-mid mb-6">Configure the ongoing service model and fee structure.</p>
 
       <div className="space-y-5">
@@ -75,7 +75,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
                   step={1}
                   value={quote.reviewMeetings}
                   onChange={e => setField('reviewMeetings', Math.max(0, parseInt(e.target.value) || 0))}
-                  className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:shadow-input text-center"
+                  className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
                 />
                 <span className="text-xs text-mid">per year</span>
               </div>
@@ -97,7 +97,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
                   step={1}
                   value={quote.ongoingAccounts}
                   onChange={e => setField('ongoingAccounts', Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:shadow-input text-center"
+                  className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
                 />
                 <span className="text-xs text-mid">accounts</span>
               </div>
@@ -147,7 +147,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
                   step={10000}
                   value={quote.fum}
                   onChange={e => setField('fum', parseFloat(e.target.value) || 0)}
-                  className="w-40 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:shadow-input"
+                  className="w-40 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                 />
               </div>
             </div>
@@ -179,7 +179,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
                     step={50}
                     value={quote.monthlySubscription}
                     onChange={e => setField('monthlySubscription', parseFloat(e.target.value) || 0)}
-                    className="w-28 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:shadow-input"
+                    className="w-28 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                   />
                   <span className="text-sm text-mid">/ month</span>
                 </div>
@@ -228,7 +228,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
                           step={0.5}
                           value={quote.reviewHours[key]}
                           onChange={e => dispatch({ type: 'SET_REVIEW_HOUR', key, value: parseFloat(e.target.value) || 0 })}
-                          className="w-20 rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:shadow-input float-right"
+                          className="w-20 rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 float-right"
                         />
                       </td>
                     </tr>
@@ -296,7 +296,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
         </button>
         <button
           onClick={onNext}
-          className="bg-teal hover:opacity-90 text-white font-medium py-2.5 px-6 rounded-input transition-opacity text-sm"
+          className="bg-teal hover:opacity-90 text-white font-semibold py-3 px-6 rounded-lg transition-opacity text-sm"
         >
           Next: Fee Summary →
         </button>
@@ -335,7 +335,7 @@ function EntitySplit({ quote, dispatch, calc }) {
                       value={entity.name}
                       onChange={e => dispatch({ type: 'SET_ENTITY', index: i, field: 'name', value: e.target.value })}
                       placeholder="Entity name"
-                      className="w-full rounded-input border border-light-border px-2 py-1 text-sm focus:outline-none focus:shadow-input"
+                      className="w-full rounded-input border border-light-border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                     />
                   </td>
                   <td className="py-2 pr-2">
@@ -344,7 +344,7 @@ function EntitySplit({ quote, dispatch, calc }) {
                       min={0}
                       value={entity.balance}
                       onChange={e => dispatch({ type: 'SET_ENTITY', index: i, field: 'balance', value: parseFloat(e.target.value) || 0 })}
-                      className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:shadow-input"
+                      className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                     />
                   </td>
                   <td className="py-2 pr-2 text-center">

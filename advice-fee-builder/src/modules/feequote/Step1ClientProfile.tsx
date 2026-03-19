@@ -11,7 +11,7 @@ export default function Step1ClientProfile({ quote, dispatch, onNext }) {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold font-heading text-dark mb-1">Client Profile</h2>
+      <h2 className="text-xl font-bold font-heading text-dark mb-1" style={{ letterSpacing: '-0.3px' }}>Client Profile</h2>
       <p className="text-sm text-mid mb-6">Basic client details used throughout the quote.</p>
 
       <div className="bg-white rounded-card border border-light-border p-6 space-y-5">
@@ -26,7 +26,7 @@ export default function Step1ClientProfile({ quote, dispatch, onNext }) {
             value={quote.clientName}
             onChange={e => set('clientName', e.target.value)}
             placeholder="e.g. Smith Family"
-            className="block w-full sm:w-80 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:shadow-input"
+            className="block w-full sm:w-80 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
           />
         </div>
 
@@ -37,7 +37,7 @@ export default function Step1ClientProfile({ quote, dispatch, onNext }) {
             type="date"
             value={quote.date}
             onChange={e => set('date', e.target.value)}
-            className="block w-full sm:w-48 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:shadow-input"
+            className="block w-full sm:w-48 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
           />
         </div>
 
@@ -61,7 +61,7 @@ export default function Step1ClientProfile({ quote, dispatch, onNext }) {
           <select
             value={quote.lifeStage}
             onChange={e => set('lifeStage', e.target.value)}
-            className="block w-full sm:w-56 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:shadow-input"
+            className="block w-full sm:w-56 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
           >
             {LIFE_STAGES.map(s => (
               <option key={s.value} value={s.value}>{s.label}</option>
@@ -99,7 +99,7 @@ export default function Step1ClientProfile({ quote, dispatch, onNext }) {
       <div className="flex justify-end mt-6">
         <button
           onClick={onNext}
-          className="bg-teal hover:opacity-90 text-white font-medium py-2.5 px-6 rounded-input transition-opacity text-sm"
+          className="bg-teal hover:opacity-90 text-white font-semibold py-3 px-6 rounded-lg transition-opacity text-sm"
         >
           Next: Scope of Advice →
         </button>

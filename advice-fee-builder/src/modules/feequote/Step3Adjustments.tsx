@@ -11,7 +11,7 @@ export default function Step3Adjustments({ quote, dispatch, onNext, onBack }) {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold font-heading text-dark mb-1">Adjustments</h2>
+      <h2 className="text-xl font-bold font-heading text-dark mb-1" style={{ letterSpacing: '-0.3px' }}>Adjustments</h2>
       <p className="text-sm text-mid mb-6">Apply complexity premiums, ease discounts, and implementation fees.</p>
 
       <div className="space-y-5">
@@ -120,7 +120,7 @@ export default function Step3Adjustments({ quote, dispatch, onNext, onBack }) {
                   min={0}
                   value={quote.insuranceCommissionOffset}
                   onChange={e => setField('insuranceCommissionOffset', parseFloat(e.target.value) || 0)}
-                  className="w-24 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:shadow-input text-right"
+                  className="w-24 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-right"
                 />
               </div>
               <div className="w-24 text-right">
@@ -167,7 +167,7 @@ export default function Step3Adjustments({ quote, dispatch, onNext, onBack }) {
         </button>
         <button
           onClick={onNext}
-          className="bg-teal hover:opacity-90 text-white font-medium py-2.5 px-6 rounded-input transition-opacity text-sm"
+          className="bg-teal hover:opacity-90 text-white font-semibold py-3 px-6 rounded-lg transition-opacity text-sm"
         >
           Next: Ongoing Service →
         </button>
@@ -190,7 +190,7 @@ function ImplRow({ label, helper, value, inputLabel, onChange, fee }) {
           step={1}
           value={value}
           onChange={e => onChange(parseFloat(e.target.value) || 0)}
-          className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:shadow-input text-center"
+          className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
         />
         <span className="text-xs text-mid">{inputLabel}</span>
       </div>
