@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import feeframeLightLogo from '../assets/logos/feeframe-primary-light.svg';
+import feeframeLightLogo from '../assets/logos/feeframe-light.svg';
 import feequoteLightLogo from '../assets/logos/feequote-light.svg';
 import feeanalysisLightLogo from '../assets/logos/feeanalysis-light.svg';
 

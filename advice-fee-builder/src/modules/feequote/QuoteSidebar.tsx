@@ -1,4 +1,4 @@
-import feeframeLogo from '../../assets/logos/feeframe-primary-light.svg';
+import feeframeLogo from '../../assets/logos/feeframe-light.svg';
 import feequoteLogo from '../../assets/logos/feequote-light.svg';
 
 const STEPS = [
