@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { calculateProfitability } from '../../lib/calculateProfitability';
 import { formatCurrency, formatPercent } from '../../lib/formatters';
 import { colors } from '../../brand';
+import AnalysisSidebar from './AnalysisSidebar';
 
 export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
   const { analysis } = state;
@@ -11,34 +12,17 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
   const setField = (field, value) => dispatch({ type: 'SET_ANALYSIS_FIELD', field, value });
 
   return (
-    <div className="min-h-screen bg-light">
-      {/* Header */}
-      <header className="bg-white border-b border-light-border px-6 py-3 flex items-center justify-between print:hidden">
-        <div className="flex items-center gap-4">
-          <button onClick={onGoHome} className="flex items-center hover:opacity-75 transition-opacity">
-            <span style={{ fontWeight: 700, fontSize: '20px', color: '#0d9488', fontFamily: '"DM Sans", sans-serif', letterSpacing: '-0.3px' }}>[ FeeFrame ]</span>
-          </button>
-          <span style={{ fontWeight: 700, fontSize: '20px', color: '#0d9488', fontFamily: '"DM Sans", sans-serif', letterSpacing: '-0.3px' }}>FeeAnalysis ]</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => dispatch({ type: 'RESET_ANALYSIS' })}
-            className="text-xs text-mid hover:text-risk transition-colors"
-          >
-            Reset
-          </button>
-          <button
-            onClick={onGoQuote}
-            className="bg-teal hover:opacity-90 text-white font-semibold py-3 px-6 rounded-lg transition-opacity text-sm"
-          >
-            ← Back to FeeQuote
-          </button>
-        </div>
-      </header>
+    <div className="flex flex-col md:flex-row min-h-screen bg-light">
+      <AnalysisSidebar
+        onGoHome={onGoHome}
+        onGoQuote={onGoQuote}
+        onReset={() => dispatch({ type: 'RESET_ANALYSIS' })}
+      />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <div className="flex-1 flex flex-col min-w-0">
+        <main className="flex-1 overflow-auto px-4 sm:px-6 py-6 max-w-4xl w-full mx-auto space-y-6">
         {/* Section 1: Fee Inputs */}
-        <section className="bg-white rounded-card border border-light-border p-5">
+        <section id="fee-inputs" className="bg-white rounded-card border border-light-border p-5">
           <h2 className="text-xl font-bold font-heading text-dark mb-4" style={{ letterSpacing: '-0.3px' }}>Fee Inputs</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <FeeInputCard
@@ -60,7 +44,7 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
         </section>
 
         {/* Section 2: Cost Inputs */}
-        <section className="bg-white rounded-card border border-light-border p-5">
+        <section id="cost-inputs" className="bg-white rounded-card border border-light-border p-5">
           <h2 className="text-xl font-bold font-heading text-dark mb-4" style={{ letterSpacing: '-0.3px' }}>Cost Inputs</h2>
 
           {/* Rates */}
@@ -132,7 +116,7 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
         </section>
 
         {/* Section 3: Profitability Dashboard */}
-        <section className="bg-white rounded-card border border-light-border p-5">
+        <section id="profitability" className="bg-white rounded-card border border-light-border p-5">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl font-bold font-heading text-dark" style={{ letterSpacing: '-0.3px' }}>Profitability Dashboard</h2>
             <div className="relative">
@@ -250,6 +234,7 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
             </div>
           )}
         </section>
+        </main>
       </div>
     </div>
   );
