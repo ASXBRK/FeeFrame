@@ -1,5 +1,5 @@
 import { useReducer, useEffect, useCallback, useRef } from 'react';
-import Landing from './components/Landing.jsx';
+import Landing from './components/Landing';
 import FeeQuoteWizard from './components/FeeQuote/FeeQuoteWizard.jsx';
 import FeeAnalysis from './components/FeeAnalysis/FeeAnalysis.jsx';
 import { defaultQuoteState } from './lib/quoteDefaults.js';
