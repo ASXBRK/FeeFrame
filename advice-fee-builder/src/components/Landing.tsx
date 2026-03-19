@@ -1,85 +1,116 @@
-export default function Landing({ onStartQuote, onStartAnalysis }) {
+export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuote: () => void; onStartAnalysis: () => void }) {
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
-
-      {/* ── Hero — dark, big logo ───────────────────────────── */}
-      <section className="bg-dark flex flex-col items-center justify-center flex-shrink-0 h-2/5 px-8">
-        {/* Inline logo — brackets + wordmark in real DM Sans at display scale */}
-        <div className="flex items-center gap-3 mb-5">
-          <svg width="28" height="72" viewBox="0 0 28 72" fill="none">
-            <path d="M20 2 L4 2 L4 70 L20 70" stroke="#5eead4" strokeWidth="3.5" strokeLinecap="square" strokeLinejoin="miter"/>
-          </svg>
-          <span className="font-heading font-semibold text-white leading-none"
-                style={{ fontSize: '72px', letterSpacing: '-2px' }}>
-            FeeFrame
-          </span>
-          <svg width="28" height="72" viewBox="0 0 28 72" fill="none">
-            <path d="M8 2 L24 2 L24 70 L8 70" stroke="#5eead4" strokeWidth="3.5" strokeLinecap="square" strokeLinejoin="miter"/>
-          </svg>
+    <div style={{ fontFamily: '"DM Sans", sans-serif', background: '#f8fafc', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* ── Nav ── */}
+      <nav style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 48px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 50 }}>
+        <span style={{ fontWeight: 700, fontSize: '22px', color: '#0d9488', letterSpacing: '-0.5px' }}>[FF]</span>
+        <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+          <a href="#" style={{ fontSize: '15px', fontWeight: 500, color: '#374151', textDecoration: 'none' }}>Home</a>
+          <a href="#about" style={{ fontSize: '15px', fontWeight: 500, color: '#374151', textDecoration: 'none' }}>About</a>
         </div>
-        <p className="font-body text-dark-border text-base tracking-wide text-center">
-          Advice fee tools for Australian financial advisers and paraplanners
+      </nav>
+      {/* ── Hero ── */}
+      <section style={{ background: '#fff', padding: '100px 48px 96px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', borderBottom: '1px solid #e2e8f0' }}>
+        <div style={{ marginBottom: '48px' }}>
+          <span style={{ fontWeight: 700, fontSize: '80px', color: '#0d9488', letterSpacing: '-3px', lineHeight: 1 }}>
+            [ FeeFrame ]
+          </span>
+        </div>
+        <h1 style={{ fontWeight: 700, fontSize: '44px', color: '#111827', letterSpacing: '-1px', lineHeight: 1.15, marginBottom: '20px', maxWidth: '640px' }}>
+          Fee clarity for Australian advisers.
+        </h1>
+        <p style={{ fontSize: '20px', fontWeight: 400, color: '#6b7280', marginBottom: '48px', maxWidth: '480px', lineHeight: 1.5 }}>
+          Know what to charge. Know if it's worth it.
+        </p>
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '28px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <button
+            onClick={onStartQuote}
+            style={{ fontWeight: 600, fontSize: '17px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', padding: '16px 36px', cursor: 'pointer', letterSpacing: '-0.2px' }}
+          >
+            Start FeeQuote →
+          </button>
+          <button
+            onClick={onStartAnalysis}
+            style={{ fontWeight: 600, fontSize: '17px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', padding: '16px 36px', cursor: 'pointer', letterSpacing: '-0.2px' }}
+          >
+            Run FeeAnalysis →
+          </button>
+        </div>
+        <p style={{ fontSize: '14px', color: '#9ca3af', letterSpacing: '0.1px' }}>
+          No login. No data stored. Just fees, [framed].
         </p>
       </section>
-
-      {/* ── Module panels — fill remaining height ──────────── */}
-      <main className="flex-1 grid grid-cols-1 md:grid-cols-2 min-h-0">
-
-        {/* FeeQuote */}
-        <div className="flex flex-col justify-between p-10 lg:p-14 bg-white border-r border-light-border overflow-y-auto">
-          <div>
-            <p className="font-heading text-label uppercase tracking-widest text-mid mb-5">
-              Fee calculator
-            </p>
-            <div className="font-heading font-bold text-teal text-display leading-none mb-6">
-              [ FeeQuote ]
+      {/* ── Tool Cards ── */}
+      <section style={{ padding: '96px 48px', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '24px', width: '100%', maxWidth: '900px' }}>
+          {/* FeeQuote */}
+          <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '52px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+            <div style={{ marginBottom: '28px' }}>
+              <span style={{ fontWeight: 700, fontSize: '36px', color: '#0d9488', letterSpacing: '-1px', lineHeight: 1 }}>
+                [ FeeQuote
+              </span>
             </div>
-            <h2 className="font-heading text-h1 text-dark mb-3">
+            <h2 style={{ fontWeight: 700, fontSize: '28px', color: '#111827', letterSpacing: '-0.5px', marginBottom: '16px', lineHeight: 1.2 }}>
               What should I charge?
             </h2>
-            <p className="font-body text-body-lg text-mid max-w-sm">
-              Scope a client engagement service by service, estimate time, and
-              arrive at a fee you can justify.
+            <p style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '16px', color: '#6b7280', lineHeight: 1.65, marginBottom: '40px', flex: 1 }}>
+              Scope a new client engagement and generate a fee you can actually justify.
             </p>
-          </div>
-          <div className="mt-10">
             <button
               onClick={onStartQuote}
-              className="bg-teal hover:opacity-90 text-white font-heading font-semibold py-3.5 px-8 rounded-input transition-opacity text-base"
+              style={{ fontWeight: 600, fontSize: '16px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', padding: '16px 24px', cursor: 'pointer', width: '100%' }}
             >
-              Start Quote →
+              Start quoting →
             </button>
           </div>
-        </div>
-
-        {/* FeeAnalysis */}
-        <div className="flex flex-col justify-between p-10 lg:p-14 bg-light overflow-y-auto">
-          <div>
-            <p className="font-heading text-label uppercase tracking-widest text-mid mb-5">
-              Profitability check
-            </p>
-            <div className="font-heading font-bold text-teal text-display leading-none mb-6">
-              [ FeeAnalysis ]
+          {/* FeeAnalysis */}
+          <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '52px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+            <div style={{ marginBottom: '28px' }}>
+              <span style={{ fontWeight: 700, fontSize: '36px', color: '#0d9488', letterSpacing: '-1px', lineHeight: 1 }}>
+                FeeAnalysis ]
+              </span>
             </div>
-            <h2 className="font-heading text-h1 text-dark mb-3">
+            <h2 style={{ fontWeight: 700, fontSize: '28px', color: '#111827', letterSpacing: '-0.5px', marginBottom: '16px', lineHeight: 1.2 }}>
               Am I making money?
             </h2>
-            <p className="font-body text-body-lg text-mid max-w-sm">
-              Enter a client's fee and the time you actually spend. See whether
-              the implied hourly rate holds up.
+            <p style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '16px', color: '#6b7280', lineHeight: 1.65, marginBottom: '40px', flex: 1 }}>
+              Enter what you're charging. Find out if the client is actually profitable.
             </p>
-          </div>
-          <div className="mt-10">
             <button
               onClick={onStartAnalysis}
-              className="bg-teal hover:opacity-90 text-white font-heading font-semibold py-3.5 px-8 rounded-input transition-opacity text-base"
+              style={{ fontWeight: 600, fontSize: '16px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', padding: '16px 24px', cursor: 'pointer', width: '100%' }}
             >
-              Analyse →
+              Analyse a client →
             </button>
           </div>
         </div>
-
-      </main>
+      </section>
+      {/* ── Video ── */}
+      <section style={{ background: '#111827', padding: '96px 48px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+        <p style={{ fontWeight: 700, fontSize: '32px', color: '#f8fafc', letterSpacing: '-0.5px', marginBottom: '56px' }}>
+          [ How it works ]
+        </p>
+        <div style={{ width: '100%', maxWidth: '720px', aspectRatio: '16/9', background: '#1f2937', borderRadius: '12px', border: '1px solid #374151', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', cursor: 'pointer' }}>
+          <div style={{ width: '72px', height: '72px', background: '#0d9488', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 0, height: 0, borderTop: '14px solid transparent', borderBottom: '14px solid transparent', borderLeft: '24px solid #fff', marginLeft: '6px' }} />
+          </div>
+          <p style={{ fontSize: '15px', color: '#6b7280' }}>
+            Video coming soon
+          </p>
+        </div>
+      </section>
+      {/* ── Footer ── */}
+      <footer style={{ background: '#fff', borderTop: '1px solid #e2e8f0', padding: '40px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <span style={{ fontWeight: 700, fontSize: '20px', color: '#0d9488', letterSpacing: '-0.5px' }}>
+          [ FeeFrame ]
+        </span>
+        <p style={{ fontSize: '13px', color: '#9ca3af' }}>
+          Built for Australian advice practices · Free to use · No data stored
+        </p>
+        <div style={{ display: 'flex', gap: '24px' }}>
+          <a href="#about" style={{ fontSize: '13px', color: '#6b7280', textDecoration: 'none' }}>About</a>
+        </div>
+      </footer>
     </div>
   );
 }
