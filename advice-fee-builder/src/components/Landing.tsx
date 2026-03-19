@@ -18,7 +18,7 @@ export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuot
         <div style={{ marginBottom: '48px' }}>
           <img src={feeframeLightLogo} alt="FeeFrame" style={{ height: '80px' }} />
         </div>
-        <h1 style={{ fontWeight: 700, fontSize: '44px', color: '#111827', letterSpacing: '-1px', lineHeight: 1.15, marginBottom: '20px', maxWidth: '640px' }}>
+        <h1 style={{ fontWeight: 700, fontSize: '36px', color: '#111827', letterSpacing: '-1px', lineHeight: 1.15, marginBottom: '20px', maxWidth: '640px' }}>
           Fee clarity for Australian advisers.
         </h1>
         <p style={{ fontSize: '20px', fontWeight: 400, color: '#6b7280', marginBottom: '48px', maxWidth: '480px', lineHeight: 1.5 }}>
@@ -43,7 +43,7 @@ export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuot
         </p>
       </section>
       {/* ── Tool Cards ── */}
-      <section style={{ padding: '96px 48px', display: 'flex', justifyContent: 'center' }}>
+      <section style={{ padding: '96px 48px 48px', display: 'flex', justifyContent: 'center' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '24px', width: '100%', maxWidth: '900px' }}>
           {/* FeeQuote */}
           <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '52px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
