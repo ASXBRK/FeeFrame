@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@600&amp;display=swap');
+    .wordmark { font-family: 'DM Sans', Georgia, serif; font-size: 36px; font-weight: 600; letter-spacing: -0.8px; fill: #0d9488; }
+  </style>
+  <!-- Left bracket -->
+  <path d="M22 14 L8 14 L8 66 L22 66" fill="none" stroke="#0d9488" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/>
+  <!-- Right bracket -->
+  <path d="M298 14 L312 14 L312 66 L298 66" fill="none" stroke="#0d9488" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/>
+  <!-- Wordmark -->
+  <text class="wordmark" x="34" y="57">FeeFrame</text>
+</svg>
