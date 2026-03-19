@@ -1,9 +1,13 @@
+import feeframeLightLogo from '../assets/logos/feeframe-primary-light.svg';
+import feequoteLightLogo from '../assets/logos/feequote-light.svg';
+import feeanalysisLightLogo from '../assets/logos/feeanalysis-light.svg';
+
 export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuote: () => void; onStartAnalysis: () => void }) {
   return (
     <div style={{ fontFamily: '"DM Sans", sans-serif', background: '#f8fafc', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* ── Nav ── */}
       <nav style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 48px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 50 }}>
-        <span style={{ fontWeight: 700, fontSize: '22px', color: '#0d9488', letterSpacing: '-0.5px' }}>[FF]</span>
+        <img src={feeframeLightLogo} alt="FeeFrame" style={{ height: '36px' }} />
         <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
           <a href="#" style={{ fontSize: '15px', fontWeight: 500, color: '#374151', textDecoration: 'none' }}>Home</a>
           <a href="#about" style={{ fontSize: '15px', fontWeight: 500, color: '#374151', textDecoration: 'none' }}>About</a>
@@ -12,9 +16,7 @@ export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuot
       {/* ── Hero ── */}
       <section style={{ background: '#fff', padding: '100px 48px 96px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', borderBottom: '1px solid #e2e8f0' }}>
         <div style={{ marginBottom: '48px' }}>
-          <span style={{ fontWeight: 700, fontSize: '80px', color: '#0d9488', letterSpacing: '-3px', lineHeight: 1 }}>
-            [ FeeFrame ]
-          </span>
+          <img src={feeframeLightLogo} alt="FeeFrame" style={{ height: '80px' }} />
         </div>
         <h1 style={{ fontWeight: 700, fontSize: '44px', color: '#111827', letterSpacing: '-1px', lineHeight: 1.15, marginBottom: '20px', maxWidth: '640px' }}>
           Fee clarity for Australian advisers.
@@ -46,9 +48,7 @@ export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuot
           {/* FeeQuote */}
           <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '52px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
             <div style={{ marginBottom: '28px' }}>
-              <span style={{ fontWeight: 700, fontSize: '36px', color: '#0d9488', letterSpacing: '-1px', lineHeight: 1 }}>
-                [ FeeQuote
-              </span>
+              <img src={feequoteLightLogo} alt="FeeQuote" style={{ height: '56px' }} />
             </div>
             <h2 style={{ fontWeight: 700, fontSize: '28px', color: '#111827', letterSpacing: '-0.5px', marginBottom: '16px', lineHeight: 1.2 }}>
               What should I charge?
@@ -66,9 +66,7 @@ export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuot
           {/* FeeAnalysis */}
           <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '52px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
             <div style={{ marginBottom: '28px' }}>
-              <span style={{ fontWeight: 700, fontSize: '36px', color: '#0d9488', letterSpacing: '-1px', lineHeight: 1 }}>
-                FeeAnalysis ]
-              </span>
+              <img src={feeanalysisLightLogo} alt="FeeAnalysis" style={{ height: '56px' }} />
             </div>
             <h2 style={{ fontWeight: 700, fontSize: '28px', color: '#111827', letterSpacing: '-0.5px', marginBottom: '16px', lineHeight: 1.2 }}>
               Am I making money?
@@ -101,9 +99,7 @@ export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuot
       </section>
       {/* ── Footer ── */}
       <footer style={{ background: '#fff', borderTop: '1px solid #e2e8f0', padding: '40px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-        <span style={{ fontWeight: 700, fontSize: '20px', color: '#0d9488', letterSpacing: '-0.5px' }}>
-          [ FeeFrame ]
-        </span>
+        <img src={feeframeLightLogo} alt="FeeFrame" style={{ height: '36px' }} />
         <p style={{ fontSize: '13px', color: '#9ca3af' }}>
           Built for Australian advice practices · Free to use · No data stored
         </p>
