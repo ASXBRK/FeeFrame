@@ -37,7 +37,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
       <div className="space-y-5">
         {/* Ongoing model selector */}
         <div className="bg-white rounded-card border border-light-border p-5">
-          <h3 className="text-sm font-semibold font-heading text-dark mb-3">Ongoing Fee Model</h3>
+          <h3 className="text-base font-bold font-heading text-dark mb-3">Ongoing Fee Model</h3>
           <div className="flex flex-wrap gap-2">
             {ongoingModels.map(m => (
               <button
@@ -58,7 +58,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
 
         {/* Fixed component — always shown */}
         <div className="bg-white rounded-card border border-light-border p-5">
-          <h3 className="text-sm font-semibold font-heading text-dark mb-4">Fixed Component</h3>
+          <h3 className="text-base font-bold font-heading text-dark mb-4">Fixed Component</h3>
           <div className="space-y-4">
             {/* Review meetings */}
             <div className="flex items-center gap-4">
@@ -134,7 +134,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
         {/* Variable / FUM (fixedVariable only) */}
         {quote.ongoingModel === 'fixedVariable' && (
           <div className="bg-white rounded-card border border-light-border p-5">
-            <h3 className="text-sm font-semibold font-heading text-dark mb-4">Variable (FUM-based) Component</h3>
+            <h3 className="text-base font-bold font-heading text-dark mb-4">Variable (FUM-based) Component</h3>
             <div className="mb-4">
               <label className="block text-sm font-medium text-dark mb-1">
                 Total FUM across all accounts
@@ -167,7 +167,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
         {/* Subscription (subscription only) */}
         {quote.ongoingModel === 'subscription' && (
           <div className="bg-white rounded-card border border-light-border p-5">
-            <h3 className="text-sm font-semibold font-heading text-dark mb-4">Subscription</h3>
+            <h3 className="text-base font-bold font-heading text-dark mb-4">Subscription</h3>
             <div className="flex items-center gap-4">
               <div>
                 <label className="block text-sm font-medium text-dark mb-1">Monthly subscription</label>
@@ -200,7 +200,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
             className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-light-surface transition-colors"
           >
             <div>
-              <h3 className="text-sm font-semibold text-dark">Review Meeting Sense-Check</h3>
+              <h3 className="text-base font-bold font-heading text-dark">Review Meeting Sense-Check</h3>
               <p className="text-xs text-mid mt-0.5">
                 Hours breakdown per review cycle — {formatHours(calc.totalReviewHours)} total at {formatCurrency(calc.costPerReview)}/meeting
               </p>
@@ -253,7 +253,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
             className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-light-surface transition-colors"
           >
             <div>
-              <h3 className="text-sm font-semibold text-dark">Entity Fee Split <span className="text-mid font-normal">(optional)</span></h3>
+              <h3 className="text-base font-bold font-heading text-dark">Entity Fee Split <span className="text-mid font-normal">(optional)</span></h3>
               <p className="text-xs text-mid mt-0.5">Allocate the ongoing fee across individual entities</p>
             </div>
             <span className="text-mid text-xs ml-4">{entitiesOpen ? '▲' : '▼'}</span>
@@ -266,7 +266,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
 
         {/* Ongoing fee summary */}
         <div className="bg-white rounded-card border border-light-border p-5">
-          <h3 className="text-sm font-semibold font-heading text-dark mb-4">Ongoing Fee Summary</h3>
+          <h3 className="text-base font-bold font-heading text-dark mb-4">Ongoing Fee Summary</h3>
           <table className="w-full text-sm">
             <tbody className="divide-y divide-light-border">
               <SummaryRow label="Fixed Component" value={formatCurrency(calc.fixedOngoingFee)} />

@@ -121,7 +121,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
             {/* Service lines table */}
             <div className="bg-white rounded-card border border-light-border overflow-hidden">
               <div className="px-5 py-4 border-b border-light-border">
-                <h3 className="text-sm font-semibold text-dark">Service Lines</h3>
+                <h3 className="text-base font-bold font-heading text-dark">Service Lines</h3>
               </div>
 
               <div className="divide-y divide-light-border">
@@ -143,7 +143,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
 
               {/* Base fee total */}
               <div className="px-5 py-4 bg-light-surface border-t border-light-border flex items-center justify-between">
-                <span className="text-sm font-semibold text-dark">Base Fee Before Adjustments</span>
+                <span className="text-base font-bold font-heading text-dark">Base Fee Before Adjustments</span>
                 <span className="text-base font-bold text-dark">{formatCurrency(calc.baseFee)}</span>
               </div>
             </div>
@@ -156,7 +156,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                 className="w-full px-5 py-4 flex items-center justify-between text-left border-b border-light-border hover:bg-light-surface transition-colors"
               >
                 <div>
-                  <h3 className="text-sm font-semibold text-dark">Strategies in Scope</h3>
+                  <h3 className="text-base font-bold font-heading text-dark">Strategies in Scope</h3>
                   <p className="text-xs text-mid mt-0.5">
                     Checking a strategy auto-enables its service line and increments the strategy development count.
                   </p>
