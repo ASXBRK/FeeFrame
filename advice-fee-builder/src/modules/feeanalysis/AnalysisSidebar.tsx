@@ -1,3 +1,6 @@
+import feeframeLogo from '../../assets/logos/feeframe-primary-light.svg';
+import feeanalysisLogo from '../../assets/logos/feeanalysis-light.svg';
+
 const SECTIONS = [
   { id: 'fee-inputs',    label: 'Fee Inputs' },
   { id: 'cost-inputs',   label: 'Cost Inputs' },
@@ -12,11 +15,11 @@ export default function AnalysisSidebar({ onGoHome, onGoQuote, onReset }: { onGo
         <div className="px-5 py-6 border-b border-dark-border">
           <button
             onClick={onGoHome}
-            className="block hover:opacity-75 transition-opacity mb-2"
+            className="block hover:opacity-75 transition-opacity mb-4"
           >
-            <span style={{ fontWeight: 700, fontSize: '18px', color: '#5eead4', fontFamily: '"DM Sans", sans-serif', letterSpacing: '-0.3px' }}>[ FeeFrame ]</span>
+            <img src={feeframeLogo} alt="FeeFrame" style={{ height: '20px' }} />
           </button>
-          <span style={{ fontWeight: 700, fontSize: '15px', color: '#5eead4', fontFamily: '"DM Sans", sans-serif' }}>FeeAnalysis ]</span>
+          <img src={feeanalysisLogo} alt="FeeAnalysis" style={{ height: '44px' }} />
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1">
@@ -50,9 +53,9 @@ export default function AnalysisSidebar({ onGoHome, onGoQuote, onReset }: { onGo
       {/* Mobile top bar */}
       <div className="md:hidden bg-dark text-white px-4 py-3 flex items-center justify-between">
         <button onClick={onGoHome} className="flex items-center gap-3 hover:opacity-75 transition-opacity">
-          <span style={{ fontWeight: 700, fontSize: '15px', color: '#5eead4', fontFamily: '"DM Sans", sans-serif' }}>[ FeeFrame ]</span>
+          <img src={feeframeLogo} alt="FeeFrame" style={{ height: '18px' }} />
           <span className="text-dark-border text-xs">|</span>
-          <span style={{ fontWeight: 700, fontSize: '13px', color: '#5eead4', fontFamily: '"DM Sans", sans-serif' }}>FeeAnalysis ]</span>
+          <img src={feeanalysisLogo} alt="FeeAnalysis" style={{ height: '22px' }} />
         </button>
         <div className="flex items-center gap-3">
           <button
