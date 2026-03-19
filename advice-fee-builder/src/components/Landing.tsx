@@ -1,12 +1,23 @@
+import { useState, useEffect } from 'react';
 import feeframeLightLogo from '../assets/logos/feeframe-primary-light.svg';
 import feequoteLightLogo from '../assets/logos/feequote-light.svg';
 import feeanalysisLightLogo from '../assets/logos/feeanalysis-light.svg';
 
 export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuote: () => void; onStartAnalysis: () => void }) {
+  const [navScrolled, setNavScrolled] = useState(false);
+  const [feequoteHovered, setFeequoteHovered] = useState(false);
+  const [feeanalysisHovered, setFeeanalysisHovered] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setNavScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div style={{ fontFamily: '"DM Sans", sans-serif', background: '#f8fafc', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* ── Nav ── */}
-      <nav style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 48px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 50 }}>
+      <nav style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 48px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 50, transition: 'box-shadow 0.2s ease', boxShadow: navScrolled ? '0 1px 12px rgba(0,0,0,0.08)' : 'none' }}>
         <img src={feeframeLightLogo} alt="FeeFrame" style={{ height: '36px' }} />
         <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
           <a href="#" style={{ fontSize: '15px', fontWeight: 500, color: '#374151', textDecoration: 'none' }}>Home</a>
@@ -41,12 +52,21 @@ export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuot
         <p style={{ fontSize: '14px', color: '#9ca3af', letterSpacing: '0.1px' }}>
           No login. No data stored. Just fees, [framed].
         </p>
+        <hr style={{ width: '40px', border: 'none', borderTop: '1px solid #e2e8f0', margin: '24px auto' }} />
+        <p style={{ fontSize: '13px', color: '#9ca3af', textAlign: 'center' }}>
+          Built for Australian advice practices. Free to use.
+        </p>
       </section>
       {/* ── Tool Cards ── */}
       <section style={{ padding: '96px 48px 48px', display: 'flex', justifyContent: 'center' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '24px', width: '100%', maxWidth: '900px' }}>
           {/* FeeQuote */}
-          <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '52px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <div
+            onClick={onStartQuote}
+            onMouseEnter={() => setFeequoteHovered(true)}
+            onMouseLeave={() => setFeequoteHovered(false)}
+            style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '52px', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'all 0.2s ease', boxShadow: feequoteHovered ? '0 8px 24px rgba(0,0,0,0.10)' : '0 1px 3px rgba(0,0,0,0.06)', transform: feequoteHovered ? 'translateY(-3px)' : 'translateY(0)' }}
+          >
             <div style={{ marginBottom: '28px' }}>
               <img src={feequoteLightLogo} alt="FeeQuote" style={{ height: '56px' }} />
             </div>
@@ -56,15 +76,17 @@ export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuot
             <p style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '16px', color: '#6b7280', lineHeight: 1.65, marginBottom: '40px', flex: 1 }}>
               Scope a new client engagement and generate a fee you can actually justify.
             </p>
-            <button
-              onClick={onStartQuote}
-              style={{ fontWeight: 600, fontSize: '16px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', padding: '16px 24px', cursor: 'pointer', width: '100%' }}
-            >
+            <span style={{ fontWeight: 600, fontSize: '16px', color: '#0d9488' }}>
               Start quoting →
-            </button>
+            </span>
           </div>
           {/* FeeAnalysis */}
-          <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '52px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <div
+            onClick={onStartAnalysis}
+            onMouseEnter={() => setFeeanalysisHovered(true)}
+            onMouseLeave={() => setFeeanalysisHovered(false)}
+            style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '52px', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'all 0.2s ease', boxShadow: feeanalysisHovered ? '0 8px 24px rgba(0,0,0,0.10)' : '0 1px 3px rgba(0,0,0,0.06)', transform: feeanalysisHovered ? 'translateY(-3px)' : 'translateY(0)' }}
+          >
             <div style={{ marginBottom: '28px' }}>
               <img src={feeanalysisLightLogo} alt="FeeAnalysis" style={{ height: '56px' }} />
             </div>
@@ -74,12 +96,9 @@ export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuot
             <p style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '16px', color: '#6b7280', lineHeight: 1.65, marginBottom: '40px', flex: 1 }}>
               Enter what you're charging. Find out if the client is actually profitable.
             </p>
-            <button
-              onClick={onStartAnalysis}
-              style={{ fontWeight: 600, fontSize: '16px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', padding: '16px 24px', cursor: 'pointer', width: '100%' }}
-            >
+            <span style={{ fontWeight: 600, fontSize: '16px', color: '#0d9488' }}>
               Analyse a client →
-            </button>
+            </span>
           </div>
         </div>
       </section>
