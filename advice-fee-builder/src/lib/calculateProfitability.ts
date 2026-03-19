@@ -2,6 +2,8 @@
  * Pure calculation engine for FeeAnalysis.
  * Returns all computed profitability metrics with no side effects.
  */
+import { colors } from '../brand';
+
 export function calculateProfitability(state) {
   const adviserRate = Number(state.adviserRate) || 0;
   const paraplannerRate = Number(state.paraplannerRate) || 0;
@@ -93,19 +95,19 @@ export function calculateProfitability(state) {
   // ── Bar chart segments ────────────────────────────────────────────────────
   // Each segment: { label, value, color }
   const soaSegments = [
-    { label: 'Adviser Time', value: soaAdviserCost, color: '#2563EB' },
-    { label: 'Paraplanning', value: soaParaplannerCost, color: '#0D9488' },
-    { label: 'Admin', value: soaAdminCost, color: '#9CA3AF' },
-    { label: 'Fixed Costs', value: fixedCosts, color: '#4B5563' },
-    { label: soaMarginDollar >= 0 ? 'Margin' : 'Loss', value: Math.abs(soaMarginDollar), color: soaMarginDollar >= 0 ? '#16A34A' : '#DC2626' },
+    { label: 'Adviser Time', value: soaAdviserCost, color: colors.dark },
+    { label: 'Paraplanning', value: soaParaplannerCost, color: colors.teal },
+    { label: 'Admin', value: soaAdminCost, color: colors.mid },
+    { label: 'Fixed Costs', value: fixedCosts, color: colors.darkSurface },
+    { label: soaMarginDollar >= 0 ? 'Margin' : 'Loss', value: Math.abs(soaMarginDollar), color: soaMarginDollar >= 0 ? colors.healthy : colors.risk },
   ];
 
   const ongoingSegments = [
-    { label: 'Adviser Time', value: ongoingAdviserCost, color: '#2563EB' },
-    { label: 'Paraplanning', value: ongoingParaplannerCost, color: '#0D9488' },
-    { label: 'Admin', value: ongoingAdminCost, color: '#9CA3AF' },
-    { label: 'Fixed Costs', value: fixedCosts, color: '#4B5563' },
-    { label: ongoingMarginDollar >= 0 ? 'Margin' : 'Loss', value: Math.abs(ongoingMarginDollar), color: ongoingMarginDollar >= 0 ? '#16A34A' : '#DC2626' },
+    { label: 'Adviser Time', value: ongoingAdviserCost, color: colors.dark },
+    { label: 'Paraplanning', value: ongoingParaplannerCost, color: colors.teal },
+    { label: 'Admin', value: ongoingAdminCost, color: colors.mid },
+    { label: 'Fixed Costs', value: fixedCosts, color: colors.darkSurface },
+    { label: ongoingMarginDollar >= 0 ? 'Margin' : 'Loss', value: Math.abs(ongoingMarginDollar), color: ongoingMarginDollar >= 0 ? colors.healthy : colors.risk },
   ];
 
   // ── Warning flags ─────────────────────────────────────────────────────────

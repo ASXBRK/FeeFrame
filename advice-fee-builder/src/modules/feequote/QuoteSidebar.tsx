@@ -35,18 +35,18 @@ export default function QuoteSidebar({ currentStep, maxStep, onStepClick, onGoHo
                 key={step.number}
                 onClick={() => !locked && onStepClick(step.number)}
                 disabled={locked}
-                className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-input text-sm transition-colors ${
                   active
-                    ? 'bg-teal-600 text-white font-medium'
+                    ? 'bg-teal text-white font-medium'
                     : locked
-                    ? 'text-gray-600 cursor-not-allowed'
+                    ? 'text-dark-border cursor-not-allowed'
                     : done
-                    ? 'text-gray-300 hover:bg-gray-800'
-                    : 'text-gray-300 hover:bg-gray-800'
+                    ? 'text-light-border hover:bg-dark-surface'
+                    : 'text-light-border hover:bg-dark-surface'
                 }`}
               >
                 <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                  active ? 'bg-white text-teal-600' : done ? 'bg-teal-600 text-white' : locked ? 'bg-gray-800 text-gray-600' : 'bg-gray-700 text-gray-400'
+                  active ? 'bg-white text-teal' : done ? 'bg-teal text-white' : locked ? 'bg-dark-surface text-dark-border' : 'bg-dark-border text-mid'
                 }`}>
                   {done ? '✓' : step.number}
                 </span>
@@ -74,12 +74,12 @@ export default function QuoteSidebar({ currentStep, maxStep, onStepClick, onGoHo
                 disabled={locked}
                 className={`w-7 h-7 rounded-full text-xs font-medium flex items-center justify-center transition-colors ${
                   step.number === currentStep
-                    ? 'bg-teal-600 text-white'
+                    ? 'bg-teal text-white'
                     : step.number < currentStep
-                    ? 'bg-teal-800 text-teal-300'
+                    ? 'bg-teal-light text-teal'
                     : locked
-                    ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-                    : 'bg-gray-700 text-gray-500'
+                    ? 'bg-dark-surface text-dark-border cursor-not-allowed'
+                    : 'bg-dark-border text-mid'
                 }`}
               >
                 {step.number < currentStep ? '✓' : step.number}

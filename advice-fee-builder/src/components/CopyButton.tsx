@@ -26,8 +26,8 @@ export default function CopyButton({ text, className = '' }) {
       onClick={handleCopy}
       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
         copied
-          ? 'bg-green-100 text-green-700 border border-green-200'
-          : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-slate-900'
+          ? 'bg-healthy-bg text-healthy-text border border-healthy'
+          : 'bg-white text-dark border border-light-border hover:bg-light-surface hover:text-dark'
       } ${className}`}
     >
       {copied ? (
@@ -35,7 +35,7 @@ export default function CopyButton({ text, className = '' }) {
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
-          Copied!
+          Copied
         </>
       ) : (
         <>

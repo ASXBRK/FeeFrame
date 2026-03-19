@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import Toggle from '../shared/Toggle.jsx';
-import { SERVICE_LINES, STRATEGIES } from '../../lib/serviceLines.js';
-import { calculateQuote } from '../../lib/calculateQuote.js';
-import { formatCurrency } from '../../lib/formatters.js';
+import Toggle from '../../components/shared/Toggle';
+import { SERVICE_LINES, STRATEGIES } from '../../lib/serviceLines';
+import { calculateQuote } from '../../lib/calculateQuote';
+import { formatCurrency } from '../../lib/formatters';
 
 export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) {
   const [strategiesOpen, setStrategiesOpen] = useState(true);
@@ -17,48 +17,48 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-1">Scope of Advice</h2>
-      <p className="text-sm text-gray-500 mb-6">Select the services in scope. Fees calculate automatically.</p>
+      <h2 className="text-xl font-semibold font-heading text-dark mb-1">Scope of Advice</h2>
+      <p className="text-sm text-mid mb-6">Select the services in scope. Fees calculate automatically.</p>
 
       <div className="space-y-5">
         {/* Paraplanner type */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <label className="block text-sm font-medium text-gray-700 mb-3">Paraplanner</label>
+        <div className="bg-white rounded-card border border-light-border p-5">
+          <label className="block text-sm font-medium text-dark mb-3">Paraplanner</label>
           <div className="flex items-center gap-3">
-            <span className={`text-sm ${!isExternal ? 'font-medium text-gray-900' : 'text-gray-400'}`}>Internal</span>
+            <span className={`text-sm ${!isExternal ? 'font-medium text-dark' : 'text-mid'}`}>Internal</span>
             <Toggle
               checked={isExternal}
               onChange={v => set('paraplanner', v ? 'external' : 'internal')}
               label="Paraplanner type"
             />
-            <span className={`text-sm ${isExternal ? 'font-medium text-gray-900' : 'text-gray-400'}`}>External</span>
+            <span className={`text-sm ${isExternal ? 'font-medium text-dark' : 'text-mid'}`}>External</span>
           </div>
         </div>
 
         {/* External: just a quoted fee */}
         {isExternal && (
-          <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+          <div className="bg-white rounded-card border border-light-border p-5 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dark mb-1">
                 External paraplanning fee (excl GST)
               </label>
-              <p className="text-xs text-gray-400 mb-3">Enter the fee quoted by your external paraplanner.</p>
+              <p className="text-xs text-mid mb-3">Enter the fee quoted by your external paraplanner.</p>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">$</span>
+                <span className="text-sm text-mid">$</span>
                 <input
                   type="number"
                   min={0}
                   step={50}
                   value={quote.paraplannerFee}
                   onChange={e => set('paraplannerFee', parseFloat(e.target.value) || 0)}
-                  className="block w-36 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="block w-36 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:shadow-input"
                 />
-                <span className="text-sm text-gray-400">ex GST</span>
+                <span className="text-sm text-mid">ex GST</span>
               </div>
             </div>
 
             {/* Buffer toggle */}
-            <div className="border-t border-gray-100 pt-4">
+            <div className="border-t border-light-border pt-4">
               <div className="flex items-start gap-3">
                 <Toggle
                   checked={!!quote.paraplannerBuffer}
@@ -66,8 +66,8 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                   label="Add 10% buffer"
                 />
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Add a 10% buffer</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-sm font-medium text-dark">Add a 10% buffer</p>
+                  <p className="text-xs text-mid mt-0.5">
                     If the paraplanning fee could increase before completion, a buffer protects your margin from absorbing the difference.
                   </p>
                 </div>
@@ -75,20 +75,20 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
             </div>
 
             {/* Fee summary */}
-            <div className="p-3 bg-teal-50 rounded-lg border border-teal-100 space-y-1.5">
+            <div className="p-3 bg-teal-subtle rounded-input border border-teal-light space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-teal-600">Quoted fee</span>
-                <span className="text-xs text-teal-700">{formatCurrency(quote.paraplannerFee)}</span>
+                <span className="text-xs text-teal">Quoted fee</span>
+                <span className="text-xs text-teal">{formatCurrency(quote.paraplannerFee)}</span>
               </div>
               {quote.paraplannerBuffer && (
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-teal-600">10% buffer</span>
-                  <span className="text-xs text-teal-700">+ {formatCurrency(quote.paraplannerFee * 0.1)}</span>
+                  <span className="text-xs text-teal">10% buffer</span>
+                  <span className="text-xs text-teal">+ {formatCurrency(quote.paraplannerFee * 0.1)}</span>
                 </div>
               )}
-              <div className="flex items-center justify-between border-t border-teal-100 pt-1.5">
-                <span className="text-sm text-teal-700 font-medium">Base fee (ex GST)</span>
-                <span className="text-sm font-bold text-teal-800">
+              <div className="flex items-center justify-between border-t border-teal-light pt-1.5">
+                <span className="text-sm text-teal font-medium">Base fee (ex GST)</span>
+                <span className="text-sm font-bold text-teal">
                   {formatCurrency(quote.paraplannerBuffer ? quote.paraplannerFee * 1.1 : quote.paraplannerFee)}
                 </span>
               </div>
@@ -100,31 +100,31 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
         {!isExternal && (
           <>
             {/* Hourly rate */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="bg-white rounded-card border border-light-border p-5">
+              <label className="block text-sm font-medium text-dark mb-1">
                 Average staff hourly rate (excl GST)
               </label>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">$</span>
+                <span className="text-sm text-mid">$</span>
                 <input
                   type="number"
                   min={0}
                   step={5}
                   value={quote.hourlyRate}
                   onChange={e => setRate(parseFloat(e.target.value) || 0)}
-                  className="block w-28 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="block w-28 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:shadow-input"
                 />
-                <span className="text-sm text-gray-400">per hour</span>
+                <span className="text-sm text-mid">per hour</span>
               </div>
             </div>
 
             {/* Service lines table */}
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-100">
-                <h3 className="text-sm font-semibold text-gray-700">Service Lines</h3>
+            <div className="bg-white rounded-card border border-light-border overflow-hidden">
+              <div className="px-5 py-4 border-b border-light-border">
+                <h3 className="text-sm font-semibold text-dark">Service Lines</h3>
               </div>
 
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-light-border">
                 {SERVICE_LINES.map((line, idx) => {
                   const computed = calc.lineItems.find(l => l.id === line.id);
                   return (
@@ -142,26 +142,26 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
               </div>
 
               {/* Base fee total */}
-              <div className="px-5 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-                <span className="text-sm font-semibold text-gray-700">Base Fee Before Adjustments</span>
-                <span className="text-base font-bold text-gray-900">{formatCurrency(calc.baseFee)}</span>
+              <div className="px-5 py-4 bg-light-surface border-t border-light-border flex items-center justify-between">
+                <span className="text-sm font-semibold text-dark">Base Fee Before Adjustments</span>
+                <span className="text-base font-bold text-dark">{formatCurrency(calc.baseFee)}</span>
               </div>
             </div>
 
             {/* Strategy checkboxes */}
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-card border border-light-border overflow-hidden">
               <button
                 type="button"
                 onClick={() => setStrategiesOpen(o => !o)}
-                className="w-full px-5 py-4 flex items-center justify-between text-left border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                className="w-full px-5 py-4 flex items-center justify-between text-left border-b border-light-border hover:bg-light-surface transition-colors"
               >
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700">Strategies in Scope</h3>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <h3 className="text-sm font-semibold text-dark">Strategies in Scope</h3>
+                  <p className="text-xs text-mid mt-0.5">
                     Checking a strategy auto-enables its service line and increments the strategy development count.
                   </p>
                 </div>
-                <span className="text-gray-400 text-xs ml-4">{strategiesOpen ? '▲' : '▼'}</span>
+                <span className="text-mid text-xs ml-4">{strategiesOpen ? '▲' : '▼'}</span>
               </button>
 
               {strategiesOpen && (
@@ -172,9 +172,9 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                         type="checkbox"
                         checked={!!quote.strategies[strategy.id]}
                         onChange={e => setStrategy(strategy.id, e.target.checked)}
-                        className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                        className="w-4 h-4 rounded border-light-border text-teal focus:ring-teal"
                       />
-                      <span className="text-sm text-gray-700 group-hover:text-gray-900">{strategy.label}</span>
+                      <span className="text-sm text-dark group-hover:text-dark">{strategy.label}</span>
                     </label>
                   ))}
                 </div>
@@ -188,13 +188,13 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
       <div className="flex justify-between mt-6">
         <button
           onClick={onBack}
-          className="text-sm text-gray-500 hover:text-gray-700 font-medium py-2.5 px-4 rounded-lg border border-gray-300 hover:border-gray-400 transition-colors"
+          className="text-sm text-mid hover:text-dark font-medium py-2.5 px-4 rounded-input border border-light-border hover:border-mid transition-colors"
         >
           ← Back
         </button>
         <button
           onClick={onNext}
-          className="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2.5 px-6 rounded-lg transition-colors text-sm"
+          className="bg-teal hover:opacity-90 text-white font-medium py-2.5 px-6 rounded-input transition-opacity text-sm"
         >
           Next: Adjustments →
         </button>
@@ -225,18 +225,18 @@ function ServiceLineRow({ line, computed, quote, onSetServiceLine, onSetField })
           step={1}
           value={quote.scenarios}
           onChange={e => onSetField('scenarios', Math.max(0, parseInt(e.target.value) || 0))}
-          className="w-16 rounded-lg border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-center"
+          className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:shadow-input text-center"
         />
       );
     }
     if (line.inputType === 'auto-entity') {
       return (
-        <span className="text-sm text-gray-500">{quote.entityCount} entities</span>
+        <span className="text-sm text-mid">{quote.entityCount} entities</span>
       );
     }
     if (line.inputType === 'auto-strategy') {
       return (
-        <span className="text-sm text-gray-500">{computed?.displayValue ?? 0} strategies</span>
+        <span className="text-sm text-mid">{computed?.displayValue ?? 0} strategies</span>
       );
     }
     return null;
@@ -245,13 +245,13 @@ function ServiceLineRow({ line, computed, quote, onSetServiceLine, onSetField })
   return (
     <div className="px-5 py-3.5 flex items-center gap-4">
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-gray-800">{line.label}</div>
-        <div className="text-xs text-gray-400 mt-0.5">{line.description}</div>
+        <div className="text-sm font-medium text-dark">{line.label}</div>
+        <div className="text-xs text-mid mt-0.5">{line.description}</div>
       </div>
       <div className="flex items-center gap-4 flex-shrink-0">
         {renderControl()}
         <div className="w-20 text-right">
-          <span className={`text-sm font-medium ${fee > 0 ? 'text-gray-900' : 'text-gray-300'}`}>
+          <span className={`text-sm font-medium ${fee > 0 ? 'text-dark' : 'text-light-border'}`}>
             {formatCurrency(fee)}
           </span>
         </div>
