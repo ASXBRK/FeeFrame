@@ -24,7 +24,7 @@ export default function TierEditor({ tiers, dispatch }) {
                     min={0}
                     value={tier.from}
                     onChange={e => setTier(i, 'from', parseFloat(e.target.value) || 0)}
-                    className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:shadow-input"
+                    className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                   />
                 </td>
                 <td className="py-2 px-2">
@@ -36,7 +36,7 @@ export default function TierEditor({ tiers, dispatch }) {
                       min={0}
                       value={tier.to}
                       onChange={e => setTier(i, 'to', parseFloat(e.target.value) || 0)}
-                      className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:shadow-input"
+                      className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                     />
                   )}
                 </td>
@@ -48,7 +48,7 @@ export default function TierEditor({ tiers, dispatch }) {
                     max={100}
                     value={tier.rate}
                     onChange={e => setTier(i, 'rate', parseFloat(e.target.value) || 0)}
-                    className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:shadow-input"
+                    className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                   />
                 </td>
                 <td className="py-2 px-2">

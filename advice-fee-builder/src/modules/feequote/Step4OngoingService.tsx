@@ -31,13 +31,13 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
 
   return (
     <div>
-      <h2 className="text-xl font-semibold font-heading text-dark mb-1">Ongoing Service</h2>
+      <h2 className="text-xl font-bold font-heading text-dark mb-1" style={{ letterSpacing: '-0.3px' }}>Ongoing Service</h2>
       <p className="text-sm text-mid mb-6">Configure the ongoing service model and fee structure.</p>
 
       <div className="space-y-5">
         {/* Ongoing model selector */}
         <div className="bg-white rounded-card border border-light-border p-5">
-          <h3 className="text-sm font-semibold font-heading text-dark mb-3">Ongoing Fee Model</h3>
+          <h3 className="text-base font-bold font-heading text-dark mb-3">Ongoing Fee Model</h3>
           <div className="flex flex-wrap gap-2">
             {ongoingModels.map(m => (
               <button
@@ -58,7 +58,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
 
         {/* Fixed component — always shown */}
         <div className="bg-white rounded-card border border-light-border p-5">
-          <h3 className="text-sm font-semibold font-heading text-dark mb-4">Fixed Component</h3>
+          <h3 className="text-base font-bold font-heading text-dark mb-4">Fixed Component</h3>
           <div className="space-y-4">
             {/* Review meetings */}
             <div className="flex items-center gap-4">
@@ -75,7 +75,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
                   step={1}
                   value={quote.reviewMeetings}
                   onChange={e => setField('reviewMeetings', Math.max(0, parseInt(e.target.value) || 0))}
-                  className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:shadow-input text-center"
+                  className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
                 />
                 <span className="text-xs text-mid">per year</span>
               </div>
@@ -97,7 +97,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
                   step={1}
                   value={quote.ongoingAccounts}
                   onChange={e => setField('ongoingAccounts', Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:shadow-input text-center"
+                  className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
                 />
                 <span className="text-xs text-mid">accounts</span>
               </div>
@@ -134,7 +134,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
         {/* Variable / FUM (fixedVariable only) */}
         {quote.ongoingModel === 'fixedVariable' && (
           <div className="bg-white rounded-card border border-light-border p-5">
-            <h3 className="text-sm font-semibold font-heading text-dark mb-4">Variable (FUM-based) Component</h3>
+            <h3 className="text-base font-bold font-heading text-dark mb-4">Variable (FUM-based) Component</h3>
             <div className="mb-4">
               <label className="block text-sm font-medium text-dark mb-1">
                 Total FUM across all accounts
@@ -147,7 +147,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
                   step={10000}
                   value={quote.fum}
                   onChange={e => setField('fum', parseFloat(e.target.value) || 0)}
-                  className="w-40 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:shadow-input"
+                  className="w-40 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                 />
               </div>
             </div>
@@ -167,7 +167,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
         {/* Subscription (subscription only) */}
         {quote.ongoingModel === 'subscription' && (
           <div className="bg-white rounded-card border border-light-border p-5">
-            <h3 className="text-sm font-semibold font-heading text-dark mb-4">Subscription</h3>
+            <h3 className="text-base font-bold font-heading text-dark mb-4">Subscription</h3>
             <div className="flex items-center gap-4">
               <div>
                 <label className="block text-sm font-medium text-dark mb-1">Monthly subscription</label>
@@ -179,7 +179,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
                     step={50}
                     value={quote.monthlySubscription}
                     onChange={e => setField('monthlySubscription', parseFloat(e.target.value) || 0)}
-                    className="w-28 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:shadow-input"
+                    className="w-28 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                   />
                   <span className="text-sm text-mid">/ month</span>
                 </div>
@@ -200,7 +200,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
             className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-light-surface transition-colors"
           >
             <div>
-              <h3 className="text-sm font-semibold text-dark">Review Meeting Sense-Check</h3>
+              <h3 className="text-base font-bold font-heading text-dark">Review Meeting Sense-Check</h3>
               <p className="text-xs text-mid mt-0.5">
                 Hours breakdown per review cycle — {formatHours(calc.totalReviewHours)} total at {formatCurrency(calc.costPerReview)}/meeting
               </p>
@@ -228,7 +228,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
                           step={0.5}
                           value={quote.reviewHours[key]}
                           onChange={e => dispatch({ type: 'SET_REVIEW_HOUR', key, value: parseFloat(e.target.value) || 0 })}
-                          className="w-20 rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:shadow-input float-right"
+                          className="w-20 rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 float-right"
                         />
                       </td>
                     </tr>
@@ -253,7 +253,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
             className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-light-surface transition-colors"
           >
             <div>
-              <h3 className="text-sm font-semibold text-dark">Entity Fee Split <span className="text-mid font-normal">(optional)</span></h3>
+              <h3 className="text-base font-bold font-heading text-dark">Entity Fee Split <span className="text-mid font-normal">(optional)</span></h3>
               <p className="text-xs text-mid mt-0.5">Allocate the ongoing fee across individual entities</p>
             </div>
             <span className="text-mid text-xs ml-4">{entitiesOpen ? '▲' : '▼'}</span>
@@ -266,7 +266,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
 
         {/* Ongoing fee summary */}
         <div className="bg-white rounded-card border border-light-border p-5">
-          <h3 className="text-sm font-semibold font-heading text-dark mb-4">Ongoing Fee Summary</h3>
+          <h3 className="text-base font-bold font-heading text-dark mb-4">Ongoing Fee Summary</h3>
           <table className="w-full text-sm">
             <tbody className="divide-y divide-light-border">
               <SummaryRow label="Fixed Component" value={formatCurrency(calc.fixedOngoingFee)} />
@@ -296,7 +296,7 @@ export default function Step4OngoingService({ quote, dispatch, onNext, onBack })
         </button>
         <button
           onClick={onNext}
-          className="bg-teal hover:opacity-90 text-white font-medium py-2.5 px-6 rounded-input transition-opacity text-sm"
+          className="bg-teal hover:opacity-90 text-white font-semibold py-3 px-6 rounded-lg transition-opacity text-sm"
         >
           Next: Fee Summary →
         </button>
@@ -335,7 +335,7 @@ function EntitySplit({ quote, dispatch, calc }) {
                       value={entity.name}
                       onChange={e => dispatch({ type: 'SET_ENTITY', index: i, field: 'name', value: e.target.value })}
                       placeholder="Entity name"
-                      className="w-full rounded-input border border-light-border px-2 py-1 text-sm focus:outline-none focus:shadow-input"
+                      className="w-full rounded-input border border-light-border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                     />
                   </td>
                   <td className="py-2 pr-2">
@@ -344,7 +344,7 @@ function EntitySplit({ quote, dispatch, calc }) {
                       min={0}
                       value={entity.balance}
                       onChange={e => dispatch({ type: 'SET_ENTITY', index: i, field: 'balance', value: parseFloat(e.target.value) || 0 })}
-                      className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:shadow-input"
+                      className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                     />
                   </td>
                   <td className="py-2 pr-2 text-center">

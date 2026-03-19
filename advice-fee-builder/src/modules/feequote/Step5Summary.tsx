@@ -29,7 +29,7 @@ export default function Step5Summary({ quote, dispatch, onBack, onGoAnalysis, on
 
   return (
     <div>
-      <h2 className="text-xl font-semibold font-heading text-dark mb-1 print:hidden">Fee Summary & Output</h2>
+      <h2 className="text-xl font-bold font-heading text-dark mb-1 print:hidden" style={{ letterSpacing: '-0.3px' }}>Fee Summary & Output</h2>
 
       {/* Print header */}
       <div className="hidden print:block mb-6">
@@ -173,7 +173,7 @@ function Tab2Breakdown({ calc, quote }) {
     <div className="space-y-5">
       {/* Initial SOA breakdown */}
       <div className="bg-white rounded-card border border-light-border p-5">
-        <h3 className="text-sm font-semibold font-heading text-dark mb-4">Initial SOA Breakdown</h3>
+        <h3 className="text-base font-bold font-heading text-dark mb-4">Initial SOA Breakdown</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -229,7 +229,7 @@ function Tab2Breakdown({ calc, quote }) {
       {/* Implementation breakdown */}
       {calc.implTotal > 0 && (
         <div className="bg-white rounded-card border border-light-border p-5">
-          <h3 className="text-sm font-semibold font-heading text-dark mb-4">Implementation Breakdown</h3>
+          <h3 className="text-base font-bold font-heading text-dark mb-4">Implementation Breakdown</h3>
           <table className="w-full text-sm">
             <tbody className="divide-y divide-light-border">
               {calc.implInvestmentFee > 0 && (
@@ -267,7 +267,7 @@ function Tab2Breakdown({ calc, quote }) {
 
       {/* Ongoing breakdown */}
       <div className="bg-white rounded-card border border-light-border p-5">
-        <h3 className="text-sm font-semibold font-heading text-dark mb-4">Ongoing Service Breakdown</h3>
+        <h3 className="text-base font-bold font-heading text-dark mb-4">Ongoing Service Breakdown</h3>
         <table className="w-full text-sm">
           <tbody className="divide-y divide-light-border">
             <tr>
@@ -317,7 +317,7 @@ function Tab3ClientOutput({ calc, quote, dispatch, copied, onCopy, editingParagr
     <div className="space-y-5">
       {/* Service summary */}
       <div className="bg-white rounded-card border border-light-border p-5">
-        <h3 className="text-sm font-semibold font-heading text-dark mb-4">What's Included — Service Summary</h3>
+        <h3 className="text-base font-bold font-heading text-dark mb-4">What's Included — Service Summary</h3>
         <ul className="space-y-2">
           {calc.serviceSummaryItems.map((item, i) => (
             <li key={i} className="flex items-start gap-2 text-sm text-dark">
@@ -331,7 +331,7 @@ function Tab3ClientOutput({ calc, quote, dispatch, copied, onCopy, editingParagr
       {/* Client paragraph */}
       <div className="bg-white rounded-card border border-light-border p-5">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold font-heading text-dark">Client-Facing Justification Paragraph</h3>
+          <h3 className="text-base font-bold font-heading text-dark">Client-Facing Justification Paragraph</h3>
           <label className="flex items-center gap-2 text-xs text-mid cursor-pointer">
             <input
               type="checkbox"
@@ -348,7 +348,7 @@ function Tab3ClientOutput({ calc, quote, dispatch, copied, onCopy, editingParagr
             value={calc.clientParagraph}
             onChange={e => dispatch({ type: 'SET_QUOTE_FIELD', field: 'clientParagraphOverride', value: e.target.value })}
             rows={12}
-            className="w-full rounded-input border border-light-border px-3 py-2 text-sm font-mono focus:outline-none focus:shadow-input resize-y"
+            className="w-full rounded-input border border-light-border px-3 py-2.5 text-[15px] font-mono focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 resize-y"
           />
         ) : (
           <div className="bg-light-surface rounded-input p-4 text-sm text-dark whitespace-pre-wrap leading-relaxed border border-light-border">
@@ -358,7 +358,7 @@ function Tab3ClientOutput({ calc, quote, dispatch, copied, onCopy, editingParagr
 
         <button
           onClick={onCopy}
-          className={`mt-4 w-full py-2.5 px-4 rounded-input text-sm font-medium transition-colors ${
+          className={`mt-4 w-full py-3 px-6 rounded-lg text-sm font-semibold transition-colors ${
             copied
               ? 'bg-healthy text-white'
               : 'bg-teal hover:opacity-90 text-white'
@@ -377,7 +377,7 @@ function Tab4Export({ calc, quote, onReset, onGoAnalysis }) {
     <div className="space-y-4">
       <div className="bg-white rounded-card border border-light-border p-5 space-y-4">
         <div>
-          <h3 className="text-sm font-semibold font-heading text-dark mb-1">Download PDF</h3>
+          <h3 className="text-base font-bold font-heading text-dark mb-1">Download PDF</h3>
           <p className="text-xs text-mid mb-3">Opens print dialog. Use your browser's "Save as PDF" option.</p>
           <button
             onClick={() => window.print()}
@@ -388,25 +388,25 @@ function Tab4Export({ calc, quote, onReset, onGoAnalysis }) {
         </div>
 
         <div className="border-t border-light-border pt-4">
-          <h3 className="text-sm font-semibold font-heading text-dark mb-1">Analyse Profitability</h3>
+          <h3 className="text-base font-bold font-heading text-dark mb-1">Analyse Profitability</h3>
           <p className="text-xs text-mid mb-3">Check if you're making money on this engagement. Fees will be pre-filled.</p>
           <button
             onClick={onGoAnalysis}
-            className="bg-teal hover:opacity-90 text-white font-medium py-2.5 px-6 rounded-input transition-opacity text-sm"
+            className="bg-teal hover:opacity-90 text-white font-semibold py-3 px-6 rounded-lg transition-opacity text-sm"
           >
             Analyse Profitability →
           </button>
         </div>
 
         <div className="border-t border-light-border pt-4">
-          <h3 className="text-sm font-semibold font-heading text-dark mb-1">Industry Benchmarks</h3>
+          <h3 className="text-base font-bold font-heading text-dark mb-1">Industry Benchmarks</h3>
           <div className="bg-light-surface rounded-input px-4 py-3 border border-dashed border-light-border">
             <p className="text-xs text-mid text-center">Industry benchmarks — coming soon</p>
           </div>
         </div>
 
         <div className="border-t border-light-border pt-4">
-          <h3 className="text-sm font-semibold font-heading text-dark mb-1">Reset Quote</h3>
+          <h3 className="text-base font-bold font-heading text-dark mb-1">Reset Quote</h3>
           <p className="text-xs text-mid mb-3">Clear all inputs and return to defaults.</p>
           <button
             onClick={onReset}

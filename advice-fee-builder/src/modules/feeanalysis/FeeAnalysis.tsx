@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { calculateProfitability } from '../../lib/calculateProfitability';
 import { formatCurrency, formatPercent } from '../../lib/formatters';
 import { colors } from '../../brand';
-import logoLight from '../../assets/logos/feeframe-primary-light.svg';
-import feeanalysisLogo from '../../assets/logos/feeanalysis-light.svg';
 
 export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
   const { analysis } = state;
@@ -13,15 +11,14 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
   const setField = (field, value) => dispatch({ type: 'SET_ANALYSIS_FIELD', field, value });
 
   return (
-    <div className="min-h-screen bg-light-surface">
+    <div className="min-h-screen bg-light">
       {/* Header */}
       <header className="bg-white border-b border-light-border px-6 py-3 flex items-center justify-between print:hidden">
         <div className="flex items-center gap-4">
           <button onClick={onGoHome} className="flex items-center hover:opacity-75 transition-opacity">
-            <img src={logoLight} alt="FeeFrame" className="h-6" />
+            <span style={{ fontWeight: 700, fontSize: '20px', color: '#0d9488', fontFamily: '"DM Sans", sans-serif', letterSpacing: '-0.3px' }}>[ FeeFrame ]</span>
           </button>
-          <span className="text-light-border">|</span>
-          <img src={feeanalysisLogo} alt="FeeAnalysis" className="h-6" />
+          <span style={{ fontWeight: 700, fontSize: '20px', color: '#0d9488', fontFamily: '"DM Sans", sans-serif', letterSpacing: '-0.3px' }}>FeeAnalysis ]</span>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -32,7 +29,7 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
           </button>
           <button
             onClick={onGoQuote}
-            className="text-xs font-medium text-teal hover:opacity-80 border border-teal-subtle hover:border-teal-light px-3 py-1.5 rounded-input transition-colors"
+            className="bg-teal hover:opacity-90 text-white font-semibold py-3 px-6 rounded-lg transition-opacity text-sm"
           >
             ← Back to FeeQuote
           </button>
@@ -42,7 +39,7 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* Section 1: Fee Inputs */}
         <section className="bg-white rounded-card border border-light-border p-5">
-          <h2 className="text-sm font-semibold font-heading text-dark mb-4">Fee Inputs</h2>
+          <h2 className="text-xl font-bold font-heading text-dark mb-4" style={{ letterSpacing: '-0.3px' }}>Fee Inputs</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <FeeInputCard
               title="Initial SOA"
@@ -64,7 +61,7 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
 
         {/* Section 2: Cost Inputs */}
         <section className="bg-white rounded-card border border-light-border p-5">
-          <h2 className="text-sm font-semibold font-heading text-dark mb-4">Cost Inputs</h2>
+          <h2 className="text-xl font-bold font-heading text-dark mb-4" style={{ letterSpacing: '-0.3px' }}>Cost Inputs</h2>
 
           {/* Rates */}
           <div className="mb-5">
@@ -125,7 +122,7 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
                       min={0}
                       value={analysis[field]}
                       onChange={e => setField(field, parseFloat(e.target.value) || 0)}
-                      className="w-24 rounded-input border border-light-border px-2 py-1.5 text-sm text-right focus:outline-none focus:shadow-input"
+                      className="w-24 rounded-input border border-light-border px-2 py-1.5 text-[15px] text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                     />
                   </div>
                 </div>
@@ -137,7 +134,7 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
         {/* Section 3: Profitability Dashboard */}
         <section className="bg-white rounded-card border border-light-border p-5">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-sm font-semibold font-heading text-dark">Profitability Dashboard</h2>
+            <h2 className="text-xl font-bold font-heading text-dark" style={{ letterSpacing: '-0.3px' }}>Profitability Dashboard</h2>
             <div className="relative">
               <button
                 onClick={() => setShowThresholds(t => !t)}
@@ -158,7 +155,7 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
                           type="number"
                           value={analysis.greenThreshold}
                           onChange={e => setField('greenThreshold', parseFloat(e.target.value) || 0)}
-                          className="w-20 rounded-input border border-light-border px-2 py-1 text-xs focus:outline-none focus:shadow-input"
+                          className="w-20 rounded-input border border-light-border px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                         />
                       </div>
                     </div>
@@ -170,7 +167,7 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
                           type="number"
                           value={analysis.amberThreshold}
                           onChange={e => setField('amberThreshold', parseFloat(e.target.value) || 0)}
-                          className="w-20 rounded-input border border-light-border px-2 py-1 text-xs focus:outline-none focus:shadow-input"
+                          className="w-20 rounded-input border border-light-border px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                         />
                       </div>
                     </div>
@@ -262,7 +259,7 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
 
 function FeeInputCard({ title, fields, setField }) {
   return (
-    <div className="bg-light-surface rounded-card p-4 border border-light-border">
+    <div className="bg-white rounded-card p-4 border border-light-border">
       <h4 className="text-xs font-semibold text-mid uppercase tracking-wide mb-3">{title}</h4>
       <div className="space-y-3">
         {fields.map(({ label, field, value }) => (
@@ -276,7 +273,7 @@ function FeeInputCard({ title, fields, setField }) {
                 step={100}
                 value={value}
                 onChange={e => setField(field, parseFloat(e.target.value) || 0)}
-                className="flex-1 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:shadow-input"
+                className="flex-1 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
               />
             </div>
           </div>
@@ -298,7 +295,7 @@ function RateInput({ label, field, value, setField }) {
           step={10}
           value={value}
           onChange={e => setField(field, parseFloat(e.target.value) || 0)}
-          className="flex-1 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:shadow-input"
+          className="flex-1 rounded-input border border-light-border px-2 py-1.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
         />
         <span className="text-xs text-mid">/hr</span>
       </div>
@@ -333,7 +330,7 @@ function TaskTable({ tasks, onSetTask, paraplanningExternal, paraplanningExterna
                         min={0}
                         value={paraplanningExternalFee}
                         onChange={e => onSetExternalFee(parseFloat(e.target.value) || 0)}
-                        className="w-20 rounded-input border border-light-border px-2 py-1 text-xs text-right focus:outline-none focus:shadow-input"
+                        className="w-20 rounded-input border border-light-border px-2 py-1 text-xs text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                       />
                     </div>
                   ) : (
@@ -343,7 +340,7 @@ function TaskTable({ tasks, onSetTask, paraplanningExternal, paraplanningExterna
                       step={0.5}
                       value={task.hours}
                       onChange={e => onSetTask(i, 'hours', parseFloat(e.target.value) || 0)}
-                      className="w-16 rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:shadow-input float-right"
+                      className="w-16 rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 float-right"
                     />
                   )}
                 </td>
@@ -363,7 +360,7 @@ function TaskTable({ tasks, onSetTask, paraplanningExternal, paraplanningExterna
                     <select
                       value={task.who}
                       onChange={e => onSetTask(i, 'who', e.target.value)}
-                      className="w-full rounded-input border border-light-border px-1.5 py-1 text-xs focus:outline-none focus:shadow-input"
+                      className="w-full rounded-input border border-light-border px-1.5 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                     >
                       <option value="adviser">Adviser</option>
                       <option value="paraplanner">Paraplanner</option>

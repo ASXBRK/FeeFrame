@@ -17,7 +17,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
 
   return (
     <div>
-      <h2 className="text-xl font-semibold font-heading text-dark mb-1">Scope of Advice</h2>
+      <h2 className="text-xl font-bold font-heading text-dark mb-1" style={{ letterSpacing: '-0.3px' }}>Scope of Advice</h2>
       <p className="text-sm text-mid mb-6">Select the services in scope. Fees calculate automatically.</p>
 
       <div className="space-y-5">
@@ -51,7 +51,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                   step={50}
                   value={quote.paraplannerFee}
                   onChange={e => set('paraplannerFee', parseFloat(e.target.value) || 0)}
-                  className="block w-36 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:shadow-input"
+                  className="block w-36 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                 />
                 <span className="text-sm text-mid">ex GST</span>
               </div>
@@ -112,7 +112,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                   step={5}
                   value={quote.hourlyRate}
                   onChange={e => setRate(parseFloat(e.target.value) || 0)}
-                  className="block w-28 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:shadow-input"
+                  className="block w-28 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                 />
                 <span className="text-sm text-mid">per hour</span>
               </div>
@@ -121,7 +121,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
             {/* Service lines table */}
             <div className="bg-white rounded-card border border-light-border overflow-hidden">
               <div className="px-5 py-4 border-b border-light-border">
-                <h3 className="text-sm font-semibold text-dark">Service Lines</h3>
+                <h3 className="text-base font-bold font-heading text-dark">Service Lines</h3>
               </div>
 
               <div className="divide-y divide-light-border">
@@ -143,7 +143,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
 
               {/* Base fee total */}
               <div className="px-5 py-4 bg-light-surface border-t border-light-border flex items-center justify-between">
-                <span className="text-sm font-semibold text-dark">Base Fee Before Adjustments</span>
+                <span className="text-base font-bold font-heading text-dark">Base Fee Before Adjustments</span>
                 <span className="text-base font-bold text-dark">{formatCurrency(calc.baseFee)}</span>
               </div>
             </div>
@@ -156,7 +156,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                 className="w-full px-5 py-4 flex items-center justify-between text-left border-b border-light-border hover:bg-light-surface transition-colors"
               >
                 <div>
-                  <h3 className="text-sm font-semibold text-dark">Strategies in Scope</h3>
+                  <h3 className="text-base font-bold font-heading text-dark">Strategies in Scope</h3>
                   <p className="text-xs text-mid mt-0.5">
                     Checking a strategy auto-enables its service line and increments the strategy development count.
                   </p>
@@ -194,7 +194,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
         </button>
         <button
           onClick={onNext}
-          className="bg-teal hover:opacity-90 text-white font-medium py-2.5 px-6 rounded-input transition-opacity text-sm"
+          className="bg-teal hover:opacity-90 text-white font-semibold py-3 px-6 rounded-lg transition-opacity text-sm"
         >
           Next: Adjustments →
         </button>
@@ -225,7 +225,7 @@ function ServiceLineRow({ line, computed, quote, onSetServiceLine, onSetField })
           step={1}
           value={quote.scenarios}
           onChange={e => onSetField('scenarios', Math.max(0, parseInt(e.target.value) || 0))}
-          className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:shadow-input text-center"
+          className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
         />
       );
     }
