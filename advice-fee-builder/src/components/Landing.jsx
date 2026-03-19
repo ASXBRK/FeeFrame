@@ -1,15 +1,17 @@
+import logoLight from '../assets/logos/feeframe-primary-light.svg';
+
 export default function Landing({ onStartQuote, onStartAnalysis }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-surface-50 flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <span className="text-xl font-semibold text-gray-900 tracking-tight">FeeFrame</span>
+      <header className="bg-white border-b border-surface-200 px-6 py-4">
+        <img src={logoLight} alt="FeeFrame" className="h-7" />
       </header>
 
       {/* Main content */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-16">
         <div className="w-full max-w-2xl">
-          <h1 className="text-3xl font-semibold text-gray-900 mb-2 text-center">
+          <h1 className="text-3xl font-semibold font-heading text-navy-900 mb-2 text-center">
             Advice fee tools
           </h1>
           <p className="text-gray-500 text-center mb-12">
@@ -37,7 +39,7 @@ export default function Landing({ onStartQuote, onStartAnalysis }) {
             {/* FeeAnalysis card */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 flex flex-col">
               <div className="mb-1">
-                <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">FeeAnalysis</span>
+                <span className="text-xs font-medium text-brand-500 uppercase tracking-wide">FeeAnalysis</span>
               </div>
               <h2 className="text-lg font-semibold text-gray-900 mb-2">Am I making money?</h2>
               <p className="text-sm text-gray-500 mb-8 flex-1">
@@ -45,7 +47,7 @@ export default function Landing({ onStartQuote, onStartAnalysis }) {
               </p>
               <button
                 onClick={onStartAnalysis}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors text-sm"
+                className="w-full bg-brand-500 hover:bg-brand-600 text-white font-medium py-2.5 px-4 rounded-lg transition-colors text-sm"
               >
                 Analyse →
               </button>

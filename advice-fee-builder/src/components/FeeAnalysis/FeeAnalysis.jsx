@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { calculateProfitability } from '../../lib/calculateProfitability.js';
 import { formatCurrency, formatPercent } from '../../lib/formatters.js';
+import logoLight from '../../assets/logos/feeframe-primary-light.svg';
 
 export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
   const { analysis } = state;
@@ -12,13 +13,13 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between print:hidden">
+      <header className="bg-white border-b border-surface-200 px-6 py-3 flex items-center justify-between print:hidden">
         <div className="flex items-center gap-3">
-          <button onClick={onGoHome} className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors">
-            FeeFrame
+          <button onClick={onGoHome} className="flex items-center">
+            <img src={logoLight} alt="FeeFrame" className="h-6" />
           </button>
           <span className="text-gray-300">/</span>
-          <span className="text-sm font-semibold text-blue-600">FeeAnalysis</span>
+          <span className="text-sm font-semibold text-brand-500">FeeAnalysis</span>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -29,7 +30,7 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
           </button>
           <button
             onClick={onGoQuote}
-            className="text-xs font-medium text-blue-600 hover:text-blue-700 border border-blue-200 hover:border-blue-400 px-3 py-1.5 rounded-lg transition-colors"
+            className="text-xs font-medium text-brand-500 hover:text-brand-600 border border-brand-100 hover:border-brand-400 px-3 py-1.5 rounded-lg transition-colors"
           >
             ← Back to FeeQuote
           </button>
