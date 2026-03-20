@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Tooltip from '../../components/shared/Tooltip';
+import NumInput from '../../components/shared/NumInput';
 import { PREMIUM_FACTORS, DISCOUNT_FACTORS } from '../../lib/serviceLines';
 import { calculateQuote } from '../../lib/calculateQuote';
 import { formatCurrency, formatPercent } from '../../lib/formatters';
@@ -183,13 +184,10 @@ function AdjustmentRow({ label, sign, autoValue, overrideValue, onOverride, onCl
         {editing ? (
           <>
             <span className={`text-sm font-medium ${colorClass}`}>{sign}$</span>
-            <input
-              type="number"
-              onFocus={e => e.target.select()}
-              min={0}
-              value={draft}
-              onChange={e => setDraft(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setEditing(false); }}
+            <NumInput
+              value={parseFloat(draft) || 0}
+              onChange={v => setDraft(String(v))}
+              onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setEditing(false); }}
               autoFocus
               className="w-24 rounded-input border border-teal px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal"
             />

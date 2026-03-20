@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Toggle from '../../components/shared/Toggle';
 import Tooltip from '../../components/shared/Tooltip';
+import NumInput from '../../components/shared/NumInput';
 import { STRATEGIES, ADD_ONS, CORE_TASKS } from '../../lib/serviceLines';
 import { calculateQuote } from '../../lib/calculateQuote';
 import { formatCurrency } from '../../lib/formatters';
@@ -62,12 +63,9 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                 <p className="text-xs text-mid mb-3">Enter the fee quoted by your external paraplanner.</p>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-mid">$</span>
-                  <input
-                    type="number" min={0} step={50}
-                    onFocus={e => e.target.select()}
+                  <NumInput
                     value={quote.paraplannerFee}
-                    onFocus={e => e.target.select()}
-                    onChange={e => set('paraplannerFee', parseFloat(e.target.value) || 0)}
+                    onChange={v => set('paraplannerFee', v)}
                     className="w-36 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                   />
                   <span className="text-sm text-mid">ex GST</span>
@@ -103,14 +101,15 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-sm ${disabled ? 'text-light-border' : 'text-mid'}`}>$</span>
-                  <input
-                    type="number" min={0} step={1}
-                    onFocus={e => e.target.select()}
-                    value={quote[field] ?? def}
-                    onChange={e => set(field, parseFloat(e.target.value) || 0)}
-                    disabled={disabled}
-                    className={`w-24 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 ${disabled ? 'bg-light-surface text-mid cursor-not-allowed' : ''}`}
-                  />
+                  {disabled ? (
+                    <span className="w-24 rounded-input border border-light-border px-3 py-2 text-sm bg-light-surface text-mid cursor-not-allowed block text-center">—</span>
+                  ) : (
+                    <NumInput
+                      value={quote[field] ?? def}
+                      onChange={v => set(field, v)}
+                      className="w-24 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
+                    />
+                  )}
                   <span className={`text-xs ${disabled ? 'text-light-border' : 'text-mid'}`}>/hr</span>
                 </div>
                 {disabled && <p className="text-xs text-mid mt-1">Not applicable — external paraplanner</p>}
@@ -173,11 +172,11 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                       {task.perAdditionalScenario && (
                         <div className="text-xs text-mid mt-0.5">
                           First scenario free · additional:&nbsp;
-                          <input
-                            type="number" min={1} step={1}
-                            onFocus={e => e.target.select()}
+                          <NumInput
                             value={quote.scenarios}
-                            onChange={e => dispatch({ type: 'SET_QUOTE_FIELD', field: 'scenarios', value: Math.max(1, parseInt(e.target.value) || 1) })}
+                            onChange={v => dispatch({ type: 'SET_QUOTE_FIELD', field: 'scenarios', value: Math.max(1, Math.round(v)) })}
+                            integer
+                            emptyDefault={1}
                             className="w-12 rounded-input border border-light-border px-1.5 py-0.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 inline-block"
                           />
                           &nbsp;total scenarios
@@ -264,11 +263,9 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-mid">-$</span>
-                <input
-                  type="number" min={0}
-                  onFocus={e => e.target.select()}
+                <NumInput
                   value={quote.insuranceCommissionOffset}
-                  onChange={e => set('insuranceCommissionOffset', parseFloat(e.target.value) || 0)}
+                  onChange={v => set('insuranceCommissionOffset', v)}
                   className="w-24 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-right"
                 />
               </div>
@@ -397,13 +394,9 @@ function HourEditor({ item, getHour, onHourOverride, isExternal }) {
             <span className={`text-xs w-24 capitalize ${disabled ? 'text-light-border' : 'text-dark'}`}>
               {role === 'admin' ? 'Admin / CSA' : role.charAt(0).toUpperCase() + role.slice(1)}
             </span>
-            <input
-              type="number"
-              onFocus={e => e.target.select()}
-              min={0}
-              step={0.5}
+            <NumInput
               value={getHour(item, role)}
-              onChange={e => onHourOverride(item.id, role, parseFloat(e.target.value) || 0)}
+              onChange={v => onHourOverride(item.id, role, v)}
               disabled={disabled}
               className={`w-16 rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 ${disabled ? 'bg-light-surface text-light-border cursor-not-allowed' : ''}`}
             />
@@ -424,11 +417,9 @@ function ImplRow({ label, helper, value, inputLabel, onChange, fee }) {
         <div className="text-xs text-mid mt-0.5">{helper}</div>
       </div>
       <div className="flex items-center gap-2">
-        <input
-          type="number" min={0} step={1}
-          onFocus={e => e.target.select()}
+        <NumInput
           value={value}
-          onChange={e => onChange(parseFloat(e.target.value) || 0)}
+          onChange={onChange}
           className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
         />
         <span className="text-xs text-mid">{inputLabel}</span>

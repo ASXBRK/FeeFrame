@@ -1,3 +1,5 @@
+import NumInput from '../../components/shared/NumInput';
+
 export default function TierEditor({ tiers, dispatch }) {
   const setTier = (index, field, value) => dispatch({ type: 'SET_TIER', index, field, value });
 
@@ -19,12 +21,9 @@ export default function TierEditor({ tiers, dispatch }) {
               <tr key={i}>
                 <td className="py-2 px-2 text-mid">{i + 1}</td>
                 <td className="py-2 px-2">
-                  <input
-                    type="number"
-                    onFocus={e => e.target.select()}
-                    min={0}
+                  <NumInput
                     value={tier.from}
-                    onChange={e => setTier(i, 'from', parseFloat(e.target.value) || 0)}
+                    onChange={v => setTier(i, 'from', v)}
                     className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                   />
                 </td>
@@ -32,25 +31,17 @@ export default function TierEditor({ tiers, dispatch }) {
                   {tier.to === null ? (
                     <span className="text-mid text-sm block text-right pr-2">Unlimited</span>
                   ) : (
-                    <input
-                      type="number"
-                      onFocus={e => e.target.select()}
-                      min={0}
+                    <NumInput
                       value={tier.to}
-                      onChange={e => setTier(i, 'to', parseFloat(e.target.value) || 0)}
+                      onChange={v => setTier(i, 'to', v)}
                       className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                     />
                   )}
                 </td>
                 <td className="py-2 px-2">
-                  <input
-                    type="number"
-                    onFocus={e => e.target.select()}
-                    min={0}
-                    step={0.01}
-                    max={100}
+                  <NumInput
                     value={tier.rate}
-                    onChange={e => setTier(i, 'rate', parseFloat(e.target.value) || 0)}
+                    onChange={v => setTier(i, 'rate', v)}
                     className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                   />
                 </td>
