@@ -124,8 +124,8 @@ export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuot
         }}>
 
           {/* FeeFrame logo */}
-          <div style={{ marginBottom: '56px' }}>
-            <img src={feeframeLogo} alt="FeeFrame" style={{ height: '72px', width: 'auto' }} />
+          <div style={{ marginBottom: '56px', display: 'flex', justifyContent: 'center' }}>
+            <img src={feeframeLogo} alt="FeeFrame" style={{ height: '100px', width: 'auto' }} />
           </div>
 
           {/* Massive headline */}
@@ -139,7 +139,7 @@ export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuot
             textTransform: 'uppercase',
           }}>
             Fee clarity for<br />
-            <span style={{ color: '#0d9488' }}>Australian advisers.</span>
+            <span style={{ color: '#111827' }}>Australian advisers.</span>
           </h1>
 
           {/* Subline */}
@@ -176,25 +176,25 @@ export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuot
           transform: cardsVisible ? 'translateY(0)' : 'translateY(40px)',
           transition: 'opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1)',
         }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '24px', width: '100%', maxWidth: '900px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))', gap: '32px', width: '100%', maxWidth: '1100px' }}>
 
             {/* FeeQuote */}
             <div
               onClick={onStartQuote}
-              style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '52px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
+              style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '72px 64px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
               onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 12px 32px rgba(0,0,0,0.10)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; }}
             >
-              <div style={{ marginBottom: '28px' }}>
-                <img src={feequoteLogo} alt="FeeQuote" style={{ height: '56px', width: 'auto' }} />
+              <div style={{ marginBottom: '36px' }}>
+                <img src={feequoteLogo} alt="FeeQuote" style={{ height: '80px', width: 'auto' }} />
               </div>
-              <h2 style={{ fontWeight: 700, fontSize: '28px', color: '#111827', letterSpacing: '-0.5px', marginBottom: '16px', lineHeight: 1.2 }}>
+              <h2 style={{ fontWeight: 700, fontSize: '32px', color: '#111827', letterSpacing: '-0.5px', marginBottom: '20px', lineHeight: 1.2 }}>
                 What should I charge?
               </h2>
-              <p style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '16px', color: '#6b7280', lineHeight: 1.65, marginBottom: '40px', flex: 1 }}>
+              <p style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '17px', color: '#6b7280', lineHeight: 1.65, marginBottom: '48px', flex: 1 }}>
                 Scope a new client engagement and generate a fee you can actually justify.
               </p>
-              <div style={{ fontWeight: 700, fontSize: '14px', color: '#0d9488', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              <div style={{ fontWeight: 700, fontSize: '15px', color: '#0d9488', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                 Start quoting →
               </div>
             </div>
@@ -202,20 +202,20 @@ export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuot
             {/* FeeAnalysis */}
             <div
               onClick={onStartAnalysis}
-              style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '52px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
+              style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '72px 64px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
               onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 12px 32px rgba(0,0,0,0.10)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; }}
             >
-              <div style={{ marginBottom: '28px' }}>
-                <img src={feeanalysisLogo} alt="FeeAnalysis" style={{ height: '56px', width: 'auto' }} />
+              <div style={{ marginBottom: '36px' }}>
+                <img src={feeanalysisLogo} alt="FeeAnalysis" style={{ height: '80px', width: 'auto' }} />
               </div>
-              <h2 style={{ fontWeight: 700, fontSize: '28px', color: '#111827', letterSpacing: '-0.5px', marginBottom: '16px', lineHeight: 1.2 }}>
+              <h2 style={{ fontWeight: 700, fontSize: '32px', color: '#111827', letterSpacing: '-0.5px', marginBottom: '20px', lineHeight: 1.2 }}>
                 Am I making money?
               </h2>
-              <p style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '16px', color: '#6b7280', lineHeight: 1.65, marginBottom: '40px', flex: 1 }}>
+              <p style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '17px', color: '#6b7280', lineHeight: 1.65, marginBottom: '48px', flex: 1 }}>
                 Enter what you're charging. Find out if the client is actually profitable.
               </p>
-              <div style={{ fontWeight: 700, fontSize: '14px', color: '#0d9488', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              <div style={{ fontWeight: 700, fontSize: '15px', color: '#0d9488', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                 Analyse a client →
               </div>
             </div>
