@@ -54,7 +54,7 @@ export function calculateQuote(state: any) {
     }
     let multiplier = 1;
     if (task.perEntity) multiplier = totalEntities;
-    if (task.perAdditionalScenario) multiplier = Math.max(0, scenarios - 1);
+    if (task.perAdditionalScenario) multiplier = Math.max(0, scenarios - 2);
     return calcCoreTaskFee(task, multiplier);
   });
 
