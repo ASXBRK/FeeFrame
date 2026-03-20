@@ -79,9 +79,9 @@ export function calculateQuote(state) {
   const insuranceImplHours = Number(state.insuranceImplHours) || 0;
   const commissionOffset = Number(state.insuranceCommissionOffset) || 0;
 
-  const implInvestmentFee = investmentAccounts * 550;
-  const implInSpecieFee = inSpecieHours * adminRate * 1.1;
-  const implInsuranceFee = insuranceImplHours * adminRate * 1.1;
+  const implInvestmentFee = state.implInvestmentOverride ?? (investmentAccounts * 550);
+  const implInSpecieFee = state.implInSpecieOverride ?? (inSpecieHours * adminRate * 1.1);
+  const implInsuranceFee = state.implInsuranceOverride ?? (insuranceImplHours * adminRate * 1.1);
   const implTotal = Math.max(0, implInvestmentFee + implInSpecieFee + implInsuranceFee - commissionOffset);
   const totalInitialFees = soaTotalInclGst + implTotal;
 
