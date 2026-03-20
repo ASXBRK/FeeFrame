@@ -163,8 +163,9 @@ export function calculateQuote(state: any) {
   const ongoingPremium = state.premiumOngoingOverride ?? ongoingPremiumAuto;
   const ongoingDiscount = state.discountOngoingOverride ?? ongoingDiscountAuto;
 
+  const ongoingCommissionOffset = Number(state.ongoingInsuranceCommissionOffset) || 0;
   const totalOngoingRounded = hasOngoing
-    ? roundToNearest100(totalOngoingExGst + ongoingPremium - ongoingDiscount)
+    ? roundToNearest100(Math.max(0, totalOngoingExGst + ongoingPremium - ongoingDiscount - ongoingCommissionOffset))
     : 0;
   const ongoingGst = totalOngoingRounded * 0.1;
   const totalOngoingInclGst = totalOngoingRounded + ongoingGst;

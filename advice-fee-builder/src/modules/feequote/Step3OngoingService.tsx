@@ -84,6 +84,33 @@ export default function Step3OngoingService({ quote, dispatch, onNext, onBack })
               <SubscriptionModel quote={quote} set={set} calc={calc} />
             )}
 
+            {/* Ongoing insurance commission offset */}
+            <div className="bg-white rounded-card border border-light-border p-5">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                  <span className="text-sm font-medium text-dark">Less: Ongoing insurance commission offset</span>
+                  <Tooltip text="If you receive ongoing insurance commissions for this client, you can apply them here to offset a portion of the annual ongoing service fee. This reduces the net fee charged to the client each year." />
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="text-xs text-mid">-$</span>
+                  <NumInput
+                    value={quote.ongoingInsuranceCommissionOffset}
+                    onChange={v => set('ongoingInsuranceCommissionOffset', v)}
+                    className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
+                  />
+                  <span className="text-xs text-mid w-14">p.a.</span>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className={`text-sm font-medium w-20 text-right ${(quote.ongoingInsuranceCommissionOffset || 0) > 0 ? 'text-risk-text' : 'text-light-border'}`}>
+                    {(quote.ongoingInsuranceCommissionOffset || 0) > 0
+                      ? `-${formatCurrency(Number(quote.ongoingInsuranceCommissionOffset) || 0)}`
+                      : '—'}
+                  </span>
+                  <div className="w-6" />
+                </div>
+              </div>
+            </div>
+
             {/* Entity fee split */}
             <div className="bg-white rounded-card border border-light-border overflow-hidden">
               <button

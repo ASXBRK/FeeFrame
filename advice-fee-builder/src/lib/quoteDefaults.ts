@@ -36,6 +36,7 @@ export const defaultQuoteState = {
   inSpecieHours: 0,
   insuranceImplHours: 0,
   insuranceCommissionOffset: 0,
+  ongoingInsuranceCommissionOffset: 0,
   implInvestmentOverride: null as number | null,
   implInSpecieOverride: null as number | null,
   implInsuranceOverride: null as number | null,

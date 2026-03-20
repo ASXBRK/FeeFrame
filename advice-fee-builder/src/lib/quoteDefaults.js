@@ -36,6 +36,7 @@ export const defaultQuoteState = {
   inSpecieHours: 0,
   insuranceImplHours: 0,
   insuranceCommissionOffset: 0,
+  ongoingInsuranceCommissionOffset: 0,
 
   // Step 3: Ongoing service
   hasOngoing: true,

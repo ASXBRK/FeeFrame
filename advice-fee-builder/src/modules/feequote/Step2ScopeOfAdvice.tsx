@@ -261,7 +261,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
             <div className="flex items-center gap-4 pt-2 border-t border-light-border">
               <div className="flex items-center gap-1.5 flex-1 min-w-0">
                 <span className="text-sm font-medium text-dark">Less: Insurance commission offset</span>
-                <Tooltip text="If you receive insurance commissions, you can apply them here to offset a portion of the implementation fee payable by the client." />
+                <Tooltip text="Apply any upfront insurance commission received to offset a portion of the implementation fee payable by the client. This covers the initial commission only — ongoing commissions can be offset against the ongoing service fee in the next step." />
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span className="text-xs text-mid">-$</span>
