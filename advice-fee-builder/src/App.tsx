@@ -1,10 +1,17 @@
-import { useReducer, useEffect, useCallback, useRef } from 'react';
+import { useReducer, useEffect, useCallback, useRef, useState } from 'react';
 import Landing from './components/Landing';
+import Nav from './components/Nav';
+import About from './components/About';
+import Contact from './components/Contact';
 import FeeQuoteWizard from './modules/feequote/FeeQuoteWizard';
 import FeeAnalysis from './modules/feeanalysis/FeeAnalysis';
 import { defaultQuoteState } from './lib/quoteDefaults';
 import { defaultAnalysisState } from './lib/analysisDefaults';
 import { STRATEGIES } from './lib/serviceLines';
+
+// ── Types ──────────────────────────────────────────────────────────────────────
+type NavPage = 'landing' | 'about' | 'contact';
+type Page = NavPage | 'quote' | 'analysis';
 
 // ── State ──────────────────────────────────────────────────────────────────────
 const STATE_VERSION = 2; // bump to clear stale localStorage
@@ -182,14 +189,18 @@ export default function App() {
     return () => clearTimeout(saveTimer.current);
   }, [state]);
 
+  const [page, setPage] = useState<Page>('landing');
+
   const goTo = useCallback((view) => dispatch({ type: 'SET_VIEW', view }), []);
+
+  const handleNavigate = useCallback((p: NavPage) => setPage(p), []);
 
   if (state.view === 'quote') {
     return (
       <FeeQuoteWizard
         state={state}
         dispatch={dispatch}
-        onGoHome={() => goTo('landing')}
+        onGoHome={() => { goTo('landing'); setPage('landing'); }}
         onGoAnalysis={(fees) => dispatch({ type: 'HANDOFF_TO_ANALYSIS', ...fees })}
       />
     );
@@ -200,11 +211,25 @@ export default function App() {
       <FeeAnalysis
         state={state}
         dispatch={dispatch}
-        onGoHome={() => goTo('landing')}
+        onGoHome={() => { goTo('landing'); setPage('landing'); }}
         onGoQuote={() => goTo('quote')}
       />
     );
   }
 
-  return <Landing onStartQuote={() => goTo('quote')} onStartAnalysis={() => goTo('analysis')} />;
+  const navPage = (page === 'quote' || page === 'analysis' ? 'landing' : page) as NavPage;
+
+  return (
+    <>
+      <Nav current={navPage} onNavigate={handleNavigate} />
+      {page === 'about' && <About />}
+      {page === 'contact' && <Contact />}
+      {navPage === 'landing' && (
+        <Landing
+          onStartQuote={() => { goTo('quote'); setPage('quote'); }}
+          onStartAnalysis={() => { goTo('analysis'); setPage('analysis'); }}
+        />
+      )}
+    </>
+  );
 }
