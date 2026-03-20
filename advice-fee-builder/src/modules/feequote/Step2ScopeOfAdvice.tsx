@@ -174,9 +174,8 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                       )}
                       {task.perAdditionalScenario && (
                         <div className="text-xs text-mid mt-0.5 flex items-center gap-1.5">
-                          <Tooltip content="Modelling &amp; Projections strategy scope covers 2 scenarios. Additional scenarios beyond 2 can be charged as an addition here.">
-                            <span className="cursor-help underline decoration-dotted">Additional scenarios</span>
-                          </Tooltip>
+                          <span>Additional scenarios</span>
+                          <Tooltip text="Modelling &amp; Projections strategy scope covers 2 scenarios. Additional scenarios beyond 2 can be charged as an addition here." />
                           <NumInput
                             value={Math.max(0, (quote.scenarios ?? 2) - 2)}
                             onChange={v => dispatch({ type: 'SET_QUOTE_FIELD', field: 'scenarios', value: Math.max(2, 2 + Math.round(v)) })}
@@ -234,33 +233,30 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
           <div className="space-y-4">
             <ImplRow
               label="Investment & super implementation"
-              tooltip="$550 incl GST per account — covers platform setup, product applications, and account establishment. Click ✏️ to override."
+              tooltip="$550 incl GST per account — covers platform setup, product applications, and account establishment."
               value={quote.investmentAccounts}
               inputLabel="accounts"
               onChange={v => set('investmentAccounts', v)}
               fee={calc.implInvestmentFee}
               feeOverride={quote.implInvestmentOverride}
               onFeeOverride={v => set('implInvestmentOverride', v)}
+              allowOverride
             />
             <ImplRow
               label="In-specie transfers of existing assets"
-              tooltip="Admin time to coordinate in-specie asset transfers. Billed at admin hourly cost + 10% GST. Click ✏️ to override."
+              tooltip="Admin time to coordinate in-specie asset transfers. Billed at admin hourly cost."
               value={quote.inSpecieHours}
               inputLabel="hours"
               onChange={v => set('inSpecieHours', v)}
               fee={calc.implInSpecieFee}
-              feeOverride={quote.implInSpecieOverride}
-              onFeeOverride={v => set('implInSpecieOverride', v)}
             />
             <ImplRow
               label="Insurance implementation"
-              tooltip="Admin time to process insurance applications and policy documentation. Billed at admin hourly cost + 10% GST. Click ✏️ to override."
+              tooltip="Admin time to process insurance applications and policy documentation. Billed at admin hourly cost."
               value={quote.insuranceImplHours}
               inputLabel="hours"
               onChange={v => set('insuranceImplHours', v)}
               fee={calc.implInsuranceFee}
-              feeOverride={quote.implInsuranceOverride}
-              onFeeOverride={v => set('implInsuranceOverride', v)}
             />
             <div className="flex items-center gap-4 pt-2 border-t border-light-border">
               <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -420,40 +416,26 @@ function HourEditor({ item, getHour, onHourOverride, isExternal }) {
 }
 
 // ── ImplRow ───────────────────────────────────────────────────────────────────
-function ImplRow({ label, tooltip, value, inputLabel, onChange, fee, feeOverride, onFeeOverride }) {
-  const [editing, setEditing] = useState(false);
+function ImplRow({ label, tooltip, value, inputLabel, onChange, fee, feeOverride = null, onFeeOverride = null, allowOverride = false }) {
+  const [expanded, setExpanded] = useState(false);
   const isOverridden = feeOverride !== null && feeOverride !== undefined;
   const displayFee = isOverridden ? feeOverride : fee;
 
   return (
-    <div className="flex items-center gap-4">
-      <div className="flex items-center gap-1.5 flex-1 min-w-0">
-        <span className="text-sm font-medium text-dark">{label}</span>
-        <Tooltip text={tooltip} />
-      </div>
-      <div className="flex items-center gap-2 flex-shrink-0">
-        <NumInput
-          value={value}
-          onChange={onChange}
-          className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
-        />
-        <span className="text-xs text-mid w-14">{inputLabel}</span>
-      </div>
-      {editing ? (
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-sm text-mid">$</span>
-          <NumInput
-            value={isOverridden ? feeOverride : fee}
-            onChange={v => onFeeOverride(v)}
-            autoFocus
-            className="w-24 rounded-input border border-teal px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal"
-          />
-          <button type="button" onClick={() => setEditing(false)} className="text-xs font-medium text-teal hover:opacity-80">Done</button>
-          {isOverridden && (
-            <button type="button" onClick={() => { onFeeOverride(null); setEditing(false); }} className="text-xs text-mid hover:text-dark">Reset</button>
-          )}
+    <div>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+          <span className="text-sm font-medium text-dark">{label}</span>
+          <Tooltip text={tooltip} />
         </div>
-      ) : (
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <NumInput
+            value={value}
+            onChange={onChange}
+            className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
+          />
+          <span className="text-xs text-mid w-14">{inputLabel}</span>
+        </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {isOverridden && (
             <span className="text-xs text-mid bg-light-surface px-1.5 py-0.5 rounded border border-light-border">override</span>
@@ -461,14 +443,34 @@ function ImplRow({ label, tooltip, value, inputLabel, onChange, fee, feeOverride
           <span className={`text-sm font-medium w-20 text-right ${displayFee > 0 ? 'text-dark' : 'text-light-border'}`}>
             {formatCurrency(displayFee)}
           </span>
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className="text-sm text-mid hover:text-dark transition-colors"
-            title="Override fee"
-          >
-            ✏️
-          </button>
+          {allowOverride ? (
+            <button
+              type="button"
+              onClick={() => setExpanded(e => !e)}
+              className={`text-sm transition-colors ${expanded ? 'text-teal' : 'text-mid hover:text-dark'}`}
+              title="Override fee"
+            >
+              ✏️
+            </button>
+          ) : (
+            <div className="w-6" />
+          )}
+        </div>
+      </div>
+      {allowOverride && expanded && (
+        <div className="mt-1.5 flex items-center gap-3 px-4 py-3 bg-light-surface rounded-input border border-light-border">
+          <span className="text-xs text-mid flex-1">Override fee</span>
+          <span className="text-sm text-mid">$</span>
+          <NumInput
+            value={isOverridden ? feeOverride : fee}
+            onChange={v => onFeeOverride(v)}
+            autoFocus
+            className="w-24 rounded-input border border-teal px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal"
+          />
+          <button type="button" onClick={() => setExpanded(false)} className="text-xs font-medium text-teal hover:opacity-80">Done</button>
+          {isOverridden && (
+            <button type="button" onClick={() => { onFeeOverride(null); setExpanded(false); }} className="text-xs text-mid hover:text-dark">Reset</button>
+          )}
         </div>
       )}
     </div>
