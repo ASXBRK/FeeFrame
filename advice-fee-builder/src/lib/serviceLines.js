@@ -8,6 +8,7 @@ export const STRATEGIES = [
   { id: 'debtManagement', label: 'Debt Management', shortLabel: 'debt management', adviserHours: 2.0, paraplannerHours: 2.5, adminHours: 1.0 },
   { id: 'gearingDebtRecycling', label: 'Gearing / Debt Recycling', shortLabel: 'gearing and debt recycling', adviserHours: 3.0, paraplannerHours: 4.0, adminHours: 1.0 },
   { id: 'centrelink', label: 'Centrelink Entitlements', shortLabel: 'Centrelink entitlements', adviserHours: 3.0, paraplannerHours: 4.0, adminHours: 2.0 },
+  { id: 'agedCare', label: 'Aged Care', shortLabel: 'aged care planning', adviserHours: 3.0, paraplannerHours: 4.0, adminHours: 2.0 },
   { id: 'personalInsurance', label: 'Personal Insurance', shortLabel: 'personal insurance', adviserHours: 3.5, paraplannerHours: 5.0, adminHours: 2.0 },
   { id: 'businessInsurance', label: 'Business Insurance', shortLabel: 'business insurance', adviserHours: 3.5, paraplannerHours: 5.0, adminHours: 2.0 },
   { id: 'estatePlanning', label: 'Estate Planning', shortLabel: 'estate planning', adviserHours: 2.5, paraplannerHours: 2.5, adminHours: 1.0 },
@@ -18,7 +19,8 @@ export const STRATEGIES = [
 export const ADD_ONS = [
   { id: 'div296', label: 'Division 296 Tax', shortLabel: 'Division 296 tax planning', adviserHours: 2.0, paraplannerHours: 3.5, adminHours: 1.0 },
   { id: 'marginLending', label: 'Margin Lending', shortLabel: 'margin lending', adviserHours: 2.0, paraplannerHours: 3.5, adminHours: 1.0 },
-  { id: 'smsfInvestmentStrategy', label: 'SMSF Investment Strategy', shortLabel: 'SMSF investment strategy', adviserHours: 2.5, paraplannerHours: 4.0, adminHours: 1.5 },
+  { id: 'smsfInvestmentStrategy', label: 'SMSF Investment Strategy', shortLabel: 'SMSF investment strategy', adviserHours: 0.5, paraplannerHours: 2.0, adminHours: 1.0 },
+  { id: 'taxStructuring', label: 'Tax Structuring', shortLabel: 'tax structuring', adviserHours: 2.0, paraplannerHours: 3.5, adminHours: 0.5 },
 ];
 
 // ── Core process tasks ─────────────────────────────────────────────────────────
