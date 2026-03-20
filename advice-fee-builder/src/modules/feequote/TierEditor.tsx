@@ -21,6 +21,7 @@ export default function TierEditor({ tiers, dispatch }) {
                 <td className="py-2 px-2">
                   <input
                     type="number"
+                    onFocus={e => e.target.select()}
                     min={0}
                     value={tier.from}
                     onChange={e => setTier(i, 'from', parseFloat(e.target.value) || 0)}
@@ -33,6 +34,7 @@ export default function TierEditor({ tiers, dispatch }) {
                   ) : (
                     <input
                       type="number"
+                      onFocus={e => e.target.select()}
                       min={0}
                       value={tier.to}
                       onChange={e => setTier(i, 'to', parseFloat(e.target.value) || 0)}
@@ -43,6 +45,7 @@ export default function TierEditor({ tiers, dispatch }) {
                 <td className="py-2 px-2">
                   <input
                     type="number"
+                    onFocus={e => e.target.select()}
                     min={0}
                     step={0.01}
                     max={100}
