@@ -36,9 +36,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
                 />
                 <span className="text-sm text-dark leading-snug flex items-center gap-1">
                   {factor.label}
-                  <Tooltip text={factor.description}>
-                    <span className="text-mid text-xs cursor-default ml-1">ⓘ</span>
-                  </Tooltip>
+                  <Tooltip text={factor.description} />
                 </span>
               </label>
             ))}
@@ -91,9 +89,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
                 />
                 <span className="text-sm text-dark leading-snug flex items-center gap-1">
                   {factor.label}
-                  <Tooltip text={factor.description}>
-                    <span className="text-mid text-xs cursor-default ml-1">ⓘ</span>
-                  </Tooltip>
+                  <Tooltip text={factor.description} />
                 </span>
               </label>
             ))}

@@ -346,9 +346,7 @@ function PercentageModel({ quote, dispatch, calc, set }) {
       <div>
         <div className="flex items-center gap-1.5 mb-1">
           <label className="text-sm font-medium text-dark">Minimum annual fee</label>
-          <Tooltip text="If the FUM-based fee calculates below this amount, the minimum will apply instead.">
-            <span className="text-mid text-xs cursor-default">ⓘ</span>
-          </Tooltip>
+          <Tooltip text="If the FUM-based fee calculates below this amount, the minimum will apply instead." />
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-mid">$</span>
@@ -439,9 +437,7 @@ function SubscriptionModel({ quote, set, calc }) {
       <div>
         <div className="flex items-center gap-1.5 mb-1">
           <label className="text-sm font-medium text-dark">Hourly rate for additional services</label>
-          <Tooltip text="Work outside the subscription scope will be quoted at this rate.">
-            <span className="text-mid text-xs cursor-default">ⓘ</span>
-          </Tooltip>
+          <Tooltip text="Work outside the subscription scope will be quoted at this rate." />
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-mid">$</span>

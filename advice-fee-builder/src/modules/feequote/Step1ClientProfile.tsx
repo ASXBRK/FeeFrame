@@ -22,9 +22,7 @@ export default function Step1ClientProfile({ quote, dispatch, onNext }) {
           <div className="flex items-center gap-1.5 mb-1">
             <label className="text-sm font-medium text-dark">Client name or reference</label>
             <span className="text-mid font-normal text-sm">(optional)</span>
-            <Tooltip text="This isn't stored anywhere — it's only used to personalise the client letter output. Use first names, e.g. John or John and Sally.">
-              <span className="text-mid text-xs cursor-default leading-none">ⓘ</span>
-            </Tooltip>
+            <Tooltip text="This isn't stored anywhere — it's only used to personalise the client letter output. Use first names, e.g. John or John and Sally." />
           </div>
           <input
             type="text"
@@ -78,9 +76,7 @@ export default function Step1ClientProfile({ quote, dispatch, onNext }) {
         <div>
           <div className="flex items-center gap-1.5 mb-1">
             <label className="text-sm font-medium text-dark">Other entities</label>
-            <Tooltip text="Count any additional legal entities beyond the individual client or couple — e.g. family trust, SMSF, company, investment bond. The client themselves is already accounted for from the single/couple selection above.">
-              <span className="text-mid text-xs cursor-default leading-none">ⓘ</span>
-            </Tooltip>
+            <Tooltip text="Count any additional legal entities beyond the individual client or couple — e.g. family trust, SMSF, company." />
           </div>
           <p className="text-xs text-mid mb-2">e.g. 1 family trust + 1 SMSF = 2</p>
           <div className="flex items-center gap-2">

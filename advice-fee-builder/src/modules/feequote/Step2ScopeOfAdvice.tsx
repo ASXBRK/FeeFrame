@@ -100,9 +100,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
               <div key={field}>
                 <div className="flex items-center gap-1.5 mb-1">
                   <label className={`text-sm font-medium ${disabled ? 'text-mid' : 'text-dark'}`}>{label}</label>
-                  <Tooltip text={RATE_TOOLTIPS[role]}>
-                    <span className="text-mid text-xs cursor-default">ⓘ</span>
-                  </Tooltip>
+                  <Tooltip text={RATE_TOOLTIPS[role]} />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-sm ${disabled ? 'text-light-border' : 'text-mid'}`}>$</span>
@@ -432,9 +430,7 @@ function ImplRow({ label, tooltip, value, inputLabel, onChange, fee, feeOverride
     <div className="flex items-center gap-4">
       <div className="flex items-center gap-1.5 flex-1 min-w-0">
         <span className="text-sm font-medium text-dark">{label}</span>
-        <Tooltip text={tooltip}>
-          <span className="text-mid text-xs cursor-default leading-none">ⓘ</span>
-        </Tooltip>
+        <Tooltip text={tooltip} />
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         <NumInput
