@@ -172,21 +172,21 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                       {task.perEntity && (
                         <div className="text-xs text-mid mt-0.5">× {calc.totalEntities} entities</div>
                       )}
+                      {task.perAdditionalScenario && (
+                        <div className="text-xs text-mid mt-0.5 flex items-center gap-1.5">
+                          <Tooltip content="Modelling &amp; Projections strategy scope covers 2 scenarios. Additional scenarios beyond 2 can be charged as an addition here.">
+                            <span className="cursor-help underline decoration-dotted">Additional scenarios</span>
+                          </Tooltip>
+                          <NumInput
+                            value={Math.max(0, (quote.scenarios ?? 2) - 2)}
+                            onChange={v => dispatch({ type: 'SET_QUOTE_FIELD', field: 'scenarios', value: Math.max(2, 2 + Math.round(v)) })}
+                            integer
+                            emptyDefault={0}
+                            className="w-10 rounded-input border border-light-border px-1.5 py-0.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 inline-block"
+                          />
+                        </div>
+                      )}
                     </div>
-                    {task.perAdditionalScenario && (
-                      <div className="flex items-center gap-1.5 flex-shrink-0 border border-light-border rounded-input px-2.5 py-1.5">
-                        <Tooltip content="2 scenarios are included in the Modelling & Projections strategy item. Each additional scenario beyond 2 is billed separately.">
-                          <span className="text-xs text-mid cursor-help select-none">Additional scenarios</span>
-                        </Tooltip>
-                        <NumInput
-                          value={Math.max(0, (quote.scenarios ?? 2) - 2)}
-                          onChange={v => dispatch({ type: 'SET_QUOTE_FIELD', field: 'scenarios', value: Math.max(2, 2 + Math.round(v)) })}
-                          integer
-                          emptyDefault={0}
-                          className="w-10 rounded-input border border-light-border px-1.5 py-0.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 inline-block"
-                        />
-                      </div>
-                    )}
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <Toggle
                         checked={enabled}
@@ -263,22 +263,24 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
               onFeeOverride={v => set('implInsuranceOverride', v)}
             />
             <div className="flex items-center gap-4 pt-2 border-t border-light-border">
-              <div className="flex-1">
-                <div className="text-sm font-medium text-dark">Less: Insurance commission offset</div>
-                <div className="text-xs text-mid mt-0.5">Manual entry — adviser discretion</div>
+              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                <span className="text-sm font-medium text-dark">Less: Insurance commission offset</span>
+                <Tooltip text="If you receive insurance commissions, you can apply them here to offset a portion of the implementation fee payable by the client." />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-mid">-$</span>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className="text-xs text-mid">-$</span>
                 <NumInput
                   value={quote.insuranceCommissionOffset}
                   onChange={v => set('insuranceCommissionOffset', v)}
-                  className="w-24 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-right"
+                  className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
                 />
+                <span className="text-xs text-mid w-14" />
               </div>
-              <div className="w-24 text-right">
-                <span className={`text-sm font-medium ${(quote.insuranceCommissionOffset || 0) > 0 ? 'text-risk-text' : 'text-light-border'}`}>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className={`text-sm font-medium w-20 text-right ${(quote.insuranceCommissionOffset || 0) > 0 ? 'text-risk-text' : 'text-light-border'}`}>
                   {(quote.insuranceCommissionOffset || 0) > 0 ? `-${formatCurrency(calc.commissionOffset)}` : '—'}
                 </span>
+                <div className="w-6" />
               </div>
             </div>
             <div className="bg-light-surface rounded-card px-4 py-3 flex items-center justify-between border border-light-border">
@@ -435,7 +437,7 @@ function ImplRow({ label, tooltip, value, inputLabel, onChange, fee, feeOverride
           onChange={onChange}
           className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
         />
-        <span className="text-xs text-mid">{inputLabel}</span>
+        <span className="text-xs text-mid w-14">{inputLabel}</span>
       </div>
       {editing ? (
         <div className="flex items-center gap-2 flex-shrink-0">
