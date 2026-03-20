@@ -1,102 +1,112 @@
-import { SERVICE_LINES, STRATEGIES, COMPLEXITY_FACTORS, EASE_FACTORS, getComplexityPremiumRate, getEaseDiscountRate, formatStrategyList } from './serviceLines.js';
+import { STRATEGIES, ADD_ONS, CORE_TASKS, REVIEW_TASKS, ANNUAL_TASKS, PREMIUM_FACTORS, DISCOUNT_FACTORS, getPremiumRate, getDiscountRate, formatStrategyList } from './serviceLines.js';
 import { roundToNearest100 } from './formatters.js';
 
 /**
- * Pure calculation engine for FeeQuote.
+ * Pure calculation engine for FeeQuote (Phase 1 rebuild).
  * Returns all computed values with no side effects.
  */
-export function calculateQuote(state) {
-  const rate = Number(state.hourlyRate) || 335;
-
-  // ── Step 2: Service line fees ──────────────────────────────────────────────
+export function calculateQuote(state: any) {
+  const adviserRate = Number(state.adviserRate) || 106;
+  const paraplannerRate = Number(state.paraplannerRate) || 62;
+  const adminRate = Number(state.adminRate) || 40;
   const isExternal = state.paraplanner === 'external';
-  const strategyCount = STRATEGIES.filter(s => state.strategies[s.id]).length;
-  const entityCount = Number(state.entityCount) || 1;
+  const entityCount = Math.max(1, Number(state.entityCount) || 1);
   const scenarios = Number(state.scenarios) || 0;
 
-  const lineItems = SERVICE_LINES.map(line => {
-    let hours = 0;
-    let fee = 0;
-    let displayValue = null;
+  // ── Helper: calc fee for one line item ────────────────────────────────────
+  function calcLineItemFee(item: any, multiplier = 1) {
+    const overrides = state.hourOverrides || {};
+    const advHrs = (overrides[`${item.id}.adviser`] ?? item.adviserHours) * multiplier;
+    const paraHrs = isExternal ? 0 : (overrides[`${item.id}.paraplanner`] ?? item.paraplannerHours) * multiplier;
+    const admHrs = (overrides[`${item.id}.admin`] ?? item.adminHours) * multiplier;
+    const fee = advHrs * adviserRate + paraHrs * paraplannerRate + admHrs * adminRate;
+    const totalHours = advHrs + paraHrs + admHrs;
+    return { ...item, adviserHoursUsed: advHrs, paraplannerHoursUsed: paraHrs, adminHoursUsed: admHrs, fee, totalHours, hours: totalHours };
+  }
 
-    if (line.inputType === 'toggle') {
-      const enabled = state.serviceLines[line.id] ?? false;
-      hours = enabled ? line.baseHours : 0;
-      fee = hours * rate;
-      displayValue = enabled;
-    } else if (line.inputType === 'auto-entity') {
-      hours = line.baseHours * entityCount;
-      fee = hours * rate;
-      displayValue = entityCount;
-    } else if (line.inputType === 'auto-strategy') {
-      hours = line.baseHours * strategyCount;
-      fee = hours * rate;
-      displayValue = strategyCount;
-    } else if (line.inputType === 'number') {
-      // financialModelling: first scenario free
-      const extra = Math.max(0, scenarios - 1);
-      hours = line.baseHours * extra;
-      fee = hours * rate;
-      displayValue = scenarios;
-    }
+  // ── Step 2: SOA line items ─────────────────────────────────────────────────
+  const strategyItems = STRATEGIES
+    .filter(s => state.strategies?.[s.id])
+    .map(s => calcLineItemFee(s));
 
-    return { ...line, hours, fee, displayValue };
+  const addOnItems = ADD_ONS
+    .filter(a => state.addOns?.[a.id])
+    .map(a => calcLineItemFee(a));
+
+  const coreTaskItems = CORE_TASKS.map(task => {
+    const enabled = state.coreTasks?.[task.id] ?? task.defaultOn ?? false;
+    if (!enabled) return { ...task, fee: 0, totalHours: 0, hours: 0, adviserHoursUsed: 0, paraplannerHoursUsed: 0, adminHoursUsed: 0 };
+    let multiplier = 1;
+    if (task.perEntity) multiplier = entityCount;
+    if (task.perAdditionalScenario) multiplier = Math.max(0, scenarios - 1);
+    return calcLineItemFee(task, multiplier);
   });
+
+  const lineItems = [...strategyItems, ...addOnItems, ...coreTaskItems];
 
   const rawParaplannerFee = Number(state.paraplannerFee) || 0;
   const effectiveParaplannerFee = state.paraplannerBuffer ? rawParaplannerFee * 1.1 : rawParaplannerFee;
-  const baseFee = isExternal
-    ? effectiveParaplannerFee
-    : lineItems.reduce((sum, l) => sum + l.fee, 0);
-  const totalBaseHours = isExternal ? 0 : lineItems.reduce((sum, l) => sum + l.hours, 0);
 
-  // ── Step 3: Adjustments ────────────────────────────────────────────────────
-  const complexityCount = COMPLEXITY_FACTORS.filter((_, i) => state.complexityFactors[i]).length;
-  const easeCount = EASE_FACTORS.filter((_, i) => state.easeFactors[i]).length;
+  const soaLineTotal = lineItems.reduce((s, l) => s + l.fee, 0);
+  const baseFee = isExternal ? effectiveParaplannerFee + soaLineTotal : soaLineTotal;
+  const totalBaseHours = lineItems.reduce((s, l) => s + l.totalHours, 0);
 
-  const complexityRate = isExternal ? 0 : getComplexityPremiumRate(complexityCount);
-  const easeRate = isExternal ? 0 : getEaseDiscountRate(easeCount);
+  // ── Step 4: Adjustments ────────────────────────────────────────────────────
+  const premiumCount = PREMIUM_FACTORS.filter((_, i) => state.premiumFactors?.[i]).length;
+  const discountCount = DISCOUNT_FACTORS.filter((_, i) => state.discountFactors?.[i]).length;
+  const premiumRate = getPremiumRate(premiumCount);
+  const discountRate = getDiscountRate(discountCount);
 
-  const complexityAmount = baseFee * complexityRate;
-  const easeAmount = baseFee * easeRate;
+  const soaPremiumAuto = baseFee * premiumRate;
+  const soaDiscountAuto = baseFee * discountRate;
+  const soaPremium = state.premiumSoaOverride ?? soaPremiumAuto;
+  const soaDiscount = state.discountSoaOverride ?? soaDiscountAuto;
 
-  const adjustedFeeExact = baseFee + complexityAmount - easeAmount;
-  const adjustedFeeRounded = isExternal ? baseFee : roundToNearest100(adjustedFeeExact);
-
+  const adjustedFeeRounded = roundToNearest100(baseFee + soaPremium - soaDiscount);
   const soaGst = adjustedFeeRounded * 0.1;
   const soaTotalInclGst = adjustedFeeRounded + soaGst;
 
-  // Implementation fees
+  // ── Implementation fees ────────────────────────────────────────────────────
   const investmentAccounts = Number(state.investmentAccounts) || 0;
   const inSpecieHours = Number(state.inSpecieHours) || 0;
   const insuranceImplHours = Number(state.insuranceImplHours) || 0;
   const commissionOffset = Number(state.insuranceCommissionOffset) || 0;
 
-  const implInvestmentFee = investmentAccounts * 550; // incl GST per account
-  const implInSpecieFee = inSpecieHours * rate * 1.1;
-  const implInsuranceFee = insuranceImplHours * rate * 1.1;
-  const implTotal = implInvestmentFee + implInSpecieFee + implInsuranceFee - commissionOffset;
-
+  const implInvestmentFee = investmentAccounts * 550;
+  const implInSpecieFee = inSpecieHours * adminRate * 1.1;
+  const implInsuranceFee = insuranceImplHours * adminRate * 1.1;
+  const implTotal = Math.max(0, implInvestmentFee + implInSpecieFee + implInsuranceFee - commissionOffset);
   const totalInitialFees = soaTotalInclGst + implTotal;
 
-  // ── Step 4: Ongoing ────────────────────────────────────────────────────────
-  const totalReviewHours = Object.values(state.reviewHours || {}).reduce((s, h) => s + (Number(h) || 0), 0);
-  const costPerReview = totalReviewHours * rate;
+  // ── Step 3: Ongoing service ────────────────────────────────────────────────
+  const hasOngoing = state.hasOngoing !== false;
 
+  function calcReviewTaskFee(task: any, overrides: Record<string, number>) {
+    const advHrs = overrides[`${task.id}.adviser`] ?? task.adviserHours;
+    const paraHrs = overrides[`${task.id}.paraplanner`] ?? task.paraplannerHours;
+    const admHrs = overrides[`${task.id}.admin`] ?? task.adminHours;
+    const fee = advHrs * adviserRate + paraHrs * paraplannerRate + admHrs * adminRate;
+    const totalHours = advHrs + paraHrs + admHrs;
+    return { ...task, adviserHoursUsed: advHrs, paraplannerHoursUsed: paraHrs, adminHoursUsed: admHrs, fee, totalHours };
+  }
+
+  const reviewHourOverrides = state.reviewHourOverrides || {};
+  const annualTaskHourOverrides = state.annualTaskHourOverrides || {};
+
+  const reviewTaskItems = REVIEW_TASKS.map(t => calcReviewTaskFee(t, reviewHourOverrides));
+  const annualTaskItems = ANNUAL_TASKS.map(t => calcReviewTaskFee(t, annualTaskHourOverrides));
+
+  const costPerReview = reviewTaskItems.reduce((s, t) => s + t.fee, 0);
+  const totalReviewHours = reviewTaskItems.reduce((s, t) => s + t.totalHours, 0);
+  const totalAnnualTaskFee = annualTaskItems.reduce((s, t) => s + t.fee, 0);
   const reviewMeetings = Number(state.reviewMeetings) || 0;
-  const reviewMeetingFee = reviewMeetings * costPerReview;
+  const reviewMeetingFee = costPerReview * reviewMeetings;
+  const fixedOngoingFee = reviewMeetingFee + totalAnnualTaskFee;
 
-  const ongoingAccounts = Number(state.ongoingAccounts) || 0;
-  const accountKeepingFee = Math.max(0, ongoingAccounts - 1) * 500;
-
-  const marginLendingFee = state.marginLending ? rate * 10 : 0;
-
-  const fixedOngoingFee = reviewMeetingFee + accountKeepingFee + marginLendingFee;
-
-  // Variable FUM component
+  // Variable / percentage-based FUM
   let variableFee = 0;
   let effectiveFumRate = 0;
-  if (state.ongoingModel === 'fixedVariable') {
+  if (state.ongoingModel === 'percentageBased') {
     const fum = Number(state.fum) || 0;
     const tiers = state.tiers || [];
     let remaining = fum;
@@ -107,7 +117,13 @@ export function calculateQuote(state) {
       variableFee += applyTo * (tier.rate / 100);
       remaining -= applyTo;
     }
-    effectiveFumRate = fum > 0 ? variableFee / fum : 0;
+    const minFee = Number(state.minimumAnnualFee) || 0;
+    variableFee = Math.max(variableFee, minFee);
+    if (state.hasAdditionalPlatformFee) {
+      const platformCount = Number(state.platformAccounts) || 1;
+      variableFee += Math.max(0, platformCount - 1) * (Number(state.additionalPlatformFee) || 500);
+    }
+    effectiveFumRate = (Number(state.fum) || 0) > 0 ? variableFee / (Number(state.fum) || 1) : 0;
   }
 
   const subscriptionAnnual = state.ongoingModel === 'subscription'
@@ -115,117 +131,113 @@ export function calculateQuote(state) {
     : 0;
 
   let totalOngoingExGst = 0;
-  if (state.ongoingModel === 'fixedOnly') {
-    totalOngoingExGst = fixedOngoingFee;
-  } else if (state.ongoingModel === 'fixedVariable') {
-    totalOngoingExGst = fixedOngoingFee + variableFee;
-  } else {
-    totalOngoingExGst = subscriptionAnnual;
+  if (hasOngoing) {
+    if (state.ongoingModel === 'fixedOnly') {
+      totalOngoingExGst = fixedOngoingFee;
+    } else if (state.ongoingModel === 'percentageBased') {
+      totalOngoingExGst = variableFee;
+    } else {
+      totalOngoingExGst = subscriptionAnnual;
+    }
   }
 
-  const totalOngoingRounded = roundToNearest100(totalOngoingExGst);
+  // Ongoing adjustments
+  const ongoingPremiumAuto = totalOngoingExGst * premiumRate;
+  const ongoingDiscountAuto = totalOngoingExGst * discountRate;
+  const ongoingPremium = state.premiumOngoingOverride ?? ongoingPremiumAuto;
+  const ongoingDiscount = state.discountOngoingOverride ?? ongoingDiscountAuto;
+
+  const totalOngoingRounded = hasOngoing
+    ? roundToNearest100(totalOngoingExGst + ongoingPremium - ongoingDiscount)
+    : 0;
   const ongoingGst = totalOngoingRounded * 0.1;
   const totalOngoingInclGst = totalOngoingRounded + ongoingGst;
   const monthlyOngoing = totalOngoingInclGst / 12;
 
-  // ── Step 5: Billing plan ────────────────────────────────────────────────────
+  // ── Billing plan ──────────────────────────────────────────────────────────
   const billingPlan = [
     { phase: '1 — Onboarding', description: '50% of SOA fee', amount: soaTotalInclGst / 2, when: 'On signing engagement letter', how: 'BPay' },
     { phase: '2 — SOA Delivery', description: '50% of SOA fee', amount: soaTotalInclGst / 2, when: 'On SOA presentation', how: 'Platform' },
     { phase: '3 — Implementation', description: 'Full implementation fee', amount: implTotal, when: 'On implementation', how: 'Platform' },
-    { phase: '4 — Ongoing Service', description: `Annual fee (quarterly)`, amount: totalOngoingInclGst / 4, when: 'Quarterly in arrears', how: 'Platform' },
+    { phase: '4 — Ongoing Service', description: 'Annual fee (quarterly)', amount: totalOngoingInclGst / 4, when: 'Quarterly in arrears', how: 'Platform' },
   ];
 
-  // ── Client paragraph ────────────────────────────────────────────────────────
-  const strategyListText = formatStrategyList(STRATEGIES, state.strategies);
+  // ── Client paragraph ──────────────────────────────────────────────────────
+  const allStrategies = [...STRATEGIES, ...ADD_ONS];
+  const allEnabled = { ...(state.strategies || {}), ...(state.addOns || {}) };
+  const strategyListText = formatStrategyList(allStrategies, allEnabled);
   const clientName = state.clientName?.trim() || 'Client';
-  const enabledStrategies = STRATEGIES.filter(s => state.strategies[s.id]);
-  const hasStrategies = enabledStrategies.length > 0;
+  const hasStrategies = allStrategies.some(s => allEnabled[s.id]);
   const totalHoursApprox = Math.round(totalBaseHours);
-  const hasModelling = scenarios > 1;
   const hasImpl = implTotal > 0;
-  const hasOngoing = totalOngoingInclGst > 0;
   const hasInspecie = inSpecieHours > 0;
   const hasInsuranceImpl = insuranceImplHours > 0;
 
   let clientParagraph = `Dear ${clientName},\n\n`;
   clientParagraph += `Thank you for the opportunity to outline the fees associated with providing you with comprehensive financial advice. `;
-  clientParagraph += `Your initial advice fee of ${formatCurrencyInline(soaTotalInclGst)} (including GST) covers ${reviewMeetings > 0 ? `${reviewMeetings > 1 ? reviewMeetings + ' meetings' : 'a meeting'} with your adviser, ` : ''}a comprehensive Statement of Advice`;
-
-  if (hasStrategies) {
-    clientParagraph += ` addressing ${strategyListText}`;
-  }
-  if (state.isCouple) {
-    clientParagraph += `, tailored to both your individual and joint financial objectives`;
-  }
+  clientParagraph += `Your initial advice fee of ${fmtCcy(soaTotalInclGst)} (including GST) covers a comprehensive Statement of Advice`;
+  if (hasStrategies) clientParagraph += ` addressing ${strategyListText}`;
+  if (state.isCouple) clientParagraph += `, tailored to both your individual and joint financial objectives`;
   clientParagraph += `. `;
-
-  clientParagraph += `This includes approximately ${totalHoursApprox} hour${totalHoursApprox !== 1 ? 's' : ''} of research, analysis, and preparation`;
-  if (hasModelling) {
-    clientParagraph += `, including ${scenarios} scenario analyses to support your decision-making,`;
+  if (totalHoursApprox > 0) {
+    clientParagraph += `This includes approximately ${totalHoursApprox} hour${totalHoursApprox !== 1 ? 's' : ''} of research, analysis, and preparation`;
+    if (scenarios > 1) clientParagraph += `, including ${scenarios} scenario analyses to support your decision-making,`;
+    clientParagraph += ` and a full compliance and quality review. `;
   }
-  clientParagraph += ` and a full compliance and quality review. `;
-
   if (hasImpl) {
-    clientParagraph += `\n\nA separate implementation fee of ${formatCurrencyInline(implTotal)} (including GST) covers the execution of the recommended strategies across ${investmentAccounts} account${investmentAccounts !== 1 ? 's' : ''}`;
+    clientParagraph += `\n\nA separate implementation fee of ${fmtCcy(implTotal)} (including GST) covers the execution of the recommended strategies across ${investmentAccounts} account${investmentAccounts !== 1 ? 's' : ''}`;
     if (hasInspecie) clientParagraph += `, including the transfer of existing assets`;
     if (hasInsuranceImpl) clientParagraph += ` and insurance application processing`;
     clientParagraph += `. `;
   }
-
-  if (hasOngoing) {
-    clientParagraph += `\n\nYour ongoing service fee of ${formatCurrencyInline(totalOngoingInclGst)} (including GST) per year provides ${reviewMeetings} review meeting${reviewMeetings !== 1 ? 's' : ''} annually, ongoing monitoring of your ${hasStrategies ? strategyListText : 'financial strategies'}. This equates to approximately ${formatCurrencyInline(Math.round(monthlyOngoing))} per month. `;
+  if (hasOngoing && totalOngoingInclGst > 0) {
+    clientParagraph += `\n\nYour ongoing service fee of ${fmtCcy(totalOngoingInclGst)} (including GST) per year provides ${reviewMeetings} review meeting${reviewMeetings !== 1 ? 's' : ''} annually`;
+    if (hasStrategies) clientParagraph += `, ongoing monitoring of your ${strategyListText}`;
+    clientParagraph += `. This equates to approximately ${fmtCcy(Math.round(monthlyOngoing))} per month. `;
   }
-
   clientParagraph += `\n\nWe believe this fee reflects the scope and complexity of the advice being provided and the value of a continuing professional relationship focused on helping you achieve your financial goals.`;
 
-  // Service summary bullets
-  const serviceSummaryItems = [];
-
-  const discoveryOn = state.serviceLines['discovery'];
+  // ── Service summary bullets ────────────────────────────────────────────────
+  const serviceSummaryItems: string[] = [];
+  const discoveryOn = state.coreTasks?.['discovery'] ?? true;
   const soaMeetings = (discoveryOn ? 1 : 0) + 1;
-  if (soaMeetings > 0) {
-    serviceSummaryItems.push(`${soaMeetings} meeting${soaMeetings > 1 ? 's' : ''} with your adviser (initial consultation and advice presentation)`);
-  }
+  serviceSummaryItems.push(`${soaMeetings} meeting${soaMeetings > 1 ? 's' : ''} with your adviser (initial consultation and advice presentation)`);
   if (hasStrategies) {
     serviceSummaryItems.push(`Comprehensive Statement of Advice covering ${strategyListText}`);
   } else {
     serviceSummaryItems.push(`Comprehensive Statement of Advice`);
   }
-  if (scenarios > 0) {
-    serviceSummaryItems.push(`Detailed financial modelling with ${scenarios} scenario ${scenarios > 1 ? 'analyses' : 'analysis'}`);
-  }
-  if (state.serviceLines['investmentResearch']) {
-    serviceSummaryItems.push(`Investment product research and risk profiling`);
-  }
-  if (totalHoursApprox > 0) {
-    serviceSummaryItems.push(`${totalHoursApprox} hours of research, analysis, and preparation`);
-  }
+  if (scenarios > 1) serviceSummaryItems.push(`Financial modelling with ${scenarios} scenario analyses`);
+  if (totalHoursApprox > 0) serviceSummaryItems.push(`${totalHoursApprox} hours of research, analysis, and preparation`);
   serviceSummaryItems.push(`Full compliance and quality review`);
-  if (investmentAccounts > 0) {
-    serviceSummaryItems.push(`Implementation across ${investmentAccounts} investment and superannuation account${investmentAccounts !== 1 ? 's' : ''}`);
-  }
-  if (reviewMeetings > 0) {
-    serviceSummaryItems.push(`${reviewMeetings} review meeting${reviewMeetings !== 1 ? 's' : ''} per year`);
-  }
-  if (hasStrategies) {
-    serviceSummaryItems.push(`Ongoing monitoring and adjustment of your financial strategies`);
-  }
+  if (investmentAccounts > 0) serviceSummaryItems.push(`Implementation across ${investmentAccounts} investment and superannuation account${investmentAccounts !== 1 ? 's' : ''}`);
+  if (hasOngoing && reviewMeetings > 0) serviceSummaryItems.push(`${reviewMeetings} review meeting${reviewMeetings !== 1 ? 's' : ''} per year`);
+  if (hasOngoing && hasStrategies) serviceSummaryItems.push(`Ongoing monitoring and adjustment of your financial strategies`);
 
   return {
-    // Service line details
+    // SOA line items
     lineItems,
-    strategyCount,
+    strategyItems,
+    addOnItems,
+    coreTaskItems,
+    reviewTaskItems,
+    annualTaskItems,
     totalBaseHours,
     baseFee,
 
     // Adjustments
-    complexityCount,
-    easeCount,
-    complexityRate,
-    easeRate,
-    complexityAmount,
-    easeAmount,
+    premiumCount,
+    discountCount,
+    premiumRate,
+    discountRate,
+    soaPremiumAuto,
+    soaDiscountAuto,
+    soaPremium,
+    soaDiscount,
+    ongoingPremiumAuto,
+    ongoingDiscountAuto,
+    ongoingPremium,
+    ongoingDiscount,
     adjustedFeeRounded,
     soaGst,
     soaTotalInclGst,
@@ -239,12 +251,12 @@ export function calculateQuote(state) {
     totalInitialFees,
 
     // Ongoing
-    totalReviewHours,
+    hasOngoing,
     costPerReview,
+    totalReviewHours,
     reviewMeetings,
-    accountKeepingFee,
-    marginLendingFee,
     fixedOngoingFee,
+    totalAnnualTaskFee,
     variableFee,
     effectiveFumRate,
     subscriptionAnnual,
@@ -253,6 +265,17 @@ export function calculateQuote(state) {
     totalOngoingInclGst,
     monthlyOngoing,
 
+    // Backward-compat aliases (for Step 5)
+    complexityCount: premiumCount,
+    easeCount: discountCount,
+    complexityRate: premiumRate,
+    easeRate: discountRate,
+    complexityAmount: soaPremium,
+    easeAmount: soaDiscount,
+    accountKeepingFee: 0,
+    marginLendingFee: 0,
+    strategyCount: STRATEGIES.filter(s => state.strategies?.[s.id]).length,
+
     // Output
     billingPlan,
     clientParagraph: state.clientParagraphOverride ?? clientParagraph,
@@ -260,7 +283,7 @@ export function calculateQuote(state) {
   };
 }
 
-function formatCurrencyInline(value) {
+function fmtCcy(value: number): string {
   const n = Math.round(Number(value) || 0);
   return '$' + n.toLocaleString('en-AU');
 }

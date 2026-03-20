@@ -4,8 +4,8 @@ import feequoteLogo from '../../assets/logos/feequote-light.svg';
 const STEPS = [
   { number: 1, label: 'Client Profile' },
   { number: 2, label: 'Scope of Advice' },
-  { number: 3, label: 'Adjustments' },
-  { number: 4, label: 'Ongoing Service' },
+  { number: 3, label: 'Ongoing Service' },
+  { number: 4, label: 'Adjustments' },
   { number: 5, label: 'Fee Summary' },
 ];
 

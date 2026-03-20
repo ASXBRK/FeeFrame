@@ -1,24 +1,7 @@
-import { SERVICE_LINES, STRATEGIES, COMPLEXITY_FACTORS, EASE_FACTORS } from './serviceLines.js';
+import { CORE_TASKS } from './serviceLines.js';
 
-// Build default service lines state
-const defaultServiceLines = {};
-SERVICE_LINES.forEach(line => {
-  if (line.inputType === 'toggle') {
-    defaultServiceLines[line.id] = line.defaultEnabled ?? false;
-  } else if (line.inputType === 'number') {
-    defaultServiceLines[line.id] = line.defaultValue ?? 0;
-  }
-  // auto types are derived from other state, no stored value needed
-});
-
-const defaultStrategies = {};
-STRATEGIES.forEach(s => { defaultStrategies[s.id] = false; });
-
-const defaultComplexityFactors = {};
-COMPLEXITY_FACTORS.forEach((_, i) => { defaultComplexityFactors[i] = false; });
-
-const defaultEaseFactors = {};
-EASE_FACTORS.forEach((_, i) => { defaultEaseFactors[i] = false; });
+const defaultCoreTasks: Record<string, boolean> = {};
+CORE_TASKS.forEach(t => { defaultCoreTasks[t.id] = t.defaultOn ?? false; });
 
 export const defaultQuoteState = {
   // Step 1: Client Profile
@@ -27,57 +10,68 @@ export const defaultQuoteState = {
   isCouple: false,
   lifeStage: 'accumulation',
   ageBracket: 'under40',
-  entityCount: 0,
+  entityCount: 1,
 
-  // Step 2: Scope of Advice
-  paraplanner: 'internal',    // 'internal' | 'external'
-  paraplannerFee: 0,          // external quoted fee ex GST
-  paraplannerBuffer: false,   // add 10% buffer to external fee
-  hourlyRate: 335,
-  serviceLines: defaultServiceLines,
+  // Step 2: Scope of Advice — paraplanner
+  paraplanner: 'internal',
+  paraplannerFee: 0,
+  paraplannerBuffer: false,
+
+  // Step 2: Role rates
+  adviserRate: 106,
+  paraplannerRate: 62,
+  adminRate: 40,
+
+  // Step 2: Scope selections
+  strategies: {} as Record<string, boolean>,
+  addOns: {} as Record<string, boolean>,
+  coreTasks: defaultCoreTasks,
   scenarios: 2,
-  strategies: defaultStrategies,
 
-  // Step 3: Adjustments
-  complexityFactors: defaultComplexityFactors,
-  easeFactors: defaultEaseFactors,
-  investmentAccounts: 2,
+  // Step 2: Hour overrides — key: "{itemId}.{role}" e.g. "super.adviser"
+  hourOverrides: {} as Record<string, number>,
+
+  // Step 2: Implementation fees
+  investmentAccounts: 0,
   inSpecieHours: 0,
   insuranceImplHours: 0,
   insuranceCommissionOffset: 0,
 
-  // Step 4: Ongoing Service
-  ongoingModel: 'fixedOnly', // 'fixedOnly' | 'fixedVariable' | 'subscription'
-  reviewMeetings: 1,
-  ongoingAccounts: 3,
-  marginLending: false,
-  fum: 500000,
+  // Step 3: Ongoing service
+  hasOngoing: true,
+  ongoingModel: 'fixedOnly', // 'fixedOnly' | 'percentageBased' | 'subscription'
+  reviewMeetings: 2,
+  reviewHourOverrides: {} as Record<string, number>,
+  annualTaskHourOverrides: {} as Record<string, number>,
+
+  // Percentage-based model
+  fum: 0,
   tiers: [
-    { from: 0, to: 250000, rate: 0.70 },
-    { from: 250001, to: 500000, rate: 0.45 },
-    { from: 500001, to: 1000000, rate: 0.40 },
-    { from: 1000001, to: 2000000, rate: 0.20 },
-    { from: 2000001, to: 4000000, rate: 0.10 },
-    { from: 4000001, to: null, rate: 0.00 },
+    { from: 0, to: 500000, rate: 1.1 },
+    { from: 500001, to: 1000000, rate: 0.88 },
+    { from: 1000001, to: null, rate: 0.66 },
   ],
-  monthlySubscription: 500,
+  minimumAnnualFee: 0,
+  hasAdditionalPlatformFee: false,
+  platformAccounts: 1,
+  additionalPlatformFee: 500,
 
-  // Review meeting hours (all editable)
-  reviewHours: {
-    updateXplan: 1.0,
-    prepareReport: 3.0,
-    admin: 0.5,
-    buffer: 0.5,
-    conductMeeting: 1.5,
-    fileNote: 0.5,
-    prepareROA: 1.5,
-    implementROA: 0.5,
-    fofaConsents: 1.0,
-  },
+  // Subscription model
+  monthlySubscription: 0,
+  includedReviews: 2,
+  additionalServicesRate: 0,
 
-  // Entity fee split (optional, up to 6 rows)
-  entities: [],
+  // Step 4: Adjustments — premium/discount factors
+  premiumFactors: {} as Record<number, boolean>,
+  discountFactors: {} as Record<number, boolean>,
+  premiumSoaOverride: null as number | null,
+  premiumOngoingOverride: null as number | null,
+  discountSoaOverride: null as number | null,
+  discountOngoingOverride: null as number | null,
+
+  // Entity fee split
+  entities: [] as { name: string; balance: number; onPlatform: boolean }[],
 
   // Step 5: client paragraph override (null = auto-generated)
-  clientParagraphOverride: null,
+  clientParagraphOverride: null as string | null,
 };
