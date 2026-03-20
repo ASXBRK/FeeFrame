@@ -33,13 +33,28 @@ export function calculateQuote(state: any) {
     .filter(a => state.addOns?.[a.id])
     .map(a => calcLineItemFee(a));
 
+  function calcCoreTaskFee(task: any, multiplier = 1) {
+    const overrides = state.hourOverrides || {};
+    const defaultAdv = isExternal ? task.externalAdviserHours : task.adviserHours;
+    const defaultPara = isExternal ? task.externalParaplannerHours : task.paraplannerHours;
+    const defaultAdm = isExternal ? task.externalAdminHours : task.adminHours;
+    const advHrs = (overrides[`${task.id}.adviser`] ?? defaultAdv) * multiplier;
+    const paraHrs = (overrides[`${task.id}.paraplanner`] ?? defaultPara) * multiplier;
+    const admHrs = (overrides[`${task.id}.admin`] ?? defaultAdm) * multiplier;
+    const fee = advHrs * adviserRate + paraHrs * paraplannerRate + admHrs * adminRate;
+    const totalHours = advHrs + paraHrs + admHrs;
+    return { ...task, adviserHoursUsed: advHrs, paraplannerHoursUsed: paraHrs, adminHoursUsed: admHrs, fee, totalHours, hours: totalHours };
+  }
+
   const coreTaskItems = CORE_TASKS.map(task => {
     const enabled = state.coreTasks?.[task.id] ?? task.defaultOn ?? false;
-    if (!enabled) return { ...task, fee: 0, totalHours: 0, hours: 0, adviserHoursUsed: 0, paraplannerHoursUsed: 0, adminHoursUsed: 0 };
+    if (!enabled || (isExternal && task.hideWhenExternal)) {
+      return { ...task, fee: 0, totalHours: 0, hours: 0, adviserHoursUsed: 0, paraplannerHoursUsed: 0, adminHoursUsed: 0 };
+    }
     let multiplier = 1;
     if (task.perEntity) multiplier = entityCount;
     if (task.perAdditionalScenario) multiplier = Math.max(0, scenarios - 1);
-    return calcLineItemFee(task, multiplier);
+    return calcCoreTaskFee(task, multiplier);
   });
 
   const lineItems = [...strategyItems, ...addOnItems, ...coreTaskItems];

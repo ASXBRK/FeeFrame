@@ -49,8 +49,19 @@ function reducer(state, action) {
         maxQuoteStep: Math.max(state.maxQuoteStep, action.step),
       };
 
-    case 'SET_QUOTE_FIELD':
+    case 'SET_QUOTE_FIELD': {
+      if (action.field === 'paraplanner') {
+        const coreTaskIds = ['discovery', 'engagementLetter', 'dataCollection', 'scenarioModelling'];
+        const cleanedOverrides = { ...state.quote.hourOverrides };
+        for (const id of coreTaskIds) {
+          delete cleanedOverrides[`${id}.adviser`];
+          delete cleanedOverrides[`${id}.paraplanner`];
+          delete cleanedOverrides[`${id}.admin`];
+        }
+        return { ...state, quote: { ...state.quote, [action.field]: action.value, hourOverrides: cleanedOverrides } };
+      }
       return { ...state, quote: { ...state.quote, [action.field]: action.value } };
+    }
 
     case 'SET_STRATEGY': {
       const strategies = { ...state.quote.strategies, [action.id]: action.enabled };

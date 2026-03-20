@@ -33,7 +33,12 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
 
   function getHour(item: any, role: string): number {
     const key = `${item.id}.${role}`;
-    return quote.hourOverrides?.[key] ?? item[`${role}Hours`];
+    if (quote.hourOverrides?.[key] !== undefined) return quote.hourOverrides[key];
+    if (isExternal) {
+      const extKey = `external${role.charAt(0).toUpperCase() + role.slice(1)}Hours`;
+      if (item[extKey] !== undefined) return item[extKey];
+    }
+    return item[`${role}Hours`];
   }
 
   return (
@@ -155,7 +160,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
             <p className="text-xs text-mid mt-0.5">Standard tasks included in every engagement.</p>
           </div>
           <div className="divide-y divide-light-border">
-            {CORE_TASKS.map(task => {
+            {CORE_TASKS.filter(task => !(isExternal && task.hideWhenExternal)).map(task => {
               const calcItem = calc.coreTaskItems.find(c => c.id === task.id);
               const fee = calcItem?.fee ?? 0;
               const enabled = quote.coreTasks?.[task.id] ?? task.defaultOn ?? false;

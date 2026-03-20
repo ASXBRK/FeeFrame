@@ -23,10 +23,10 @@ export const ADD_ONS = [
 
 // ── Core process tasks ─────────────────────────────────────────────────────────
 export const CORE_TASKS = [
-  { id: 'discovery', label: 'Discovery / Initial Meeting', shortLabel: 'initial consultation', adviserHours: 3.0, paraplannerHours: 1.0, adminHours: 1.0, defaultOn: true },
-  { id: 'engagementLetter', label: 'Engagement Letter', shortLabel: 'engagement letter', adviserHours: 1.0, paraplannerHours: 1.0, adminHours: 1.0, defaultOn: true },
-  { id: 'dataCollection', label: 'Data Collection', shortLabel: 'data collection', adviserHours: 1.0, paraplannerHours: 1.5, adminHours: 2.0, defaultOn: true, perEntity: true },
-  { id: 'scenarioModelling', label: 'Scenario Modelling', shortLabel: 'scenario modelling', adviserHours: 1.0, paraplannerHours: 2.5, adminHours: 0.5, defaultOn: true, perAdditionalScenario: true },
+  { id: 'discovery', label: 'Discovery / Initial Meeting', shortLabel: 'initial consultation', adviserHours: 3.0, paraplannerHours: 1.0, adminHours: 1.0, externalAdviserHours: 3.0, externalParaplannerHours: 0, externalAdminHours: 1.5, defaultOn: true },
+  { id: 'engagementLetter', label: 'Engagement Letter', shortLabel: 'engagement letter', adviserHours: 1.0, paraplannerHours: 1.0, adminHours: 1.0, externalAdviserHours: 1.0, externalParaplannerHours: 0, externalAdminHours: 1.5, defaultOn: true },
+  { id: 'dataCollection', label: 'Data Collection', shortLabel: 'data collection', adviserHours: 1.0, paraplannerHours: 1.5, adminHours: 2.0, externalAdviserHours: 1.0, externalParaplannerHours: 0, externalAdminHours: 3.0, defaultOn: true, perEntity: true },
+  { id: 'scenarioModelling', label: 'Scenario Modelling', shortLabel: 'scenario modelling', adviserHours: 1.0, paraplannerHours: 2.5, adminHours: 0.5, externalAdviserHours: 0, externalParaplannerHours: 0, externalAdminHours: 0, defaultOn: true, perAdditionalScenario: true, hideWhenExternal: true },
 ];
 
 // ── Per-review-meeting tasks (used in Step 3 ongoing) ─────────────────────────
