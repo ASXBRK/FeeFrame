@@ -2,14 +2,13 @@ import { useState } from 'react';
 import QuoteSidebar from './QuoteSidebar';
 import Step1ClientProfile from './Step1ClientProfile';
 import Step2ScopeOfAdvice from './Step2ScopeOfAdvice';
-import Step3Adjustments from './Step3Adjustments';
-import Step4OngoingService from './Step4OngoingService';
+import Step3OngoingService from './Step3OngoingService';
+import Step4Adjustments from './Step4Adjustments';
 import Step5Summary from './Step5Summary';
 import ConfirmModal from '../../components/shared/ConfirmModal';
 
 export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis }: { state: any; dispatch: any; onGoHome: () => void; onGoAnalysis: (fees: any) => void }) {
   const [showReset, setShowReset] = useState(false);
-  const [draftSaved, setDraftSaved] = useState(false);
 
   const { quoteStep, maxQuoteStep, quote } = state;
 
@@ -59,8 +58,8 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
         <main className="flex-1 overflow-auto px-4 sm:px-6 py-6 max-w-4xl w-full mx-auto">
           {quoteStep === 1 && <Step1ClientProfile {...sharedProps} />}
           {quoteStep === 2 && <Step2ScopeOfAdvice {...sharedProps} />}
-          {quoteStep === 3 && <Step3Adjustments {...sharedProps} />}
-          {quoteStep === 4 && <Step4OngoingService {...sharedProps} />}
+          {quoteStep === 3 && <Step3OngoingService {...sharedProps} />}
+          {quoteStep === 4 && <Step4Adjustments {...sharedProps} />}
           {quoteStep === 5 && (
             <Step5Summary
               {...sharedProps}

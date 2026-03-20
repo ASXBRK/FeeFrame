@@ -7,14 +7,12 @@ import FeeQuoteWizard from './modules/feequote/FeeQuoteWizard';
 import FeeAnalysis from './modules/feeanalysis/FeeAnalysis';
 import { defaultQuoteState } from './lib/quoteDefaults';
 import { defaultAnalysisState } from './lib/analysisDefaults';
-import { STRATEGIES } from './lib/serviceLines';
-
 // ── Types ──────────────────────────────────────────────────────────────────────
 type NavPage = 'landing' | 'about' | 'contact';
 type Page = NavPage | 'quote' | 'analysis';
 
 // ── State ──────────────────────────────────────────────────────────────────────
-const STATE_VERSION = 2; // bump to clear stale localStorage
+const STATE_VERSION = 3; // bumped for Phase 1 engine rebuild
 
 const initialState = {
   view: 'landing', // 'landing' | 'quote' | 'analysis'
@@ -54,34 +52,60 @@ function reducer(state, action) {
     case 'SET_QUOTE_FIELD':
       return { ...state, quote: { ...state.quote, [action.field]: action.value } };
 
-    case 'SET_SERVICE_LINE': {
-      const serviceLines = { ...state.quote.serviceLines, [action.id]: action.value };
-      return { ...state, quote: { ...state.quote, serviceLines } };
-    }
-
     case 'SET_STRATEGY': {
       const strategies = { ...state.quote.strategies, [action.id]: action.enabled };
-      const stratDef = STRATEGIES.find(s => s.id === action.id);
-      let serviceLines = { ...state.quote.serviceLines };
-      if (stratDef?.linkedServiceLine) {
-        serviceLines = { ...serviceLines, [stratDef.linkedServiceLine]: action.enabled };
-      }
-      return { ...state, quote: { ...state.quote, strategies, serviceLines } };
+      return { ...state, quote: { ...state.quote, strategies } };
     }
 
+    case 'SET_ADDON': {
+      const addOns = { ...state.quote.addOns, [action.id]: action.enabled };
+      return { ...state, quote: { ...state.quote, addOns } };
+    }
+
+    case 'SET_CORE_TASK': {
+      const coreTasks = { ...state.quote.coreTasks, [action.id]: action.enabled };
+      return { ...state, quote: { ...state.quote, coreTasks } };
+    }
+
+    case 'SET_HOUR_OVERRIDE': {
+      const hourOverrides = { ...state.quote.hourOverrides, [action.key]: action.value };
+      return { ...state, quote: { ...state.quote, hourOverrides } };
+    }
+
+    case 'SET_REVIEW_HOUR_OVERRIDE': {
+      const reviewHourOverrides = { ...state.quote.reviewHourOverrides, [action.key]: action.value };
+      return { ...state, quote: { ...state.quote, reviewHourOverrides } };
+    }
+
+    case 'SET_ANNUAL_TASK_HOUR_OVERRIDE': {
+      const annualTaskHourOverrides = { ...state.quote.annualTaskHourOverrides, [action.key]: action.value };
+      return { ...state, quote: { ...state.quote, annualTaskHourOverrides } };
+    }
+
+    case 'SET_PREMIUM_FACTOR': {
+      const premiumFactors = { ...state.quote.premiumFactors, [action.index]: action.value };
+      return { ...state, quote: { ...state.quote, premiumFactors } };
+    }
+
+    case 'SET_DISCOUNT_FACTOR': {
+      const discountFactors = { ...state.quote.discountFactors, [action.index]: action.value };
+      return { ...state, quote: { ...state.quote, discountFactors } };
+    }
+
+    // Legacy aliases kept for any surviving references
+    case 'SET_SERVICE_LINE':
+      return state;
     case 'SET_COMPLEXITY_FACTOR': {
-      const complexityFactors = { ...state.quote.complexityFactors, [action.index]: action.value };
-      return { ...state, quote: { ...state.quote, complexityFactors } };
+      const premiumFactors = { ...state.quote.premiumFactors, [action.index]: action.value };
+      return { ...state, quote: { ...state.quote, premiumFactors } };
     }
-
     case 'SET_EASE_FACTOR': {
-      const easeFactors = { ...state.quote.easeFactors, [action.index]: action.value };
-      return { ...state, quote: { ...state.quote, easeFactors } };
+      const discountFactors = { ...state.quote.discountFactors, [action.index]: action.value };
+      return { ...state, quote: { ...state.quote, discountFactors } };
     }
-
     case 'SET_REVIEW_HOUR': {
-      const reviewHours = { ...state.quote.reviewHours, [action.key]: action.value };
-      return { ...state, quote: { ...state.quote, reviewHours } };
+      const reviewHourOverrides = { ...state.quote.reviewHourOverrides, [action.key]: action.value };
+      return { ...state, quote: { ...state.quote, reviewHourOverrides } };
     }
 
     case 'SET_ENTITY': {
