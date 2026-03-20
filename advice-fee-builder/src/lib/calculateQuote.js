@@ -6,7 +6,8 @@ export function calculateQuote(state) {
   const paraplannerRate = Number(state.paraplannerRate) || 62;
   const adminRate = Number(state.adminRate) || 40;
   const isExternal = state.paraplanner === 'external';
-  const entityCount = Math.max(1, Number(state.entityCount) || 1);
+  const entityCount = Number(state.entityCount) || 0;
+  const totalEntities = (state.isCouple ? 2 : 1) + entityCount;
   const scenarios = Number(state.scenarios) || 0;
 
   function calcLineItemFee(item, multiplier = 1) {
@@ -46,7 +47,7 @@ export function calculateQuote(state) {
       return { ...task, fee: 0, totalHours: 0, hours: 0, adviserHoursUsed: 0, paraplannerHoursUsed: 0, adminHoursUsed: 0 };
     }
     let multiplier = 1;
-    if (task.perEntity) multiplier = entityCount;
+    if (task.perEntity) multiplier = totalEntities;
     if (task.perAdditionalScenario) multiplier = Math.max(0, scenarios - 1);
     return calcCoreTaskFee(task, multiplier);
   });
@@ -212,6 +213,7 @@ export function calculateQuote(state) {
   if (hasOngoing && hasStrategies) serviceSummaryItems.push(`Ongoing monitoring and adjustment of your financial strategies`);
 
   return {
+    totalEntities,
     lineItems, strategyItems, addOnItems, coreTaskItems, reviewTaskItems, annualTaskItems,
     totalBaseHours, baseFee,
     premiumCount, discountCount, premiumRate, discountRate,

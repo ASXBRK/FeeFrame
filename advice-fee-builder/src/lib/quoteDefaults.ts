@@ -10,7 +10,7 @@ export const defaultQuoteState = {
   isCouple: false,
   lifeStage: 'accumulation',
   ageBracket: 'under40',
-  entityCount: 1,
+  entityCount: 0,
 
   // Step 2: Scope of Advice — paraplanner
   paraplanner: 'internal',

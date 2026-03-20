@@ -172,7 +172,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-dark">{task.label}</div>
                       {task.perEntity && (
-                        <div className="text-xs text-mid mt-0.5">× {Math.max(1, Number(quote.entityCount) || 1)} entities</div>
+                        <div className="text-xs text-mid mt-0.5">× {calc.totalEntities} entities</div>
                       )}
                       {task.perAdditionalScenario && (
                         <div className="text-xs text-mid mt-0.5">
