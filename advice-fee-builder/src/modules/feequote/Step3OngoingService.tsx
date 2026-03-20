@@ -158,6 +158,7 @@ function FixedFeeModel({ quote, dispatch, calc }) {
           <div className="flex items-center gap-2">
             <input
               type="number" min={0} step={1}
+              onFocus={e => e.target.select()}
               value={quote.reviewMeetings}
               onChange={e => set('reviewMeetings', Math.max(0, parseInt(e.target.value) || 0))}
               className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
@@ -197,6 +198,7 @@ function FixedFeeModel({ quote, dispatch, calc }) {
                         {isEditing ? (
                           <input
                             type="number" min={0} step={0.5}
+                            onFocus={e => e.target.select()}
                             value={getReviewHour(task, role)}
                             onChange={e => setReviewOverride(task.id, role, parseFloat(e.target.value) || 0)}
                             className="w-16 rounded-input border border-teal px-1.5 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 float-right"
@@ -272,6 +274,7 @@ function FixedFeeModel({ quote, dispatch, calc }) {
                         {isEditing ? (
                           <input
                             type="number" min={0} step={0.5}
+                            onFocus={e => e.target.select()}
                             value={getAnnualHour(task, role)}
                             onChange={e => setAnnualOverride(task.id, role, parseFloat(e.target.value) || 0)}
                             className="w-16 rounded-input border border-teal px-1.5 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 float-right"
@@ -324,6 +327,7 @@ function PercentageModel({ quote, dispatch, calc, set }) {
           <span className="text-sm text-mid">$</span>
           <input
             type="number" min={0} step={10000}
+            onFocus={e => e.target.select()}
             value={quote.fum}
             onChange={e => set('fum', parseFloat(e.target.value) || 0)}
             className="w-40 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
@@ -356,6 +360,7 @@ function PercentageModel({ quote, dispatch, calc, set }) {
           <span className="text-sm text-mid">$</span>
           <input
             type="number" min={0} step={100}
+            onFocus={e => e.target.select()}
             value={quote.minimumAnnualFee ?? 0}
             onChange={e => set('minimumAnnualFee', parseFloat(e.target.value) || 0)}
             className="w-32 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
@@ -381,6 +386,7 @@ function PercentageModel({ quote, dispatch, calc, set }) {
               <label className="text-sm text-dark">Accounts</label>
               <input
                 type="number" min={1} step={1}
+                onFocus={e => e.target.select()}
                 value={quote.platformAccounts ?? 1}
                 onChange={e => set('platformAccounts', Math.max(1, parseInt(e.target.value) || 1))}
                 className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
@@ -391,6 +397,7 @@ function PercentageModel({ quote, dispatch, calc, set }) {
               <span className="text-sm text-mid">$</span>
               <input
                 type="number" min={0} step={50}
+                onFocus={e => e.target.select()}
                 value={quote.additionalPlatformFee ?? 500}
                 onChange={e => set('additionalPlatformFee', parseFloat(e.target.value) || 0)}
                 className="w-24 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
@@ -416,6 +423,7 @@ function SubscriptionModel({ quote, set, calc }) {
           <span className="text-sm text-mid">$</span>
           <input
             type="number" min={0} step={50}
+            onFocus={e => e.target.select()}
             value={quote.monthlySubscription}
             onChange={e => set('monthlySubscription', parseFloat(e.target.value) || 0)}
             className="w-28 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
@@ -431,6 +439,7 @@ function SubscriptionModel({ quote, set, calc }) {
         <div className="flex items-center gap-2">
           <input
             type="number" min={0} step={1}
+            onFocus={e => e.target.select()}
             value={quote.includedReviews ?? 2}
             onChange={e => set('includedReviews', Math.max(0, parseInt(e.target.value) || 0))}
             className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
@@ -451,6 +460,7 @@ function SubscriptionModel({ quote, set, calc }) {
           <span className="text-sm text-mid">$</span>
           <input
             type="number" min={0} step={10}
+            onFocus={e => e.target.select()}
             value={quote.additionalServicesRate ?? 0}
             onChange={e => set('additionalServicesRate', parseFloat(e.target.value) || 0)}
             className="w-28 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
@@ -499,6 +509,7 @@ function EntitySplit({ quote, dispatch, calc }) {
                   <td className="py-2 pr-2">
                     <input
                       type="number" min={0}
+                      onFocus={e => e.target.select()}
                       value={entity.balance}
                       onChange={e => dispatch({ type: 'SET_ENTITY', index: i, field: 'balance', value: parseFloat(e.target.value) || 0 })}
                       className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"

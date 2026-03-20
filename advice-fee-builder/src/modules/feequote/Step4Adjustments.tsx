@@ -185,6 +185,7 @@ function AdjustmentRow({ label, sign, autoValue, overrideValue, onOverride, onCl
             <span className={`text-sm font-medium ${colorClass}`}>{sign}$</span>
             <input
               type="number"
+              onFocus={e => e.target.select()}
               min={0}
               value={draft}
               onChange={e => setDraft(e.target.value)}

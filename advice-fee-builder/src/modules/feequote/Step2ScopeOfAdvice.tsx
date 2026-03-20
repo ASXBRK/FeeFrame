@@ -64,7 +64,9 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                   <span className="text-sm text-mid">$</span>
                   <input
                     type="number" min={0} step={50}
+                    onFocus={e => e.target.select()}
                     value={quote.paraplannerFee}
+                    onFocus={e => e.target.select()}
                     onChange={e => set('paraplannerFee', parseFloat(e.target.value) || 0)}
                     className="w-36 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                   />
@@ -103,6 +105,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                   <span className={`text-sm ${disabled ? 'text-light-border' : 'text-mid'}`}>$</span>
                   <input
                     type="number" min={0} step={1}
+                    onFocus={e => e.target.select()}
                     value={quote[field] ?? def}
                     onChange={e => set(field, parseFloat(e.target.value) || 0)}
                     disabled={disabled}
@@ -172,6 +175,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                           First scenario free · additional:&nbsp;
                           <input
                             type="number" min={1} step={1}
+                            onFocus={e => e.target.select()}
                             value={quote.scenarios}
                             onChange={e => dispatch({ type: 'SET_QUOTE_FIELD', field: 'scenarios', value: Math.max(1, parseInt(e.target.value) || 1) })}
                             className="w-12 rounded-input border border-light-border px-1.5 py-0.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 inline-block"
@@ -262,6 +266,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                 <span className="text-sm text-mid">-$</span>
                 <input
                   type="number" min={0}
+                  onFocus={e => e.target.select()}
                   value={quote.insuranceCommissionOffset}
                   onChange={e => set('insuranceCommissionOffset', parseFloat(e.target.value) || 0)}
                   className="w-24 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-right"
@@ -394,6 +399,7 @@ function HourEditor({ item, getHour, onHourOverride, isExternal }) {
             </span>
             <input
               type="number"
+              onFocus={e => e.target.select()}
               min={0}
               step={0.5}
               value={getHour(item, role)}
@@ -420,6 +426,7 @@ function ImplRow({ label, helper, value, inputLabel, onChange, fee }) {
       <div className="flex items-center gap-2">
         <input
           type="number" min={0} step={1}
+          onFocus={e => e.target.select()}
           value={value}
           onChange={e => onChange(parseFloat(e.target.value) || 0)}
           className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
