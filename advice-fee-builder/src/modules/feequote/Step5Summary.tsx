@@ -3,10 +3,11 @@ import { calculateQuote } from '../../lib/calculateQuote';
 import { formatCurrency, formatHours } from '../../lib/formatters';
 import NumInput from '../../components/shared/NumInput';
 import ConfirmModal from '../../components/shared/ConfirmModal';
+import Tooltip from '../../components/shared/Tooltip';
 
 const TABS = ['Summary', 'Detailed Breakdown', 'Profitability', 'Client Output'];
 
-export default function Step5Summary({ quote, dispatch, onBack, onReset }) {
+export default function Step5Summary({ quote, dispatch, onBack, onReset, onNavigate }) {
   const [tab, setTab] = useState(0);
   const [copied, setCopied] = useState(false);
   const [editingParagraph, setEditingParagraph] = useState(false);
@@ -37,7 +38,10 @@ export default function Step5Summary({ quote, dispatch, onBack, onReset }) {
       <div className="bg-white rounded-card border border-light-border px-5 py-3.5 mb-4 print:hidden">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-dark whitespace-nowrap">Profit Margin</label>
+            <label className="text-sm font-medium text-dark whitespace-nowrap flex items-center gap-1.5">
+              Profit Margin
+              <Tooltip text="Industry benchmark: the average Australian advice practice operates at a 21% profit margin (Adviser Ratings 2024). Top-performing practices (top 10%) achieve 47% profit margins before tax (Iress Advisely Index 2024)." />
+            </label>
             <div className="flex items-center gap-1">
               <NumInput
                 value={quote.profitMarginPercent ?? 0}
@@ -83,7 +87,7 @@ export default function Step5Summary({ quote, dispatch, onBack, onReset }) {
         {tab === 0 && <Tab1Summary calc={calc} quote={quote} />}
       </div>
       {tab === 1 && <Tab2Breakdown calc={calc} quote={quote} />}
-      {tab === 2 && <Tab3Profitability calc={calc} quote={quote} />}
+      {tab === 2 && <Tab3Profitability calc={calc} quote={quote} onNavigate={onNavigate} />}
       {tab === 3 && (
         <Tab4ClientOutput
           calc={calc}
@@ -159,6 +163,49 @@ function Tab1Summary({ calc, quote }) {
         )}
       </div>
 
+      {/* Incentivised fees — only shown when incentives are active */}
+      {calc.hasIncentives && (
+        <div className="bg-white rounded-card border-l-4 border-l-green-500 border border-light-border p-5">
+          <h3 className="text-xs font-semibold font-heading text-mid uppercase tracking-wide mb-4">With Ongoing Arrangement</h3>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between items-center">
+              <span className="text-mid">SOA Preparation Fee (incl GST)</span>
+              <span className="flex items-center gap-2">
+                {calc.soaDiscountPercent > 0 && (
+                  <span className="text-gray-400 line-through">{formatCurrency(calc.soaTotalInclGst)}</span>
+                )}
+                <span className="font-semibold text-gray-900">
+                  {calc.soaDiscountPercent === 100 ? 'Waived' : formatCurrency(calc.soaIncentivisedFee)}
+                </span>
+                {calc.soaDiscountPercent > 0 && (
+                  <span className="text-green-600 text-xs">-{calc.soaDiscountPercent}%</span>
+                )}
+              </span>
+            </div>
+            {calc.implTotal > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-mid">Implementation Fees (incl GST)</span>
+                <span className="flex items-center gap-2">
+                  {calc.waiveImplementation && (
+                    <span className="text-gray-400 line-through">{formatCurrency(calc.implTotal)}</span>
+                  )}
+                  <span className="font-semibold text-gray-900">
+                    {calc.waiveImplementation ? 'Waived' : formatCurrency(calc.implTotal)}
+                  </span>
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between items-center border-t-2 border-light-border pt-3 mt-2">
+              <span className="text-base font-bold text-dark">Total Initial Fees</span>
+              <span className="flex items-center gap-3">
+                <span className="text-base font-bold text-teal">{formatCurrency(calc.totalIncentivisedInitialFees)}</span>
+                <span className="text-green-600 text-sm font-medium">saving {formatCurrency(calc.totalIncentiveSaving)}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Ongoing fees */}
       <div className="bg-white rounded-card border border-light-border p-5">
         <h3 className="text-xs font-semibold font-heading text-mid uppercase tracking-wide mb-4">Ongoing Fees</h3>
@@ -204,7 +251,10 @@ function Tab1Summary({ calc, quote }) {
               {calc.billingPlan.map((row, i) => (
                 <tr key={i}>
                   <td className="py-2.5 text-dark font-medium pr-3">{row.phase}</td>
-                  <td className="py-2.5 text-mid pr-3 hidden sm:table-cell">{row.description}</td>
+                  <td className="py-2.5 pr-3 hidden sm:table-cell">
+                    <span className="text-mid">{row.description}</span>
+                    {row.note && <span className="block text-xs text-green-600 mt-0.5">{row.note}</span>}
+                  </td>
                   <td className="py-2.5 text-right font-semibold text-dark">{formatCurrency(row.amount)}</td>
                   <td className="py-2.5 text-mid pl-3 hidden md:table-cell">{row.when}</td>
                   <td className="py-2.5 text-mid pl-3 hidden md:table-cell">{row.how}</td>
@@ -441,12 +491,6 @@ function Tab2Breakdown({ calc, quote }) {
 }
 
 // ── Tab 3: Profitability ───────────────────────────────────────────────────────
-function rateColor(rate: number) {
-  if (rate >= 300) return { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', label: 'Healthy' };
-  if (rate >= 200) return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', label: 'Marginal' };
-  return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', label: 'Below cost' };
-}
-
 function StackedBar({ segments }: { segments: { label: string; value: number; color: string }[] }) {
   const total = segments.reduce((s, seg) => s + Math.max(0, seg.value), 0);
   if (total === 0) return <div className="h-6 bg-gray-100 rounded" />;
@@ -478,81 +522,169 @@ function StackedBar({ segments }: { segments: { label: string; value: number; co
   );
 }
 
-function Tab3Profitability({ calc, quote }) {
-  const soaRate = calc.impliedHourlyRateSoa;
-  const ongoingRate = calc.impliedHourlyRateOngoing;
-  const soaColors = rateColor(soaRate);
-  const ongoingColors = calc.hasOngoing ? rateColor(ongoingRate) : null;
+function Tab3Profitability({ calc, quote, onNavigate }) {
+  const isFixedOngoing = calc.hasOngoing && quote.ongoingModel === 'fixedOnly';
+  const isPercentageOngoing = calc.hasOngoing && quote.ongoingModel === 'percentageBased';
+  const isSubscriptionOngoing = calc.hasOngoing && quote.ongoingModel === 'subscription';
+  const hasOngoingCostData = isFixedOngoing;
 
-  const soaTotalCost = calc.soaAdviserCost + calc.soaParaplannerCost + calc.soaAdminCost + calc.soaExternalFee;
+  const soaDirectCost = calc.soaAdviserCost + calc.soaParaplannerCost + calc.soaAdminCost;
+  const soaTotalCost = soaDirectCost + calc.soaExternalFee;
   const soaMarginValue = calc.adjustedFeeRounded - soaTotalCost;
 
   const ongoingTotalCost = calc.ongoingAdviserCost + calc.ongoingParaplannerCost + calc.ongoingAdminCost;
   const ongoingMarginValue = calc.totalOngoingRounded - ongoingTotalCost;
 
-  const totalFees = calc.adjustedFeeRounded + (calc.hasOngoing ? calc.totalOngoingRounded : 0);
-  const totalMargin = soaMarginValue + (calc.hasOngoing ? ongoingMarginValue : 0);
-  const totalMarginPct = totalFees > 0 ? (totalMargin / totalFees) * 100 : 0;
+  const firstYearMargin = calc.soaMarginAmount + (hasOngoingCostData ? calc.ongoingMarginAmount : 0);
 
-  // Warnings
-  const warnings: { type: 'red' | 'amber' | 'info'; msg: string }[] = [];
-  if (calc.soaMarginPercent === 0) {
-    warnings.push({ type: 'info', msg: 'No profit margin has been applied. Consider adding a margin above.' });
+  // Smart callouts
+  const callouts: string[] = [];
+
+  if (soaDirectCost > 0 && calc.soaParaplannerCost / soaDirectCost > 0.45) {
+    const pct = Math.round((calc.soaParaplannerCost / soaDirectCost) * 100);
+    callouts.push(`Paraplanning represents ${pct}% of your SOA cost (${formatCurrency(calc.soaParaplannerCost)} of ${formatCurrency(soaDirectCost)}). If paraplanning hours or rates feel high, consider whether some tasks could shift to admin or be streamlined with templates and technology.`);
   }
-  if (soaRate > 0 && soaRate < 250) {
-    warnings.push({ type: 'amber', msg: `Your implied hourly rate of ${formatCurrency(soaRate)}/hr (initial SOA) is below $250. You may be undercharging for this engagement.` });
+
+  if (soaTotalCost > 0 && calc.soaAdviserCost / soaTotalCost > 0.55) {
+    const pct = Math.round((calc.soaAdviserCost / soaTotalCost) * 100);
+    callouts.push(`Adviser time represents ${pct}% of your SOA cost (${formatCurrency(calc.soaAdviserCost)} of ${formatCurrency(soaTotalCost)}). If adviser hours feel high, consider whether some preparation or research tasks could be delegated to paraplanning or admin staff.`);
   }
-  if (calc.hasOngoing && ongoingRate > 0 && ongoingRate < 250) {
-    warnings.push({ type: 'amber', msg: `Your implied hourly rate of ${formatCurrency(ongoingRate)}/hr (ongoing) is below $250. You may be undercharging for ongoing service.` });
+
+  if (soaTotalCost > 0 && calc.soaAdminCost / soaTotalCost > 0.30) {
+    const pct = Math.round((calc.soaAdminCost / soaTotalCost) * 100);
+    callouts.push(`Administration represents ${pct}% of your SOA cost (${formatCurrency(calc.soaAdminCost)} of ${formatCurrency(soaTotalCost)}). High admin costs may indicate manual processes that could benefit from automation or systemisation.`);
   }
-  if (soaMarginValue < 0) {
-    warnings.push({ type: 'red', msg: `Your total SOA cost of ${formatCurrency(soaTotalCost)} exceeds the SOA fee of ${formatCurrency(calc.adjustedFeeRounded)}. You are losing ${formatCurrency(-soaMarginValue)} on this engagement.` });
+
+  if (calc.adjustedFeeRounded > 0 && calc.adjustedFeeRounded < 2000) {
+    callouts.push(`This engagement quotes below $2,000. The average initial advice fee in Australia is $2,500–$4,400 (Investment Trends 2024). Consider whether the scope fully reflects the work required.`);
   }
-  if (calc.hasOngoing && ongoingMarginValue < 0) {
-    warnings.push({ type: 'red', msg: `Your total ongoing cost of ${formatCurrency(ongoingTotalCost)} exceeds the ongoing fee of ${formatCurrency(calc.totalOngoingRounded)}. You are losing ${formatCurrency(-ongoingMarginValue)} p.a. on this client.` });
+
+  if (calc.adjustedFeeRounded > 10000) {
+    callouts.push(`This engagement quotes above $10,000. While complex engagements can justify this fee, ensure the client understands the value being delivered. Only 6–7% of advisers price above this level (Adviser Ratings 2025).`);
   }
+
+  if (soaTotalCost > 0 && calc.soaExternalFee / soaTotalCost > 0.50) {
+    const pct = Math.round((calc.soaExternalFee / soaTotalCost) * 100);
+    callouts.push(`Your external paraplanner fee represents ${pct}% of the total SOA cost. Consider whether an internal paraplanner or AI-assisted paraplanning could reduce this.`);
+  }
+
+  if (calc.soaMarginPercent > 0 && calc.soaMarginPercent < 15) {
+    callouts.push(`Your margin of ${calc.soaMarginPercent}% is below the industry average of 21%. While this may be appropriate for some engagements, sustained low margins can impact business viability.`);
+  }
+
+  const firstYearMarginWithIncentives = calc.hasIncentives
+    ? firstYearMargin - calc.totalIncentiveSaving
+    : firstYearMargin;
 
   return (
     <div className="space-y-5">
-      {/* Key metric cards */}
-      <div className={`grid gap-4 ${calc.hasOngoing ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
-        {/* SOA implied rate */}
-        <div className={`rounded-card border p-4 ${soaColors.bg} ${soaColors.border}`}>
-          <div className="text-xs font-semibold font-heading uppercase tracking-wide text-mid mb-1">Implied Rate — Initial SOA</div>
-          <div className={`text-2xl font-bold font-heading ${soaColors.text}`}>
-            {soaRate > 0 ? `${formatCurrency(soaRate)}/hr` : '—'}
+      {/* Zero margin info */}
+      {calc.soaMarginPercent === 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
+          <div className="flex gap-3">
+            <span className="text-amber-500 flex-shrink-0 mt-0.5">⚠</span>
+            <div className="text-sm text-amber-800">
+              <span className="font-semibold">No profit margin applied.</span> Your quoted fees currently reflect cost only. Use the margin input above to add your target profitability.
+            </div>
           </div>
-          <div className="text-xs text-mid mt-1">
-            {formatCurrency(calc.adjustedFeeRounded)} fee ÷ {calc.totalBaseHours.toFixed(1)} hrs
+        </div>
+      )}
+
+      {/* Incentives impact callout */}
+      {calc.hasIncentives && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
+          <div className="flex gap-3">
+            <span className="text-amber-500 flex-shrink-0 mt-0.5">⚠</span>
+            <div className="text-sm text-amber-800 space-y-1">
+              <div className="font-semibold">Client incentives applied</div>
+              {calc.soaDiscountPercent > 0 && (
+                <div>SOA discount ({calc.soaDiscountPercent}%): -{formatCurrency(calc.soaDiscountAmount)}</div>
+              )}
+              {calc.waiveImplementation && calc.implTotal > 0 && (
+                <div>Implementation waiver: -{formatCurrency(calc.implTotal)}</div>
+              )}
+              <div className="font-medium pt-1">
+                Total first-year margin impact: -{formatCurrency(calc.totalIncentiveSaving)}
+              </div>
+              <div>
+                Your first-year margin with incentives: <span className="font-semibold">{formatCurrency(firstYearMarginWithIncentives)}</span>
+                <span className="text-amber-600"> (was {formatCurrency(firstYearMargin)} without incentives)</span>
+              </div>
+            </div>
           </div>
-          <div className={`text-xs font-semibold mt-1 ${soaColors.text}`}>{soaColors.label}</div>
+        </div>
+      )}
+
+      {/* Metric cards */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        {/* Card 1: SOA cost → fee */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">SOA Cost → Fee</div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-gray-500">{formatCurrency(calc.soaCostBeforeMargin)}</span>
+            <span className="text-gray-300">→</span>
+            <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.adjustedFeeRounded)}</span>
+          </div>
+          <div className="text-sm text-gray-500 mt-1.5">
+            Margin:{' '}
+            <span className={calc.soaMarginAmount > 0 ? 'font-semibold text-green-600' : 'text-gray-400'}>
+              {formatCurrency(calc.soaMarginAmount)}
+            </span>
+            {' '}
+            <span className="text-gray-400">({calc.soaMarginPercent}%)</span>
+          </div>
         </div>
 
-        {/* Ongoing implied rate */}
-        {calc.hasOngoing && ongoingColors && (
-          <div className={`rounded-card border p-4 ${ongoingColors.bg} ${ongoingColors.border}`}>
-            <div className="text-xs font-semibold font-heading uppercase tracking-wide text-mid mb-1">Implied Rate — Ongoing</div>
-            <div className={`text-2xl font-bold font-heading ${ongoingColors.text}`}>
-              {ongoingRate > 0 ? `${formatCurrency(ongoingRate)}/hr` : '—'}
-            </div>
-            <div className="text-xs text-mid mt-1">
-              {formatCurrency(calc.totalOngoingRounded)} fee ÷ {calc.totalOngoingHours.toFixed(1)} hrs
-            </div>
-            <div className={`text-xs font-semibold mt-1 ${ongoingColors.text}`}>{ongoingColors.label}</div>
-          </div>
-        )}
+        {/* Card 2: Ongoing cost → fee */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Ongoing Cost → Fee</div>
+          {!calc.hasOngoing ? (
+            <div className="text-sm text-gray-400">No ongoing fee</div>
+          ) : hasOngoingCostData ? (
+            <>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-gray-500">{formatCurrency(calc.ongoingCostBeforeMargin)}</span>
+                <span className="text-gray-300">→</span>
+                <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.totalOngoingRounded)}</span>
+                <span className="text-sm text-gray-400">/yr</span>
+              </div>
+              <div className="text-sm text-gray-500 mt-1.5">
+                Margin:{' '}
+                <span className={calc.ongoingMarginAmount > 0 ? 'font-semibold text-green-600' : 'text-gray-400'}>
+                  {formatCurrency(calc.ongoingMarginAmount)}
+                </span>
+                {' '}
+                <span className="text-gray-400">({calc.ongoingMarginPercent}%)</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-gray-400">—</span>
+                <span className="text-gray-300">→</span>
+                <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.totalOngoingRounded)}</span>
+                <span className="text-sm text-gray-400">/yr</span>
+              </div>
+              <div className="text-sm text-gray-400 mt-1.5">N/A — no cost data</div>
+            </>
+          )}
+        </div>
 
-        {/* Total margin */}
-        <div className={`rounded-card border p-4 ${totalMargin >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-          <div className="text-xs font-semibold font-heading uppercase tracking-wide text-mid mb-1">Total Margin</div>
-          <div className={`text-2xl font-bold font-heading ${totalMargin >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-            {formatCurrency(totalMargin)}
+        {/* Card 3: Total first year profit */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Total First Year</div>
+          <div className={`text-2xl font-bold ${firstYearMargin > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+            {formatCurrency(firstYearMargin)}
           </div>
-          <div className="text-xs text-mid mt-1">{totalMarginPct.toFixed(1)}% of total fees</div>
+          {(isPercentageOngoing || isSubscriptionOngoing) ? (
+            <div className="text-sm text-gray-400 mt-1">SOA margin only — ongoing cost data not available</div>
+          ) : (
+            <div className="text-sm text-gray-400 mt-1">Combined first year profit</div>
+          )}
         </div>
       </div>
 
-      {/* Cost breakdown charts */}
+      {/* SOA cost breakdown */}
       <div className="bg-white rounded-card border border-light-border p-5 space-y-5">
         <h3 className="text-base font-bold font-heading text-dark">Cost Breakdown</h3>
 
@@ -566,7 +698,8 @@ function Tab3Profitability({ calc, quote }) {
           ]} />
         </div>
 
-        {calc.hasOngoing && calc.totalOngoingHours > 0 && (
+        {/* Fixed ongoing cost breakdown */}
+        {isFixedOngoing && calc.totalOngoingHours > 0 && (
           <div>
             <div className="text-sm font-medium text-dark mb-2">Ongoing (annual)</div>
             <StackedBar segments={[
@@ -577,35 +710,68 @@ function Tab3Profitability({ calc, quote }) {
             ]} />
           </div>
         )}
+
+        {/* Percentage-based ongoing — no cost breakdown */}
+        {isPercentageOngoing && (
+          <div className="border-t border-light-border pt-4">
+            <div className="text-sm font-medium text-dark mb-2">Ongoing (percentage-based)</div>
+            <div className="text-sm text-mid space-y-1">
+              <div>
+                <span className="text-dark font-medium">Percentage-based fee: {formatCurrency(calc.totalOngoingRounded)} p.a.</span>
+                {' '}Based on {formatCurrency(Number(quote.fum) || 0)} FUM across {(quote.tiers || []).length} tier{(quote.tiers || []).length !== 1 ? 's' : ''}.
+                {' '}Effective rate: {(calc.effectiveFumRate * 100).toFixed(2)}%
+              </div>
+              <p className="text-xs text-mid mt-2">
+                For detailed profitability analysis of percentage-based arrangements,{' '}
+                <button
+                  onClick={() => onNavigate('feeanalysis')}
+                  className="text-teal underline hover:no-underline font-medium"
+                >
+                  use FeeAnalysis
+                </button>
+                {' '}with your actual time-tracking data to understand your true cost to serve.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Subscription ongoing — no cost breakdown */}
+        {isSubscriptionOngoing && (
+          <div className="border-t border-light-border pt-4">
+            <div className="text-sm font-medium text-dark mb-2">Ongoing (subscription)</div>
+            <div className="text-sm text-mid space-y-1">
+              <div>
+                <span className="text-dark font-medium">Subscription fee: {formatCurrency(calc.totalOngoingRounded)} p.a.</span>
+                {' '}({formatCurrency(Number(quote.monthlySubscription) || 0)}/month). Includes {quote.reviewMeetings || 0} review meeting{(quote.reviewMeetings || 0) !== 1 ? 's' : ''} per year.
+              </div>
+              <p className="text-xs text-mid mt-2">
+                For detailed profitability analysis of subscription arrangements,{' '}
+                <button
+                  onClick={() => onNavigate('feeanalysis')}
+                  className="text-teal underline hover:no-underline font-medium"
+                >
+                  use FeeAnalysis
+                </button>
+                {' '}with your actual time-tracking data to understand your true cost to serve.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Warnings */}
-      {warnings.length > 0 && (
-        <div className="space-y-2">
-          {warnings.map((w, i) => (
-            <div
-              key={i}
-              className={`rounded-card border px-4 py-3 text-sm ${
-                w.type === 'red'
-                  ? 'bg-red-50 border-red-200 text-red-700'
-                  : w.type === 'amber'
-                  ? 'bg-amber-50 border-amber-200 text-amber-700'
-                  : 'bg-blue-50 border-blue-200 text-blue-700'
-              }`}
-            >
-              {w.msg}
+      {/* Smart callouts */}
+      {callouts.length > 0 && (
+        <div className="space-y-3">
+          {callouts.map((msg, i) => (
+            <div key={i} className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-4">
+              <div className="flex gap-3">
+                <span className="text-gray-400 flex-shrink-0 mt-0.5">💡</span>
+                <p className="text-sm text-gray-700">{msg}</p>
+              </div>
             </div>
           ))}
         </div>
       )}
-
-      {/* Industry benchmarks placeholder */}
-      <div className="rounded-card border border-dashed border-gray-300 px-5 py-8 text-center">
-        <div className="text-sm font-semibold text-mid mb-1">Industry Benchmarks — Coming Soon</div>
-        <div className="text-xs text-mid">
-          Compare your fees against industry averages from Adviser Ratings, Investment Trends, and other sources.
-        </div>
-      </div>
     </div>
   );
 }

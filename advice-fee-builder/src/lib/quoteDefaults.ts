@@ -47,6 +47,8 @@ export const defaultQuoteState = {
   hasOngoing: true,
   ongoingModel: 'fixedOnly', // 'fixedOnly' | 'percentageBased' | 'subscription'
   reviewMeetings: 2,
+  soaDiscountPercent: 0,   // 0, 25, 50, 75, or 100
+  waiveImplementation: false,
   reviewHourOverrides: {} as Record<string, number>,
   annualTaskHourOverrides: {} as Record<string, number>,
 
@@ -79,7 +81,7 @@ export const defaultQuoteState = {
   entities: [] as { name: string; balance: number; onPlatform: boolean }[],
 
   // Step 5: profit margin
-  profitMarginPercent: 0,
+  profitMarginPercent: 20,
   applyMarginToOngoing: true,
 
   // Step 5: client paragraph override (null = auto-generated)

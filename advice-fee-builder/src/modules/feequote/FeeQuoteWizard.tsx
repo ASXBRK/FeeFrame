@@ -66,6 +66,7 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
               {...sharedProps}
               onGoAnalysis={onGoAnalysis}
               onReset={() => setShowReset(true)}
+              onNavigate={onNavigate}
             />
           )}
         </main>

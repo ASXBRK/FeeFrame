@@ -1,14 +1,15 @@
-export default function Toggle({ checked, onChange, label, id }) {
+export default function Toggle({ checked, onChange, label, id, disabled = false }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
       id={id}
-      onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 ${
-        checked ? 'bg-teal' : 'bg-light-border'
-      }`}
+      disabled={disabled}
+      onClick={() => !disabled && onChange(!checked)}
+      className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 ${
+        disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
+      } ${checked ? 'bg-teal' : 'bg-light-border'}`}
     >
       {label && <span className="sr-only">{label}</span>}
       <span

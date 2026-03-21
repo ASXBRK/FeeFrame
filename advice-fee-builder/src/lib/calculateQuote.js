@@ -1,4 +1,4 @@
-import { STRATEGIES, ADD_ONS, CORE_TASKS, REVIEW_TASKS, ANNUAL_TASKS, PREMIUM_FACTORS, DISCOUNT_FACTORS, getPremiumRate, getDiscountRate, formatStrategyList } from './serviceLines.js';
+import { STRATEGIES, ADD_ONS, CORE_TASKS, REVIEW_TASKS, ANNUAL_TASKS, PREMIUM_FACTORS, DISCOUNT_FACTORS, getPremiumRate, getEngagementDiscountRate, formatStrategyList } from './serviceLines.js';
 import { roundToNearest100 } from './formatters.js';
 
 export function calculateQuote(state) {
@@ -87,13 +87,24 @@ export function calculateQuote(state) {
   const soaExternalFee = isExternal ? effectiveParaplannerFee : 0;
 
   const premiumCount = PREMIUM_FACTORS.filter((_, i) => state.premiumFactors?.[i]).length;
-  const discountCount = DISCOUNT_FACTORS.filter((_, i) => state.discountFactors?.[i]).length;
   const premiumRate = getPremiumRate(premiumCount);
-  const discountRate = getDiscountRate(discountCount);
-
   const soaPremiumAuto = baseFee * premiumRate;
-  const soaDiscountAuto = baseFee * discountRate;
   const soaPremium = state.premiumSoaOverride ?? soaPremiumAuto;
+
+  // Engagement factor discount
+  const engagementDiscountCount = DISCOUNT_FACTORS.filter((_, i) => state.discountFactors?.[i]).length;
+  const engagementDiscountRate = getEngagementDiscountRate(engagementDiscountCount);
+
+  // Relationship discount
+  const relationshipDiscountRate = state.relationshipDiscountEnabled
+    ? Math.min((Number(state.relationshipDiscountPercent) || 0) / 100, 0.50)
+    : 0;
+
+  // Combined discount rate, capped at 50%
+  const totalDiscountRate = Math.min(engagementDiscountRate + relationshipDiscountRate, 0.50);
+  const discountCapApplied = engagementDiscountRate + relationshipDiscountRate > 0.50;
+
+  const soaDiscountAuto = baseFee * totalDiscountRate;
   const soaDiscount = state.discountSoaOverride ?? soaDiscountAuto;
 
   // Apply margin AFTER adjustments, BEFORE rounding/GST
@@ -182,17 +193,17 @@ export function calculateQuote(state) {
   }
 
   const ongoingPremiumAuto = totalOngoingExGst * premiumRate;
-  const ongoingDiscountAuto = totalOngoingExGst * discountRate;
+  const ongoingDiscountAuto = totalOngoingExGst * totalDiscountRate;
   const ongoingPremium = state.premiumOngoingOverride ?? ongoingPremiumAuto;
   const ongoingDiscount = state.discountOngoingOverride ?? ongoingDiscountAuto;
 
   const ongoingCommissionOffset = Number(state.ongoingInsuranceCommissionOffset) || 0;
 
   const ongoingCostBeforeMargin = Math.max(0, totalOngoingExGst + ongoingPremium - ongoingDiscount - ongoingCommissionOffset);
-  const ongoingMarginAmount = hasOngoing && applyMarginToOngoing
+  const ongoingMarginAmount = hasOngoing && applyMarginToOngoing && state.ongoingModel === 'fixedOnly'
     ? ongoingCostBeforeMargin * (marginPercent / 100)
     : 0;
-  const ongoingMarginPercent = hasOngoing && applyMarginToOngoing ? marginPercent : 0;
+  const ongoingMarginPercent = hasOngoing && applyMarginToOngoing && state.ongoingModel === 'fixedOnly' ? marginPercent : 0;
 
   const totalOngoingRounded = hasOngoing
     ? roundToNearest100(ongoingCostBeforeMargin + ongoingMarginAmount)
@@ -204,11 +215,29 @@ export function calculateQuote(state) {
   const impliedHourlyRateSoa = totalBaseHours > 0 ? adjustedFeeRounded / totalBaseHours : 0;
   const impliedHourlyRateOngoing = totalOngoingHours > 0 ? totalOngoingRounded / totalOngoingHours : 0;
 
+  // ── Client incentives ─────────────────────────────────────────────────────
+  const soaDiscountPercent = Number(state.soaDiscountPercent) || 0;
+  const soaDiscountAmount = soaTotalInclGst * (soaDiscountPercent / 100);
+  const soaIncentivisedFee = soaTotalInclGst - soaDiscountAmount;
+  const waiveImplementation = !!state.waiveImplementation;
+  const implIncentivisedFee = waiveImplementation ? 0 : implTotal;
+  const totalIncentivisedInitialFees = soaIncentivisedFee + implIncentivisedFee;
+  const totalIncentiveSaving = soaDiscountAmount + (waiveImplementation ? implTotal : 0);
+  const hasIncentives = soaDiscountPercent > 0 || waiveImplementation;
+
+  // ── Billing plan ──────────────────────────────────────────────────────────
+  const soaPhaseAmount = hasIncentives ? soaIncentivisedFee / 2 : soaTotalInclGst / 2;
+  const soaPhaseNote = hasIncentives && soaDiscountPercent > 0
+    ? `Discounted from ${fmtCcy(soaTotalInclGst / 2)} — subject to ongoing agreement`
+    : undefined;
+  const implPhaseNote = waiveImplementation && implTotal > 0
+    ? `Waived — subject to ongoing agreement`
+    : undefined;
   const billingPlan = [
-    { phase: '1 — Onboarding', description: '50% of SOA fee', amount: soaTotalInclGst / 2, when: 'On signing engagement letter', how: 'BPay' },
-    { phase: '2 — SOA Delivery', description: '50% of SOA fee', amount: soaTotalInclGst / 2, when: 'On SOA presentation', how: 'Platform' },
-    { phase: '3 — Implementation', description: 'Full implementation fee', amount: implTotal, when: 'On implementation', how: 'Platform' },
-    { phase: '4 — Ongoing Service', description: 'Annual fee (quarterly)', amount: totalOngoingInclGst / 4, when: 'Quarterly in arrears', how: 'Platform' },
+    { phase: '1 — Onboarding', description: '50% of SOA fee', amount: soaPhaseAmount, when: 'On signing engagement letter', how: 'BPay', note: soaPhaseNote },
+    { phase: '2 — SOA Delivery', description: '50% of SOA fee', amount: soaPhaseAmount, when: 'On SOA presentation', how: 'Platform', note: soaPhaseNote },
+    { phase: '3 — Implementation', description: waiveImplementation && implTotal > 0 ? 'Implementation fee waived' : 'Full implementation fee', amount: implIncentivisedFee, when: 'On implementation', how: 'Platform', note: implPhaseNote },
+    { phase: '4 — Ongoing Service', description: 'Annual fee (quarterly)', amount: totalOngoingInclGst / 4, when: 'Quarterly in arrears', how: 'Platform', note: undefined },
   ];
 
   const allStrategies = [...STRATEGIES, ...ADD_ONS];
@@ -267,7 +296,8 @@ export function calculateQuote(state) {
     totalBaseHours, baseFee,
     soaAdviserCost, soaParaplannerCost, soaAdminCost, soaExternalFee,
     ongoingAdviserCost, ongoingParaplannerCost, ongoingAdminCost,
-    premiumCount, discountCount, premiumRate, discountRate,
+    premiumCount, premiumRate,
+    engagementDiscountCount, engagementDiscountRate, relationshipDiscountRate, totalDiscountRate, discountCapApplied,
     soaPremiumAuto, soaDiscountAuto, soaPremium, soaDiscount,
     ongoingPremiumAuto, ongoingDiscountAuto, ongoingPremium, ongoingDiscount,
     soaCostBeforeMargin, soaMarginAmount, soaMarginPercent: marginPercent,
@@ -280,11 +310,15 @@ export function calculateQuote(state) {
     totalOngoingRounded, ongoingGst, totalOngoingInclGst, monthlyOngoing,
     impliedHourlyRateSoa, impliedHourlyRateOngoing,
     // Backward-compat
-    complexityCount: premiumCount, easeCount: discountCount,
-    complexityRate: premiumRate, easeRate: discountRate,
+    complexityCount: premiumCount, easeCount: engagementDiscountCount,
+    complexityRate: premiumRate, easeRate: totalDiscountRate,
     complexityAmount: soaPremium, easeAmount: soaDiscount,
+    discountCount: engagementDiscountCount, discountRate: totalDiscountRate,
     accountKeepingFee: 0, marginLendingFee: 0,
     strategyCount: STRATEGIES.filter(s => state.strategies?.[s.id]).length,
+    soaDiscountPercent, soaDiscountAmount, soaIncentivisedFee,
+    waiveImplementation, implIncentivisedFee,
+    totalIncentivisedInitialFees, totalIncentiveSaving, hasIncentives,
     billingPlan,
     clientParagraph: state.clientParagraphOverride ?? clientParagraph,
     serviceSummaryItems,

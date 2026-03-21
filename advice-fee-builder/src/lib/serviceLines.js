@@ -33,20 +33,20 @@ export const CORE_TASKS = [
 
 // ── Per-review-meeting tasks (used in Step 3 ongoing) ─────────────────────────
 export const REVIEW_TASKS = [
-  { id: 'prepareReport', label: 'Prepare report / presentation', adviserHours: 0.5, paraplannerHours: 1.5, adminHours: 0.5 },
-  { id: 'adminCor', label: 'Admin — correspondence', adviserHours: 0, paraplannerHours: 0, adminHours: 0.5 },
-  { id: 'conductMeeting', label: 'Conduct review meeting', adviserHours: 1.0, paraplannerHours: 0, adminHours: 0 },
-  { id: 'fileNote', label: 'File note', adviserHours: 0.5, paraplannerHours: 0, adminHours: 0 },
-  { id: 'adviceAdjustments', label: 'Advice adjustments', adviserHours: 0.5, paraplannerHours: 1.0, adminHours: 0 },
-  { id: 'implementation', label: 'Implementation', adviserHours: 0, paraplannerHours: 0.5, adminHours: 0.5 },
-  { id: 'compliancePaperwork', label: 'Compliance paperwork', adviserHours: 0, paraplannerHours: 0.5, adminHours: 0.5 },
+  { id: 'prepareReport', label: 'Prepare report / presentation', adviserHours: 1.0, paraplannerHours: 3.0, adminHours: 1.0 },
+  { id: 'adminCor', label: 'Admin — correspondence', adviserHours: 0, paraplannerHours: 0, adminHours: 1.5 },
+  { id: 'conductMeeting', label: 'Conduct review meeting', adviserHours: 1.5, paraplannerHours: 0, adminHours: 0 },
+  { id: 'fileNote', label: 'File note', adviserHours: 0.5, paraplannerHours: 0.5, adminHours: 0 },
+  { id: 'adviceAdjustments', label: 'Advice adjustments', adviserHours: 1.0, paraplannerHours: 2.0, adminHours: 0.5 },
+  { id: 'implementation', label: 'Implementation', adviserHours: 0, paraplannerHours: 1.0, adminHours: 1.0 },
+  { id: 'compliancePaperwork', label: 'Compliance paperwork', adviserHours: 0, paraplannerHours: 1.0, adminHours: 1.0 },
 ];
 
 // ── Annual tasks (fixed per year regardless of meeting count) ──────────────────
 export const ANNUAL_TASKS = [
-  { id: 'ongoingMonitoring', label: 'Ongoing monitoring', adviserHours: 1.0, paraplannerHours: 2.0, adminHours: 0 },
-  { id: 'adHocQueries', label: 'Ad-hoc client queries', adviserHours: 1.0, paraplannerHours: 0, adminHours: 0.5 },
-  { id: 'accountAdmin', label: 'Account administration', adviserHours: 0, paraplannerHours: 0, adminHours: 1.0 },
+  { id: 'ongoingMonitoring', label: 'Ongoing monitoring', adviserHours: 2.0, paraplannerHours: 4.0, adminHours: 1.0 },
+  { id: 'adHocQueries', label: 'Ad-hoc client queries', adviserHours: 2.0, paraplannerHours: 0.5, adminHours: 1.0 },
+  { id: 'accountAdmin', label: 'Account administration', adviserHours: 0, paraplannerHours: 0.5, adminHours: 2.0 },
 ];
 
 // ── Premium factors (replaces COMPLEXITY_FACTORS) ─────────────────────────────
@@ -64,10 +64,8 @@ export const PREMIUM_FACTORS = [
   { label: 'Hands-on client', description: 'Clients who want involvement in every detail, frequent updates, and extensive meeting time consume significantly more adviser capacity than standard engagements.' },
 ];
 
-// ── Discount factors (replaces EASE_FACTORS) ──────────────────────────────────
+// ── Discount factors ───────────────────────────────────────────────────────────
 export const DISCOUNT_FACTORS = [
-  { label: 'Existing relationship', description: 'Familiarity with the client circumstances, existing data on file, and an established relationship reduce discovery and onboarding time significantly.' },
-  { label: 'Referral', description: 'Referred clients — whether from existing clients, professional networks, staff, or friends and family — typically arrive with higher trust and clearer expectations, reducing rapport-building time.' },
   { label: 'Delegator', description: 'Clients who trust the adviser judgement require fewer options, shorter meetings, and less back-and-forth before accepting recommendations.' },
   { label: 'Responsive client', description: 'Clients who listen, respond promptly, provide documents on time, and follow through on actions reduce the overall engagement effort.' },
   { label: 'Motivated', description: 'Motivated clients who actively participate in the planning process, do their homework, and stay focused make the advice process more efficient.' },
@@ -76,26 +74,21 @@ export const DISCOUNT_FACTORS = [
   { label: 'Well-organised records', description: 'Clients who arrive with complete, accurate, and well-organised financial records significantly reduce data collection and verification time.' },
 ];
 
-// ── Banding functions ──────────────────────────────────────────────────────────
+// ── Rate functions ─────────────────────────────────────────────────────────────
 export function getPremiumRate(count) {
-  if (count === 0) return 0;
-  if (count <= 2) return 0.05;
-  if (count <= 4) return 0.10;
-  if (count <= 6) return 0.15;
-  if (count <= 8) return 0.20;
-  return 0.25;
+  // 3% per factor, capped at 33% (11 factors × 3%)
+  return Math.min(count * 0.03, 0.33);
 }
 
-export function getDiscountRate(count) {
-  if (count === 0) return 0;
-  if (count <= 2) return 0.05;
-  if (count <= 4) return 0.10;
-  return 0.15;
+export function getEngagementDiscountRate(count) {
+  // 2.5% per factor, capped at 15% (6 factors × 2.5%)
+  return Math.min(count * 0.025, 0.15);
 }
 
 // Backward-compat aliases
 export const getComplexityPremiumRate = getPremiumRate;
-export const getEaseDiscountRate = getDiscountRate;
+export const getDiscountRate = getEngagementDiscountRate;
+export const getEaseDiscountRate = getEngagementDiscountRate;
 export const COMPLEXITY_FACTORS = PREMIUM_FACTORS.map(f => f.label);
 export const EASE_FACTORS = DISCOUNT_FACTORS.map(f => f.label);
 // Stub so old imports don't crash
