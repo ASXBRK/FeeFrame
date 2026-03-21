@@ -769,31 +769,27 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
 
       {/* FeeAnalysis CTA — percentage/subscription models only */}
       {showCtaCard && (
-        <div className="bg-white border border-gray-200 border-l-4 border-l-teal-500 rounded-xl p-6 mt-2">
-          <div className="flex items-start gap-4">
-            <img src={feeanalysisLogo} alt="FeeAnalysis" className="h-8 flex-shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-sm font-semibold text-gray-900 mb-1">
-                Want to know if this arrangement is profitable?
-              </h4>
-              <p className="text-sm text-gray-500 mb-4">
-                FeeAnalysis lets you input your actual time data against fee arrangements to check your real margins. Your quote data will be pre-filled.
-              </p>
-              <button
-                onClick={handleGoToFeeAnalysis}
-                className="bg-teal hover:opacity-90 text-white font-medium py-2 px-5 rounded-lg transition-opacity text-sm"
-              >
-                Analyse in FeeAnalysis →
-              </button>
-            </div>
-          </div>
+        <div className="bg-white border border-gray-200 border-l-4 border-l-teal-500 rounded-xl p-6 mt-6">
+          <img src={feeanalysisLogo} alt="FeeAnalysis" className="h-8 mb-4" />
+          <h4 className="text-sm font-semibold text-gray-900 mb-1">
+            Want to know if this arrangement is profitable?
+          </h4>
+          <p className="text-sm text-gray-500 mb-4">
+            FeeAnalysis lets you input your actual time data against fee arrangements to check your real margins. Your quote data will be pre-filled.
+          </p>
+          <button
+            onClick={handleGoToFeeAnalysis}
+            className="bg-teal hover:opacity-90 text-white font-medium py-2 px-5 rounded-lg transition-opacity text-sm"
+          >
+            Analyse in FeeAnalysis →
+          </button>
         </div>
       )}
 
       {/* Attribution */}
       <div className="flex items-center justify-center gap-2 mt-8 mb-4">
+        <span className="text-xs text-gray-400">Powered by</span>
         <img src={feeanalysisLogo} alt="FeeAnalysis" className="h-4 opacity-40" />
-        <span className="text-xs text-gray-400">Powered by FeeAnalysis</span>
       </div>
     </div>
   );
