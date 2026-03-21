@@ -4,10 +4,11 @@ import { formatCurrency, formatHours } from '../../lib/formatters';
 import NumInput from '../../components/shared/NumInput';
 import ConfirmModal from '../../components/shared/ConfirmModal';
 import Tooltip from '../../components/shared/Tooltip';
+import feeanalysisLogo from '../../assets/logos/feeanalysis-light.svg';
 
 const TABS = ['Summary', 'Detailed Breakdown', 'Profitability', 'Client Output'];
 
-export default function Step5Summary({ quote, dispatch, onBack, onReset, onNavigate }) {
+export default function Step5Summary({ quote, dispatch, onBack, onReset, onNavigate, onGoAnalysis }) {
   const [tab, setTab] = useState(0);
   const [copied, setCopied] = useState(false);
   const [editingParagraph, setEditingParagraph] = useState(false);
@@ -90,7 +91,7 @@ export default function Step5Summary({ quote, dispatch, onBack, onReset, onNavig
         {tab === 0 && <Tab1Summary calc={calc} quote={quote} />}
       </div>
       {tab === 1 && <Tab2Breakdown calc={calc} quote={quote} />}
-      {tab === 2 && <Tab3Profitability calc={calc} quote={quote} onNavigate={onNavigate} />}
+      {tab === 2 && <Tab3Profitability calc={calc} quote={quote} onNavigate={onNavigate} onGoAnalysis={onGoAnalysis} />}
       {tab === 3 && (
         <Tab4ClientOutput
           calc={calc}
@@ -525,7 +526,7 @@ function StackedBar({ segments }: { segments: { label: string; value: number; co
   );
 }
 
-function Tab3Profitability({ calc, quote, onNavigate }) {
+function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
   const isFixedOngoing = calc.hasOngoing && quote.ongoingModel === 'fixedOnly';
   const isPercentageOngoing = calc.hasOngoing && quote.ongoingModel === 'percentageBased';
   const isSubscriptionOngoing = calc.hasOngoing && quote.ongoingModel === 'subscription';
@@ -578,6 +579,20 @@ function Tab3Profitability({ calc, quote, onNavigate }) {
   const firstYearMarginWithIncentives = calc.hasIncentives
     ? firstYearMargin - calc.totalIncentiveSaving
     : firstYearMargin;
+
+  const showCtaCard = isPercentageOngoing || isSubscriptionOngoing;
+
+  function handleGoToFeeAnalysis() {
+    if (onGoAnalysis) {
+      onGoAnalysis({
+        soaFeeExGst: calc.adjustedFeeRounded,
+        implFeeExGst: calc.implTotal > 0 ? calc.implTotal / 1.1 : 0,
+        ongoingFeeExGst: calc.totalOngoingRounded,
+      });
+    } else {
+      onNavigate('feeanalysis');
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -718,22 +733,10 @@ function Tab3Profitability({ calc, quote, onNavigate }) {
         {isPercentageOngoing && (
           <div className="border-t border-light-border pt-4">
             <div className="text-sm font-medium text-dark mb-2">Ongoing (percentage-based)</div>
-            <div className="text-sm text-mid space-y-1">
-              <div>
-                <span className="text-dark font-medium">Percentage-based fee: {formatCurrency(calc.totalOngoingRounded)} p.a.</span>
-                {' '}Based on {formatCurrency(Number(quote.fum) || 0)} FUM across {(quote.tiers || []).length} tier{(quote.tiers || []).length !== 1 ? 's' : ''}.
-                {' '}Effective rate: {(calc.effectiveFumRate * 100).toFixed(2)}%
-              </div>
-              <p className="text-xs text-mid mt-2">
-                For detailed profitability analysis of percentage-based arrangements,{' '}
-                <button
-                  onClick={() => onNavigate('feeanalysis')}
-                  className="text-teal underline hover:no-underline font-medium"
-                >
-                  use FeeAnalysis
-                </button>
-                {' '}with your actual time-tracking data to understand your true cost to serve.
-              </p>
+            <div className="text-sm text-mid">
+              <span className="text-dark font-medium">Percentage-based fee: {formatCurrency(calc.totalOngoingRounded)} p.a.</span>
+              {' '}Based on {formatCurrency(Number(quote.fum) || 0)} FUM across {(quote.tiers || []).length} tier{(quote.tiers || []).length !== 1 ? 's' : ''}.
+              {' '}Effective rate: {(calc.effectiveFumRate * 100).toFixed(2)}%
             </div>
           </div>
         )}
@@ -742,21 +745,9 @@ function Tab3Profitability({ calc, quote, onNavigate }) {
         {isSubscriptionOngoing && (
           <div className="border-t border-light-border pt-4">
             <div className="text-sm font-medium text-dark mb-2">Ongoing (subscription)</div>
-            <div className="text-sm text-mid space-y-1">
-              <div>
-                <span className="text-dark font-medium">Subscription fee: {formatCurrency(calc.totalOngoingRounded)} p.a.</span>
-                {' '}({formatCurrency(Number(quote.monthlySubscription) || 0)}/month). Includes {quote.reviewMeetings || 0} review meeting{(quote.reviewMeetings || 0) !== 1 ? 's' : ''} per year.
-              </div>
-              <p className="text-xs text-mid mt-2">
-                For detailed profitability analysis of subscription arrangements,{' '}
-                <button
-                  onClick={() => onNavigate('feeanalysis')}
-                  className="text-teal underline hover:no-underline font-medium"
-                >
-                  use FeeAnalysis
-                </button>
-                {' '}with your actual time-tracking data to understand your true cost to serve.
-              </p>
+            <div className="text-sm text-mid">
+              <span className="text-dark font-medium">Subscription fee: {formatCurrency(calc.totalOngoingRounded)} p.a.</span>
+              {' '}({formatCurrency(Number(quote.monthlySubscription) || 0)}/month). Includes {quote.reviewMeetings || 0} review meeting{(quote.reviewMeetings || 0) !== 1 ? 's' : ''} per year.
             </div>
           </div>
         )}
@@ -775,6 +766,35 @@ function Tab3Profitability({ calc, quote, onNavigate }) {
           ))}
         </div>
       )}
+
+      {/* FeeAnalysis CTA — percentage/subscription models only */}
+      {showCtaCard && (
+        <div className="bg-white border border-gray-200 border-l-4 border-l-teal-500 rounded-xl p-6 mt-2">
+          <div className="flex items-start gap-4">
+            <img src={feeanalysisLogo} alt="FeeAnalysis" className="h-8 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 mb-1">
+                Want to know if this arrangement is profitable?
+              </h4>
+              <p className="text-sm text-gray-500 mb-4">
+                FeeAnalysis lets you input your actual time data against fee arrangements to check your real margins. Your quote data will be pre-filled.
+              </p>
+              <button
+                onClick={handleGoToFeeAnalysis}
+                className="bg-teal hover:opacity-90 text-white font-medium py-2 px-5 rounded-lg transition-opacity text-sm"
+              >
+                Analyse in FeeAnalysis →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Attribution */}
+      <div className="flex items-center justify-center gap-2 mt-8 mb-4">
+        <img src={feeanalysisLogo} alt="FeeAnalysis" className="h-4 opacity-40" />
+        <span className="text-xs text-gray-400">Powered by FeeAnalysis</span>
+      </div>
     </div>
   );
 }
