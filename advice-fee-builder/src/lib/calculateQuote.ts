@@ -17,24 +17,42 @@ export function calculateQuote(state: any) {
   const applyMarginToOngoing = state.applyMarginToOngoing !== false;
 
   // ── Helper: calc fee for one line item ────────────────────────────────────
-  function calcLineItemFee(item: any, multiplier = 1) {
+  // quantity multiplies the total fee/hours (hours per unit stay the same for editing)
+  function calcLineItemFee(item: any, multiplier = 1, quantity = 1) {
     const overrides = state.hourOverrides || {};
     const advHrs = (overrides[`${item.id}.adviser`] ?? item.adviserHours) * multiplier;
     const paraHrs = isExternal ? 0 : (overrides[`${item.id}.paraplanner`] ?? item.paraplannerHours) * multiplier;
     const admHrs = (overrides[`${item.id}.admin`] ?? item.adminHours) * multiplier;
-    const fee = advHrs * adviserRate + paraHrs * paraplannerRate + admHrs * adminRate;
-    const totalHours = advHrs + paraHrs + admHrs;
-    return { ...item, adviserHoursUsed: advHrs, paraplannerHoursUsed: paraHrs, adminHoursUsed: admHrs, fee, totalHours, hours: totalHours };
+    const feePerUnit = advHrs * adviserRate + paraHrs * paraplannerRate + admHrs * adminRate;
+    const fee = feePerUnit * quantity;
+    const totalHours = (advHrs + paraHrs + admHrs) * quantity;
+    return {
+      ...item,
+      quantity,
+      feePerUnit,
+      adviserHoursUsed: advHrs * quantity,
+      paraplannerHoursUsed: paraHrs * quantity,
+      adminHoursUsed: admHrs * quantity,
+      fee,
+      totalHours,
+      hours: totalHours,
+    };
   }
 
   // ── Step 2: SOA line items ─────────────────────────────────────────────────
   const strategyItems = STRATEGIES
     .filter(s => state.strategies?.[s.id])
-    .map(s => calcLineItemFee(s));
+    .map(s => {
+      const quantity = Math.max(1, Number(state.strategyQuantities?.[s.id]) || 1);
+      return calcLineItemFee(s, 1, quantity);
+    });
 
   const addOnItems = ADD_ONS
     .filter(a => state.addOns?.[a.id])
-    .map(a => calcLineItemFee(a));
+    .map(a => {
+      const quantity = Math.max(1, Number(state.addOnQuantities?.[a.id]) || 1);
+      return calcLineItemFee(a, 1, quantity);
+    });
 
   function calcCoreTaskFee(task: any, multiplier = 1) {
     const overrides = state.hourOverrides || {};

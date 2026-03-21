@@ -27,6 +27,8 @@ export const defaultQuoteState = {
   addOns: {} as Record<string, boolean>,
   coreTasks: defaultCoreTasks,
   scenarios: 0,
+  strategyQuantities: {} as Record<string, number>,
+  addOnQuantities: {} as Record<string, number>,
 
   // Step 2: Hour overrides — key: "{itemId}.{role}" e.g. "super.adviser"
   hourOverrides: {} as Record<string, number>,

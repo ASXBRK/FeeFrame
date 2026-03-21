@@ -65,12 +65,26 @@ function reducer(state, action) {
 
     case 'SET_STRATEGY': {
       const strategies = { ...state.quote.strategies, [action.id]: action.enabled };
-      return { ...state, quote: { ...state.quote, strategies } };
+      const strategyQuantities = { ...(state.quote.strategyQuantities || {}) };
+      if (!action.enabled) delete strategyQuantities[action.id];
+      return { ...state, quote: { ...state.quote, strategies, strategyQuantities } };
     }
 
     case 'SET_ADDON': {
       const addOns = { ...state.quote.addOns, [action.id]: action.enabled };
-      return { ...state, quote: { ...state.quote, addOns } };
+      const addOnQuantities = { ...(state.quote.addOnQuantities || {}) };
+      if (!action.enabled) delete addOnQuantities[action.id];
+      return { ...state, quote: { ...state.quote, addOns, addOnQuantities } };
+    }
+
+    case 'SET_STRATEGY_QUANTITY': {
+      const strategyQuantities = { ...(state.quote.strategyQuantities || {}), [action.id]: Math.min(10, Math.max(1, action.quantity)) };
+      return { ...state, quote: { ...state.quote, strategyQuantities } };
+    }
+
+    case 'SET_ADDON_QUANTITY': {
+      const addOnQuantities = { ...(state.quote.addOnQuantities || {}), [action.id]: Math.min(10, Math.max(1, action.quantity)) };
+      return { ...state, quote: { ...state.quote, addOnQuantities } };
     }
 
     case 'SET_CORE_TASK': {

@@ -125,6 +125,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
         <ScopeSection
           heading="Strategies in Scope"
           subheading="Select the advice areas in scope for this engagement."
+          tooltipText="If an advice area includes multiple distinct strategies (e.g. Superannuation may cover contributions, consolidation, and spouse splitting separately), increase the quantity to reflect the additional work."
           items={STRATEGIES}
           enabledMap={quote.strategies || {}}
           onToggle={(id, v) => dispatch({ type: 'SET_STRATEGY', id, enabled: v })}
@@ -134,6 +135,8 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
           onHourOverride={setHourOverride}
           isExternal={isExternal}
           calcItems={calc.strategyItems}
+          quantityMap={quote.strategyQuantities || {}}
+          onQuantityChange={(id, qty) => dispatch({ type: 'SET_STRATEGY_QUANTITY', id, quantity: qty })}
         />
 
         {/* Section D: Add-ons */}
@@ -149,6 +152,8 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
           onHourOverride={setHourOverride}
           isExternal={isExternal}
           calcItems={calc.addOnItems}
+          quantityMap={quote.addOnQuantities || {}}
+          onQuantityChange={(id, qty) => dispatch({ type: 'SET_ADDON_QUANTITY', id, quantity: qty })}
         />
 
         {/* Section E: Core Process Tasks */}
@@ -324,11 +329,14 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
 }
 
 // ── ScopeSection (strategies + add-ons share same UX) ─────────────────────────
-function ScopeSection({ heading, subheading, items, enabledMap, onToggle, expandedIds, onToggleExpand, getHour, onHourOverride, isExternal, calcItems }) {
+function ScopeSection({ heading, subheading, tooltipText = null, items, enabledMap, onToggle, expandedIds, onToggleExpand, getHour, onHourOverride, isExternal, calcItems, quantityMap = {}, onQuantityChange = null }) {
   return (
     <div className="bg-white rounded-card border border-light-border overflow-hidden">
       <div className="px-5 py-4 border-b border-light-border">
-        <h3 className="text-base font-bold font-heading text-dark">{heading}</h3>
+        <div className="flex items-center gap-1.5">
+          <h3 className="text-base font-bold font-heading text-dark">{heading}</h3>
+          {tooltipText && <Tooltip text={tooltipText} />}
+        </div>
         <p className="text-xs text-mid mt-0.5">{subheading}</p>
       </div>
       <div className="p-5">
@@ -338,18 +346,41 @@ function ScopeSection({ heading, subheading, items, enabledMap, onToggle, expand
             const isExpanded = expandedIds.has(item.id);
             const calcItem = calcItems?.find(c => c.id === item.id);
             const fee = enabled ? (calcItem?.fee ?? 0) : 0;
+            const quantity = enabled ? (quantityMap[item.id] ?? 1) : 1;
 
             return (
               <div key={item.id} className={`rounded-input border transition-colors ${enabled ? 'border-teal bg-teal-subtle' : 'border-light-border bg-white'}`}>
-                <div className="px-4 py-3 flex items-center gap-3">
+                <div className="px-4 py-3 flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={enabled}
                     onChange={e => onToggle(item.id, e.target.checked)}
                     className="w-4 h-4 rounded border-light-border text-teal focus:ring-teal flex-shrink-0"
                   />
-                  <span className={`text-sm flex-1 ${enabled ? 'font-medium text-dark' : 'text-dark'}`}>{item.label}</span>
-                  <span className={`text-sm font-medium ${enabled ? 'text-teal' : 'text-light-border'}`}>
+                  <span className={`text-sm flex-1 min-w-0 ${enabled ? 'font-medium text-dark' : 'text-dark'}`}>{item.label}</span>
+                  {enabled && onQuantityChange && (
+                    <div className="flex items-center gap-0.5 flex-shrink-0">
+                      <span className="text-xs text-gray-400 mr-0.5">×</span>
+                      <button
+                        type="button"
+                        onClick={() => onQuantityChange(item.id, quantity - 1)}
+                        disabled={quantity <= 1}
+                        className="w-5 h-5 rounded border border-light-border bg-white text-mid hover:bg-light-surface disabled:opacity-30 flex items-center justify-center text-xs leading-none"
+                      >
+                        −
+                      </button>
+                      <span className="text-sm font-medium w-5 text-center text-dark">{quantity}</span>
+                      <button
+                        type="button"
+                        onClick={() => onQuantityChange(item.id, quantity + 1)}
+                        disabled={quantity >= 10}
+                        className="w-5 h-5 rounded border border-light-border bg-white text-mid hover:bg-light-surface disabled:opacity-30 flex items-center justify-center text-xs leading-none"
+                      >
+                        +
+                      </button>
+                    </div>
+                  )}
+                  <span className={`text-sm font-medium flex-shrink-0 ${enabled ? 'text-teal' : 'text-light-border'}`}>
                     {enabled ? formatCurrency(fee) : '—'}
                   </span>
                   <button
@@ -363,7 +394,14 @@ function ScopeSection({ heading, subheading, items, enabledMap, onToggle, expand
                 </div>
                 {isExpanded && (
                   <div className="border-t border-light-border mx-3 mb-3">
-                    <HourEditor item={item} getHour={getHour} onHourOverride={onHourOverride} isExternal={isExternal} />
+                    <HourEditor
+                      item={item}
+                      getHour={getHour}
+                      onHourOverride={onHourOverride}
+                      isExternal={isExternal}
+                      quantity={quantity}
+                      feePerUnit={calcItem?.feePerUnit ?? 0}
+                    />
                   </div>
                 )}
               </div>
@@ -384,12 +422,12 @@ function ScopeSection({ heading, subheading, items, enabledMap, onToggle, expand
 }
 
 // ── HourEditor — inline hour inputs (pencil expand) ───────────────────────────
-function HourEditor({ item, getHour, onHourOverride, isExternal }) {
+function HourEditor({ item, getHour, onHourOverride, isExternal, quantity = 1, feePerUnit = 0 }) {
   return (
     <div className="pt-3 px-1 pb-1">
       <div className="flex gap-4 text-xs text-mid mb-2 font-medium">
         <span className="w-24">Role</span>
-        <span>Hours</span>
+        <span>{quantity > 1 ? 'Hours per instance' : 'Hours'}</span>
       </div>
       {(['adviser', 'paraplanner', 'admin'] as const).map(role => {
         const disabled = isExternal && role === 'paraplanner';
@@ -411,6 +449,11 @@ function HourEditor({ item, getHour, onHourOverride, isExternal }) {
           </div>
         );
       })}
+      {quantity > 1 && (
+        <div className="mt-1 pt-2 border-t border-light-border text-xs text-mid">
+          × {quantity} instances = {formatCurrency(feePerUnit * quantity)}
+        </div>
+      )}
     </div>
   );
 }
