@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Toggle from '../../components/shared/Toggle';
 import Tooltip from '../../components/shared/Tooltip';
+import NumInput from '../../components/shared/NumInput';
 import TierEditor from './TierEditor';
 import { REVIEW_TASKS, ANNUAL_TASKS } from '../../lib/serviceLines';
 import { calculateQuote } from '../../lib/calculateQuote';
@@ -83,6 +84,33 @@ export default function Step3OngoingService({ quote, dispatch, onNext, onBack })
               <SubscriptionModel quote={quote} set={set} calc={calc} />
             )}
 
+            {/* Ongoing insurance commission offset */}
+            <div className="bg-white rounded-card border border-light-border p-5">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                  <span className="text-sm font-medium text-dark">Less: Ongoing insurance commission offset</span>
+                  <Tooltip text="If you receive ongoing insurance commissions for this client, you can apply them here to offset a portion of the annual ongoing service fee. This reduces the net fee charged to the client each year." />
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="text-xs text-mid">-$</span>
+                  <NumInput
+                    value={quote.ongoingInsuranceCommissionOffset}
+                    onChange={v => set('ongoingInsuranceCommissionOffset', v)}
+                    className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
+                  />
+                  <span className="text-xs text-mid w-14">p.a.</span>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className={`text-sm font-medium w-20 text-right ${(quote.ongoingInsuranceCommissionOffset || 0) > 0 ? 'text-risk-text' : 'text-light-border'}`}>
+                    {(quote.ongoingInsuranceCommissionOffset || 0) > 0
+                      ? `-${formatCurrency(Number(quote.ongoingInsuranceCommissionOffset) || 0)}`
+                      : '—'}
+                  </span>
+                  <div className="w-6" />
+                </div>
+              </div>
+            </div>
+
             {/* Entity fee split */}
             <div className="bg-white rounded-card border border-light-border overflow-hidden">
               <button
@@ -156,11 +184,10 @@ function FixedFeeModel({ quote, dispatch, calc }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <input
-              type="number" min={0} step={1}
-              onFocus={e => e.target.select()}
+            <NumInput
               value={quote.reviewMeetings}
-              onChange={e => set('reviewMeetings', Math.max(0, parseInt(e.target.value) || 0))}
+              onChange={v => set('reviewMeetings', Math.max(0, Math.round(v)))}
+              integer
               className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
             />
             <span className="text-xs text-mid">per year</span>
@@ -196,11 +223,9 @@ function FixedFeeModel({ quote, dispatch, calc }) {
                     {(['adviser', 'paraplanner', 'admin'] as const).map(role => (
                       <td key={role} className="py-2.5 px-3 text-right">
                         {isEditing ? (
-                          <input
-                            type="number" min={0} step={0.5}
-                            onFocus={e => e.target.select()}
+                          <NumInput
                             value={getReviewHour(task, role)}
-                            onChange={e => setReviewOverride(task.id, role, parseFloat(e.target.value) || 0)}
+                            onChange={v => setReviewOverride(task.id, role, v)}
                             className="w-16 rounded-input border border-teal px-1.5 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 float-right"
                           />
                         ) : (
@@ -272,11 +297,9 @@ function FixedFeeModel({ quote, dispatch, calc }) {
                     {(['adviser', 'paraplanner', 'admin'] as const).map(role => (
                       <td key={role} className="py-2.5 px-3 text-right">
                         {isEditing ? (
-                          <input
-                            type="number" min={0} step={0.5}
-                            onFocus={e => e.target.select()}
+                          <NumInput
                             value={getAnnualHour(task, role)}
-                            onChange={e => setAnnualOverride(task.id, role, parseFloat(e.target.value) || 0)}
+                            onChange={v => setAnnualOverride(task.id, role, v)}
                             className="w-16 rounded-input border border-teal px-1.5 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 float-right"
                           />
                         ) : (
@@ -325,11 +348,9 @@ function PercentageModel({ quote, dispatch, calc, set }) {
         <label className="block text-sm font-medium text-dark mb-1">Total funds under management</label>
         <div className="flex items-center gap-2">
           <span className="text-sm text-mid">$</span>
-          <input
-            type="number" min={0} step={10000}
-            onFocus={e => e.target.select()}
+          <NumInput
             value={quote.fum}
-            onChange={e => set('fum', parseFloat(e.target.value) || 0)}
+            onChange={v => set('fum', v)}
             className="w-40 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
           />
         </div>
@@ -352,17 +373,13 @@ function PercentageModel({ quote, dispatch, calc, set }) {
       <div>
         <div className="flex items-center gap-1.5 mb-1">
           <label className="text-sm font-medium text-dark">Minimum annual fee</label>
-          <Tooltip text="If the FUM-based fee calculates below this amount, the minimum will apply instead.">
-            <span className="text-mid text-xs cursor-default">ⓘ</span>
-          </Tooltip>
+          <Tooltip text="If the FUM-based fee calculates below this amount, the minimum will apply instead." />
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-mid">$</span>
-          <input
-            type="number" min={0} step={100}
-            onFocus={e => e.target.select()}
+          <NumInput
             value={quote.minimumAnnualFee ?? 0}
-            onChange={e => set('minimumAnnualFee', parseFloat(e.target.value) || 0)}
+            onChange={v => set('minimumAnnualFee', v)}
             className="w-32 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
           />
           <span className="text-xs text-mid">p.a.</span>
@@ -384,22 +401,20 @@ function PercentageModel({ quote, dispatch, calc, set }) {
           <div className="flex flex-wrap items-center gap-4 pl-7">
             <div className="flex items-center gap-2">
               <label className="text-sm text-dark">Accounts</label>
-              <input
-                type="number" min={1} step={1}
-                onFocus={e => e.target.select()}
+              <NumInput
                 value={quote.platformAccounts ?? 1}
-                onChange={e => set('platformAccounts', Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={v => set('platformAccounts', Math.max(1, Math.round(v)))}
+                integer
+                emptyDefault={1}
                 className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
               />
             </div>
             <div className="flex items-center gap-2">
               <label className="text-sm text-dark">Fee per additional account</label>
               <span className="text-sm text-mid">$</span>
-              <input
-                type="number" min={0} step={50}
-                onFocus={e => e.target.select()}
+              <NumInput
                 value={quote.additionalPlatformFee ?? 500}
-                onChange={e => set('additionalPlatformFee', parseFloat(e.target.value) || 0)}
+                onChange={v => set('additionalPlatformFee', v)}
                 className="w-24 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
               />
             </div>
@@ -421,11 +436,9 @@ function SubscriptionModel({ quote, set, calc }) {
         <label className="block text-sm font-medium text-dark mb-1">Monthly subscription fee</label>
         <div className="flex items-center gap-3">
           <span className="text-sm text-mid">$</span>
-          <input
-            type="number" min={0} step={50}
-            onFocus={e => e.target.select()}
+          <NumInput
             value={quote.monthlySubscription}
-            onChange={e => set('monthlySubscription', parseFloat(e.target.value) || 0)}
+            onChange={v => set('monthlySubscription', v)}
             className="w-28 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
           />
           <span className="text-sm text-mid">/ month</span>
@@ -437,11 +450,10 @@ function SubscriptionModel({ quote, set, calc }) {
       <div>
         <label className="block text-sm font-medium text-dark mb-1">Included reviews per year</label>
         <div className="flex items-center gap-2">
-          <input
-            type="number" min={0} step={1}
-            onFocus={e => e.target.select()}
+          <NumInput
             value={quote.includedReviews ?? 2}
-            onChange={e => set('includedReviews', Math.max(0, parseInt(e.target.value) || 0))}
+            onChange={v => set('includedReviews', Math.max(0, Math.round(v)))}
+            integer
             className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
           />
           <span className="text-xs text-mid">review meetings included</span>
@@ -452,17 +464,13 @@ function SubscriptionModel({ quote, set, calc }) {
       <div>
         <div className="flex items-center gap-1.5 mb-1">
           <label className="text-sm font-medium text-dark">Hourly rate for additional services</label>
-          <Tooltip text="Work outside the subscription scope will be quoted at this rate.">
-            <span className="text-mid text-xs cursor-default">ⓘ</span>
-          </Tooltip>
+          <Tooltip text="Work outside the subscription scope will be quoted at this rate." />
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-mid">$</span>
-          <input
-            type="number" min={0} step={10}
-            onFocus={e => e.target.select()}
+          <NumInput
             value={quote.additionalServicesRate ?? 0}
-            onChange={e => set('additionalServicesRate', parseFloat(e.target.value) || 0)}
+            onChange={v => set('additionalServicesRate', v)}
             className="w-28 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
           />
           <span className="text-sm text-mid">/ hour</span>
@@ -507,11 +515,9 @@ function EntitySplit({ quote, dispatch, calc }) {
                     />
                   </td>
                   <td className="py-2 pr-2">
-                    <input
-                      type="number" min={0}
-                      onFocus={e => e.target.select()}
+                    <NumInput
                       value={entity.balance}
-                      onChange={e => dispatch({ type: 'SET_ENTITY', index: i, field: 'balance', value: parseFloat(e.target.value) || 0 })}
+                      onChange={v => dispatch({ type: 'SET_ENTITY', index: i, field: 'balance', value: v })}
                       className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                     />
                   </td>

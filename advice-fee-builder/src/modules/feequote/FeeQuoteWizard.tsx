@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import QuoteSidebar from './QuoteSidebar';
+import FooterBar from '../../components/shared/FooterBar';
 import Step1ClientProfile from './Step1ClientProfile';
 import Step2ScopeOfAdvice from './Step2ScopeOfAdvice';
 import Step3OngoingService from './Step3OngoingService';
@@ -7,7 +8,7 @@ import Step4Adjustments from './Step4Adjustments';
 import Step5Summary from './Step5Summary';
 import ConfirmModal from '../../components/shared/ConfirmModal';
 
-export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis }: { state: any; dispatch: any; onGoHome: () => void; onGoAnalysis: (fees: any) => void }) {
+export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis, onNavigate }: { state: any; dispatch: any; onGoHome: () => void; onGoAnalysis: (fees: any) => void; onNavigate: (page: string) => void }) {
   const [showReset, setShowReset] = useState(false);
 
   const { quoteStep, maxQuoteStep, quote } = state;
@@ -68,6 +69,14 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
             />
           )}
         </main>
+
+        <FooterBar
+          currentPage="feequote"
+          onNavigate={(page) => {
+            if (page === 'home') onGoHome();
+            else onNavigate(page);
+          }}
+        />
       </div>
 
       <ConfirmModal

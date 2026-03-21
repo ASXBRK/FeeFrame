@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Toggle from '../../components/shared/Toggle';
 import Tooltip from '../../components/shared/Tooltip';
+import NumInput from '../../components/shared/NumInput';
 import { STRATEGIES, ADD_ONS, CORE_TASKS } from '../../lib/serviceLines';
 import { calculateQuote } from '../../lib/calculateQuote';
 import { formatCurrency } from '../../lib/formatters';
@@ -32,7 +33,12 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
 
   function getHour(item: any, role: string): number {
     const key = `${item.id}.${role}`;
-    return quote.hourOverrides?.[key] ?? item[`${role}Hours`];
+    if (quote.hourOverrides?.[key] !== undefined) return quote.hourOverrides[key];
+    if (isExternal) {
+      const extKey = `external${role.charAt(0).toUpperCase() + role.slice(1)}Hours`;
+      if (item[extKey] !== undefined) return item[extKey];
+    }
+    return item[`${role}Hours`];
   }
 
   return (
@@ -62,12 +68,9 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                 <p className="text-xs text-mid mb-3">Enter the fee quoted by your external paraplanner.</p>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-mid">$</span>
-                  <input
-                    type="number" min={0} step={50}
-                    onFocus={e => e.target.select()}
+                  <NumInput
                     value={quote.paraplannerFee}
-                    onFocus={e => e.target.select()}
-                    onChange={e => set('paraplannerFee', parseFloat(e.target.value) || 0)}
+                    onChange={v => set('paraplannerFee', v)}
                     className="w-36 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                   />
                   <span className="text-sm text-mid">ex GST</span>
@@ -97,20 +100,19 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
               <div key={field}>
                 <div className="flex items-center gap-1.5 mb-1">
                   <label className={`text-sm font-medium ${disabled ? 'text-mid' : 'text-dark'}`}>{label}</label>
-                  <Tooltip text={RATE_TOOLTIPS[role]}>
-                    <span className="text-mid text-xs cursor-default">ⓘ</span>
-                  </Tooltip>
+                  <Tooltip text={RATE_TOOLTIPS[role]} />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-sm ${disabled ? 'text-light-border' : 'text-mid'}`}>$</span>
-                  <input
-                    type="number" min={0} step={1}
-                    onFocus={e => e.target.select()}
-                    value={quote[field] ?? def}
-                    onChange={e => set(field, parseFloat(e.target.value) || 0)}
-                    disabled={disabled}
-                    className={`w-24 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 ${disabled ? 'bg-light-surface text-mid cursor-not-allowed' : ''}`}
-                  />
+                  {disabled ? (
+                    <span className="w-24 rounded-input border border-light-border px-3 py-2 text-sm bg-light-surface text-mid cursor-not-allowed block text-center">—</span>
+                  ) : (
+                    <NumInput
+                      value={quote[field] ?? def}
+                      onChange={v => set(field, v)}
+                      className="w-24 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
+                    />
+                  )}
                   <span className={`text-xs ${disabled ? 'text-light-border' : 'text-mid'}`}>/hr</span>
                 </div>
                 {disabled && <p className="text-xs text-mid mt-1">Not applicable — external paraplanner</p>}
@@ -123,6 +125,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
         <ScopeSection
           heading="Strategies in Scope"
           subheading="Select the advice areas in scope for this engagement."
+          tooltipText="If an advice area includes multiple distinct strategies (e.g. Superannuation may cover contributions, consolidation, and spouse splitting separately), increase the quantity to reflect the additional work."
           items={STRATEGIES}
           enabledMap={quote.strategies || {}}
           onToggle={(id, v) => dispatch({ type: 'SET_STRATEGY', id, enabled: v })}
@@ -132,6 +135,8 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
           onHourOverride={setHourOverride}
           isExternal={isExternal}
           calcItems={calc.strategyItems}
+          quantityMap={quote.strategyQuantities || {}}
+          onQuantityChange={(id, qty) => dispatch({ type: 'SET_STRATEGY_QUANTITY', id, quantity: qty })}
         />
 
         {/* Section D: Add-ons */}
@@ -147,6 +152,8 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
           onHourOverride={setHourOverride}
           isExternal={isExternal}
           calcItems={calc.addOnItems}
+          quantityMap={quote.addOnQuantities || {}}
+          onQuantityChange={(id, qty) => dispatch({ type: 'SET_ADDON_QUANTITY', id, quantity: qty })}
         />
 
         {/* Section E: Core Process Tasks */}
@@ -156,7 +163,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
             <p className="text-xs text-mid mt-0.5">Standard tasks included in every engagement.</p>
           </div>
           <div className="divide-y divide-light-border">
-            {CORE_TASKS.map(task => {
+            {CORE_TASKS.filter(task => !(isExternal && task.hideWhenExternal)).map(task => {
               const calcItem = calc.coreTaskItems.find(c => c.id === task.id);
               const fee = calcItem?.fee ?? 0;
               const enabled = quote.coreTasks?.[task.id] ?? task.defaultOn ?? false;
@@ -168,32 +175,28 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-dark">{task.label}</div>
                       {task.perEntity && (
-                        <div className="text-xs text-mid mt-0.5">× {Math.max(1, Number(quote.entityCount) || 1)} entities</div>
+                        <div className="text-xs text-mid mt-0.5">× {calc.totalEntities} entities</div>
                       )}
                       {task.perAdditionalScenario && (
-                        <div className="text-xs text-mid mt-0.5">
-                          First scenario free · additional:&nbsp;
-                          <input
-                            type="number" min={1} step={1}
-                            onFocus={e => e.target.select()}
-                            value={quote.scenarios}
-                            onChange={e => dispatch({ type: 'SET_QUOTE_FIELD', field: 'scenarios', value: Math.max(1, parseInt(e.target.value) || 1) })}
-                            className="w-12 rounded-input border border-light-border px-1.5 py-0.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 inline-block"
+                        <div className="text-xs text-mid mt-0.5 flex items-center gap-1.5">
+                          <span>Scenarios</span>
+                          <Tooltip text="Fee is charged per scenario. Set to 0 if no scenario modelling is required." />
+                          <NumInput
+                            value={quote.scenarios ?? 0}
+                            onChange={v => dispatch({ type: 'SET_QUOTE_FIELD', field: 'scenarios', value: Math.max(0, Math.round(v)) })}
+                            integer
+                            emptyDefault={0}
+                            className="w-10 rounded-input border border-light-border px-1.5 py-0.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 inline-block"
                           />
-                          &nbsp;total scenarios
                         </div>
                       )}
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      {(task.id === 'discovery' || task.id === 'engagementLetter') ? (
-                        <Toggle
-                          checked={enabled}
-                          onChange={v => dispatch({ type: 'SET_CORE_TASK', id: task.id, enabled: v })}
-                          label={task.label}
-                        />
-                      ) : (
-                        <span className="text-xs text-mid">Always on</span>
-                      )}
+                      <Toggle
+                        checked={enabled}
+                        onChange={v => dispatch({ type: 'SET_CORE_TASK', id: task.id, enabled: v })}
+                        label={task.label}
+                      />
                       <button
                         type="button"
                         onClick={() => toggleExpand(task.id)}
@@ -235,15 +238,18 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
           <div className="space-y-4">
             <ImplRow
               label="Investment & super implementation"
-              helper="$550 incl GST per account"
+              tooltip="$550 incl GST per account — covers platform setup, product applications, and account establishment."
               value={quote.investmentAccounts}
               inputLabel="accounts"
               onChange={v => set('investmentAccounts', v)}
               fee={calc.implInvestmentFee}
+              feeOverride={quote.implInvestmentOverride}
+              onFeeOverride={v => set('implInvestmentOverride', v)}
+              allowOverride
             />
             <ImplRow
               label="In-specie transfers of existing assets"
-              helper={`Admin rate × hours × 1.1 (GST)`}
+              tooltip="Admin time to coordinate in-specie asset transfers. Billed at admin hourly cost."
               value={quote.inSpecieHours}
               inputLabel="hours"
               onChange={v => set('inSpecieHours', v)}
@@ -251,31 +257,31 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
             />
             <ImplRow
               label="Insurance implementation"
-              helper={`Admin rate × hours × 1.1 (GST)`}
+              tooltip="Admin time to process insurance applications and policy documentation. Billed at admin hourly cost."
               value={quote.insuranceImplHours}
               inputLabel="hours"
               onChange={v => set('insuranceImplHours', v)}
               fee={calc.implInsuranceFee}
             />
             <div className="flex items-center gap-4 pt-2 border-t border-light-border">
-              <div className="flex-1">
-                <div className="text-sm font-medium text-dark">Less: Insurance commission offset</div>
-                <div className="text-xs text-mid mt-0.5">Manual entry — adviser discretion</div>
+              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                <span className="text-sm font-medium text-dark">Less: Insurance commission offset</span>
+                <Tooltip text="Apply any upfront insurance commission received to offset a portion of the implementation fee payable by the client. This covers the initial commission only — ongoing commissions can be offset against the ongoing service fee in the next step." />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-mid">-$</span>
-                <input
-                  type="number" min={0}
-                  onFocus={e => e.target.select()}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className="text-xs text-mid">-$</span>
+                <NumInput
                   value={quote.insuranceCommissionOffset}
-                  onChange={e => set('insuranceCommissionOffset', parseFloat(e.target.value) || 0)}
-                  className="w-24 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-right"
+                  onChange={v => set('insuranceCommissionOffset', v)}
+                  className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
                 />
+                <span className="text-xs text-mid w-14" />
               </div>
-              <div className="w-24 text-right">
-                <span className={`text-sm font-medium ${(quote.insuranceCommissionOffset || 0) > 0 ? 'text-risk-text' : 'text-light-border'}`}>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className={`text-sm font-medium w-20 text-right ${(quote.insuranceCommissionOffset || 0) > 0 ? 'text-risk-text' : 'text-light-border'}`}>
                   {(quote.insuranceCommissionOffset || 0) > 0 ? `-${formatCurrency(calc.commissionOffset)}` : '—'}
                 </span>
+                <div className="w-6" />
               </div>
             </div>
             <div className="bg-light-surface rounded-card px-4 py-3 flex items-center justify-between border border-light-border">
@@ -323,11 +329,14 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
 }
 
 // ── ScopeSection (strategies + add-ons share same UX) ─────────────────────────
-function ScopeSection({ heading, subheading, items, enabledMap, onToggle, expandedIds, onToggleExpand, getHour, onHourOverride, isExternal, calcItems }) {
+function ScopeSection({ heading, subheading, tooltipText = null, items, enabledMap, onToggle, expandedIds, onToggleExpand, getHour, onHourOverride, isExternal, calcItems, quantityMap = {}, onQuantityChange = null }) {
   return (
     <div className="bg-white rounded-card border border-light-border overflow-hidden">
       <div className="px-5 py-4 border-b border-light-border">
-        <h3 className="text-base font-bold font-heading text-dark">{heading}</h3>
+        <div className="flex items-center gap-1.5">
+          <h3 className="text-base font-bold font-heading text-dark">{heading}</h3>
+          {tooltipText && <Tooltip text={tooltipText} />}
+        </div>
         <p className="text-xs text-mid mt-0.5">{subheading}</p>
       </div>
       <div className="p-5">
@@ -337,18 +346,41 @@ function ScopeSection({ heading, subheading, items, enabledMap, onToggle, expand
             const isExpanded = expandedIds.has(item.id);
             const calcItem = calcItems?.find(c => c.id === item.id);
             const fee = enabled ? (calcItem?.fee ?? 0) : 0;
+            const quantity = enabled ? (quantityMap[item.id] ?? 1) : 1;
 
             return (
               <div key={item.id} className={`rounded-input border transition-colors ${enabled ? 'border-teal bg-teal-subtle' : 'border-light-border bg-white'}`}>
-                <div className="px-4 py-3 flex items-center gap-3">
+                <div className="px-4 py-3 flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={enabled}
                     onChange={e => onToggle(item.id, e.target.checked)}
                     className="w-4 h-4 rounded border-light-border text-teal focus:ring-teal flex-shrink-0"
                   />
-                  <span className={`text-sm flex-1 ${enabled ? 'font-medium text-dark' : 'text-dark'}`}>{item.label}</span>
-                  <span className={`text-sm font-medium ${enabled ? 'text-teal' : 'text-light-border'}`}>
+                  <span className={`text-sm flex-1 min-w-0 ${enabled ? 'font-medium text-dark' : 'text-dark'}`}>{item.label}</span>
+                  {enabled && onQuantityChange && (
+                    <div className="flex items-center gap-0.5 flex-shrink-0">
+                      <span className="text-xs text-gray-400 mr-0.5">×</span>
+                      <button
+                        type="button"
+                        onClick={() => onQuantityChange(item.id, quantity - 1)}
+                        disabled={quantity <= 1}
+                        className="w-5 h-5 rounded border border-light-border bg-white text-mid hover:bg-light-surface disabled:opacity-30 flex items-center justify-center text-xs leading-none"
+                      >
+                        −
+                      </button>
+                      <span className="text-sm font-medium w-5 text-center text-dark">{quantity}</span>
+                      <button
+                        type="button"
+                        onClick={() => onQuantityChange(item.id, quantity + 1)}
+                        disabled={quantity >= 10}
+                        className="w-5 h-5 rounded border border-light-border bg-white text-mid hover:bg-light-surface disabled:opacity-30 flex items-center justify-center text-xs leading-none"
+                      >
+                        +
+                      </button>
+                    </div>
+                  )}
+                  <span className={`text-sm font-medium flex-shrink-0 ${enabled ? 'text-teal' : 'text-light-border'}`}>
                     {enabled ? formatCurrency(fee) : '—'}
                   </span>
                   <button
@@ -362,7 +394,14 @@ function ScopeSection({ heading, subheading, items, enabledMap, onToggle, expand
                 </div>
                 {isExpanded && (
                   <div className="border-t border-light-border mx-3 mb-3">
-                    <HourEditor item={item} getHour={getHour} onHourOverride={onHourOverride} isExternal={isExternal} />
+                    <HourEditor
+                      item={item}
+                      getHour={getHour}
+                      onHourOverride={onHourOverride}
+                      isExternal={isExternal}
+                      quantity={quantity}
+                      feePerUnit={calcItem?.feePerUnit ?? 0}
+                    />
                   </div>
                 )}
               </div>
@@ -383,61 +422,100 @@ function ScopeSection({ heading, subheading, items, enabledMap, onToggle, expand
 }
 
 // ── HourEditor — inline hour inputs (pencil expand) ───────────────────────────
-function HourEditor({ item, getHour, onHourOverride, isExternal }) {
+function HourEditor({ item, getHour, onHourOverride, isExternal, quantity = 1, feePerUnit = 0 }) {
   return (
     <div className="pt-3 px-1 pb-1">
       <div className="flex gap-4 text-xs text-mid mb-2 font-medium">
-        <span className="w-20">Role</span>
-        <span>Hours</span>
+        <span className="w-24">Role</span>
+        <span>{quantity > 1 ? 'Hours per instance' : 'Hours'}</span>
       </div>
       {(['adviser', 'paraplanner', 'admin'] as const).map(role => {
         const disabled = isExternal && role === 'paraplanner';
         return (
           <div key={role} className="flex items-center gap-3 mb-2">
-            <span className={`text-xs w-24 capitalize ${disabled ? 'text-light-border' : 'text-dark'}`}>
+            <span className={`text-xs w-24 ${disabled ? 'text-light-border' : 'text-dark'}`}>
               {role === 'admin' ? 'Admin / CSA' : role.charAt(0).toUpperCase() + role.slice(1)}
             </span>
-            <input
-              type="number"
-              onFocus={e => e.target.select()}
-              min={0}
-              step={0.5}
-              value={getHour(item, role)}
-              onChange={e => onHourOverride(item.id, role, parseFloat(e.target.value) || 0)}
-              disabled={disabled}
-              className={`w-16 rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 ${disabled ? 'bg-light-surface text-light-border cursor-not-allowed' : ''}`}
-            />
+            {disabled ? (
+              <span className="w-16 text-sm text-mid text-right">—</span>
+            ) : (
+              <NumInput
+                value={getHour(item, role)}
+                onChange={v => onHourOverride(item.id, role, v)}
+                className="w-16 rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0"
+              />
+            )}
             <span className="text-xs text-mid">hrs</span>
           </div>
         );
       })}
+      {quantity > 1 && (
+        <div className="mt-1 pt-2 border-t border-light-border text-xs text-mid">
+          × {quantity} instances = {formatCurrency(feePerUnit * quantity)}
+        </div>
+      )}
     </div>
   );
 }
 
 // ── ImplRow ───────────────────────────────────────────────────────────────────
-function ImplRow({ label, helper, value, inputLabel, onChange, fee }) {
+function ImplRow({ label, tooltip, value, inputLabel, onChange, fee, feeOverride = null, onFeeOverride = null, allowOverride = false }) {
+  const [expanded, setExpanded] = useState(false);
+  const isOverridden = feeOverride !== null && feeOverride !== undefined;
+  const displayFee = isOverridden ? feeOverride : fee;
+
   return (
-    <div className="flex items-center gap-4">
-      <div className="flex-1">
-        <div className="text-sm font-medium text-dark">{label}</div>
-        <div className="text-xs text-mid mt-0.5">{helper}</div>
+    <div>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+          <span className="text-sm font-medium text-dark">{label}</span>
+          <Tooltip text={tooltip} />
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <NumInput
+            value={value}
+            onChange={onChange}
+            className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
+          />
+          <span className="text-xs text-mid w-14">{inputLabel}</span>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {isOverridden && (
+            <span className="text-xs text-mid bg-light-surface px-1.5 py-0.5 rounded border border-light-border">override</span>
+          )}
+          <span className={`text-sm font-medium w-20 text-right ${displayFee > 0 ? 'text-dark' : 'text-light-border'}`}>
+            {formatCurrency(displayFee)}
+          </span>
+          {allowOverride ? (
+            <button
+              type="button"
+              onClick={() => setExpanded(e => !e)}
+              className={`text-sm transition-colors ${expanded ? 'text-teal' : 'text-mid hover:text-dark'}`}
+              title="Override fee"
+            >
+              ✏️
+            </button>
+          ) : (
+            <div className="w-6" />
+          )}
+        </div>
       </div>
-      <div className="flex items-center gap-2">
-        <input
-          type="number" min={0} step={1}
-          onFocus={e => e.target.select()}
-          value={value}
-          onChange={e => onChange(parseFloat(e.target.value) || 0)}
-          className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
-        />
-        <span className="text-xs text-mid">{inputLabel}</span>
-      </div>
-      <div className="w-24 text-right">
-        <span className={`text-sm font-medium ${fee > 0 ? 'text-dark' : 'text-light-border'}`}>
-          {formatCurrency(fee)}
-        </span>
-      </div>
+      {allowOverride && expanded && (
+        <div className="mt-1.5 flex items-center gap-3 px-4 py-3 bg-light-surface rounded-input border border-light-border">
+          <span className="text-xs text-mid flex-1">Override fee</span>
+          <span className="text-sm text-mid">$</span>
+          <NumInput
+            value={isOverridden ? feeOverride : fee}
+            onChange={v => onFeeOverride(v)}
+            autoFocus
+            className="w-24 rounded-input border border-teal px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal"
+          />
+          <button type="button" onClick={() => setExpanded(false)} className="text-xs font-medium text-teal hover:opacity-80">Done</button>
+          {isOverridden && (
+            <button type="button" onClick={() => { onFeeOverride(null); setExpanded(false); }} className="text-xs text-mid hover:text-dark">Reset</button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

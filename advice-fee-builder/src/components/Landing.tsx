@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import feeframeLogo from '../assets/logos/feeframe-light.svg';
 import feequoteLogo from '../assets/logos/feequote-light.svg';
 import feeanalysisLogo from '../assets/logos/feeanalysis-light.svg';
+import FooterBar from './shared/FooterBar';
 
-export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuote: () => void; onStartAnalysis: () => void }) {
+export default function Landing({ onStartQuote, onStartAnalysis, onNavigate }: { onStartQuote: () => void; onStartAnalysis: () => void; onNavigate: (page: string) => void }) {
   const [quoteHovered, setQuoteHovered] = useState(false);
   const [analysisHovered, setAnalysisHovered] = useState(false);
   const [heroVisible, setHeroVisible] = useState(false);
@@ -254,14 +255,14 @@ export default function Landing({ onStartQuote, onStartAnalysis }: { onStartQuot
       </div>
 
       {/* ── Footer ── */}
-      <footer style={{ background: '#ffffff', borderTop: '1px solid #e2e8f0', padding: '40px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-        <img src={feeframeLogo} alt="FeeFrame" style={{ height: '28px', width: 'auto' }} />
-        <p style={{ fontSize: '13px', color: '#9ca3af' }}>Built for Australian advice practices · Free to use · No data stored</p>
-        <div style={{ display: 'flex', gap: '16px' }}>
-          <a href="#" style={{ fontSize: '13px', color: '#6b7280', textDecoration: 'none' }}>About</a>
-          <a href="#" style={{ fontSize: '13px', color: '#6b7280', textDecoration: 'none' }}>Contact</a>
-        </div>
-      </footer>
+      <FooterBar
+        currentPage="home"
+        onNavigate={(page) => {
+          if (page === 'feequote') onStartQuote();
+          else if (page === 'feeanalysis') onStartAnalysis();
+          else onNavigate(page);
+        }}
+      />
 
     </div>
   );

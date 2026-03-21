@@ -10,7 +10,7 @@ export const defaultQuoteState = {
   isCouple: false,
   lifeStage: 'accumulation',
   ageBracket: 'under40',
-  entityCount: 1,
+  entityCount: 0,
 
   // Step 2: Scope of Advice — paraplanner
   paraplanner: 'internal',
@@ -26,7 +26,9 @@ export const defaultQuoteState = {
   strategies: {} as Record<string, boolean>,
   addOns: {} as Record<string, boolean>,
   coreTasks: defaultCoreTasks,
-  scenarios: 2,
+  scenarios: 0,
+  strategyQuantities: {} as Record<string, number>,
+  addOnQuantities: {} as Record<string, number>,
 
   // Step 2: Hour overrides — key: "{itemId}.{role}" e.g. "super.adviser"
   hourOverrides: {} as Record<string, number>,
@@ -36,6 +38,10 @@ export const defaultQuoteState = {
   inSpecieHours: 0,
   insuranceImplHours: 0,
   insuranceCommissionOffset: 0,
+  ongoingInsuranceCommissionOffset: 0,
+  implInvestmentOverride: null as number | null,
+  implInSpecieOverride: null as number | null,
+  implInsuranceOverride: null as number | null,
 
   // Step 3: Ongoing service
   hasOngoing: true,
@@ -71,6 +77,10 @@ export const defaultQuoteState = {
 
   // Entity fee split
   entities: [] as { name: string; balance: number; onPlatform: boolean }[],
+
+  // Step 5: profit margin
+  profitMarginPercent: 0,
+  applyMarginToOngoing: true,
 
   // Step 5: client paragraph override (null = auto-generated)
   clientParagraphOverride: null as string | null,

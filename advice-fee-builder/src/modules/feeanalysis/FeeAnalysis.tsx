@@ -3,8 +3,9 @@ import { calculateProfitability } from '../../lib/calculateProfitability';
 import { formatCurrency, formatPercent } from '../../lib/formatters';
 import { colors } from '../../brand';
 import AnalysisSidebar from './AnalysisSidebar';
+import FooterBar from '../../components/shared/FooterBar';
 
-export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
+export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote, onNavigate }) {
   const { analysis } = state;
   const calc = calculateProfitability(analysis);
   const [showThresholds, setShowThresholds] = useState(false);
@@ -235,6 +236,14 @@ export default function FeeAnalysis({ state, dispatch, onGoHome, onGoQuote }) {
           )}
         </section>
         </main>
+        <FooterBar
+          currentPage="feeanalysis"
+          onNavigate={(page) => {
+            if (page === 'home') onGoHome();
+            else if (page === 'feequote') onGoQuote();
+            else onNavigate(page);
+          }}
+        />
       </div>
     </div>
   );

@@ -1,32 +1,34 @@
 // ── Strategies — core advice areas ────────────────────────────────────────────
 export const STRATEGIES = [
-  { id: 'super', label: 'Superannuation', shortLabel: 'superannuation', adviserHours: 1.5, paraplannerHours: 2.0, adminHours: 0.5 },
-  { id: 'retirementPlanning', label: 'Retirement Planning', shortLabel: 'retirement planning', adviserHours: 2.0, paraplannerHours: 3.0, adminHours: 0.5 },
-  { id: 'cashFlowPlanning', label: 'Cash Flow Planning', shortLabel: 'cash flow planning', adviserHours: 1.5, paraplannerHours: 1.5, adminHours: 0.5 },
-  { id: 'capitalExpenditure', label: 'Capital Expenditure', shortLabel: 'capital expenditure planning', adviserHours: 1.0, paraplannerHours: 1.5, adminHours: 0.5 },
-  { id: 'modellingProjections', label: 'Modelling & Projections', shortLabel: 'financial modelling and projections', adviserHours: 1.0, paraplannerHours: 2.5, adminHours: 0 },
-  { id: 'debtManagement', label: 'Debt Management', shortLabel: 'debt management', adviserHours: 1.0, paraplannerHours: 1.0, adminHours: 0.5 },
-  { id: 'gearingDebtRecycling', label: 'Gearing / Debt Recycling', shortLabel: 'gearing and debt recycling', adviserHours: 1.5, paraplannerHours: 2.0, adminHours: 0.5 },
-  { id: 'centrelink', label: 'Centrelink Entitlements', shortLabel: 'Centrelink entitlements', adviserHours: 1.5, paraplannerHours: 2.0, adminHours: 1.0 },
-  { id: 'personalInsurance', label: 'Personal Insurance', shortLabel: 'personal insurance', adviserHours: 2.0, paraplannerHours: 2.5, adminHours: 1.0 },
-  { id: 'businessInsurance', label: 'Business Insurance', shortLabel: 'business insurance', adviserHours: 2.0, paraplannerHours: 2.5, adminHours: 1.0 },
-  { id: 'estatePlanning', label: 'Estate Planning', shortLabel: 'estate planning', adviserHours: 1.5, paraplannerHours: 1.0, adminHours: 0.5 },
-  { id: 'investing', label: 'Investing', shortLabel: 'investment portfolio', adviserHours: 1.5, paraplannerHours: 2.5, adminHours: 0.5 },
+  { id: 'super', label: 'Superannuation', shortLabel: 'superannuation', adviserHours: 2.5, paraplannerHours: 3.5, adminHours: 1.0 },
+  { id: 'retirementPlanning', label: 'Retirement Planning', shortLabel: 'retirement planning', adviserHours: 3.5, paraplannerHours: 5.0, adminHours: 1.5 },
+  { id: 'cashFlowPlanning', label: 'Cash Flow Planning', shortLabel: 'cash flow planning', adviserHours: 2.5, paraplannerHours: 3.5, adminHours: 1.0 },
+  { id: 'capitalExpenditure', label: 'Capital Expenditure', shortLabel: 'capital expenditure planning', adviserHours: 2.0, paraplannerHours: 3.0, adminHours: 1.0 },
+  { id: 'modellingProjections', label: 'Modelling & Projections', shortLabel: 'financial modelling and projections', adviserHours: 2.0, paraplannerHours: 5.0, adminHours: 0.5 },
+  { id: 'debtManagement', label: 'Debt Management', shortLabel: 'debt management', adviserHours: 2.0, paraplannerHours: 2.5, adminHours: 1.0 },
+  { id: 'gearingDebtRecycling', label: 'Gearing / Debt Recycling', shortLabel: 'gearing and debt recycling', adviserHours: 3.0, paraplannerHours: 4.0, adminHours: 1.0 },
+  { id: 'centrelink', label: 'Centrelink Entitlements', shortLabel: 'Centrelink entitlements', adviserHours: 3.0, paraplannerHours: 4.0, adminHours: 2.0 },
+  { id: 'agedCare', label: 'Aged Care', shortLabel: 'aged care planning', adviserHours: 3.0, paraplannerHours: 4.0, adminHours: 2.0 },
+  { id: 'personalInsurance', label: 'Personal Insurance', shortLabel: 'personal insurance', adviserHours: 3.5, paraplannerHours: 5.0, adminHours: 2.0 },
+  { id: 'businessInsurance', label: 'Business Insurance', shortLabel: 'business insurance', adviserHours: 3.5, paraplannerHours: 5.0, adminHours: 2.0 },
+  { id: 'estatePlanning', label: 'Estate Planning', shortLabel: 'estate planning', adviserHours: 2.5, paraplannerHours: 2.5, adminHours: 1.0 },
+  { id: 'investing', label: 'Investing', shortLabel: 'investment portfolio', adviserHours: 3.0, paraplannerHours: 5.0, adminHours: 1.5 },
 ];
 
 // ── Add-ons ────────────────────────────────────────────────────────────────────
 export const ADD_ONS = [
-  { id: 'div296', label: 'Division 296 Tax', shortLabel: 'Division 296 tax planning', adviserHours: 1.0, paraplannerHours: 2.0, adminHours: 0.5 },
-  { id: 'marginLending', label: 'Margin Lending', shortLabel: 'margin lending', adviserHours: 1.0, paraplannerHours: 2.0, adminHours: 0.5 },
-  { id: 'smsfInvestmentStrategy', label: 'SMSF Investment Strategy', shortLabel: 'SMSF investment strategy', adviserHours: 1.5, paraplannerHours: 2.0, adminHours: 0.5 },
+  { id: 'div296', label: 'Division 296 Tax', shortLabel: 'Division 296 tax planning', adviserHours: 2.0, paraplannerHours: 3.5, adminHours: 1.0 },
+  { id: 'marginLending', label: 'Margin Lending', shortLabel: 'margin lending', adviserHours: 2.0, paraplannerHours: 3.5, adminHours: 1.0 },
+  { id: 'smsfInvestmentStrategy', label: 'SMSF Investment Strategy', shortLabel: 'SMSF investment strategy', adviserHours: 0.5, paraplannerHours: 2.0, adminHours: 1.0 },
+  { id: 'taxStructuring', label: 'Tax Structuring', shortLabel: 'tax structuring', adviserHours: 2.0, paraplannerHours: 3.5, adminHours: 0.5 },
 ];
 
 // ── Core process tasks ─────────────────────────────────────────────────────────
 export const CORE_TASKS = [
-  { id: 'discovery', label: 'Discovery / Initial Meeting', shortLabel: 'initial consultation', adviserHours: 2.0, paraplannerHours: 0.5, adminHours: 0.5, defaultOn: true },
-  { id: 'engagementLetter', label: 'Engagement Letter', shortLabel: 'engagement letter', adviserHours: 0.5, paraplannerHours: 0.5, adminHours: 0.5, defaultOn: true },
-  { id: 'dataCollection', label: 'Data Collection', shortLabel: 'data collection', adviserHours: 0.5, paraplannerHours: 0.5, adminHours: 1.0, defaultOn: true, perEntity: true },
-  { id: 'scenarioModelling', label: 'Scenario Modelling', shortLabel: 'scenario modelling', adviserHours: 0.5, paraplannerHours: 1.5, adminHours: 0, defaultOn: true, perAdditionalScenario: true },
+  { id: 'discovery', label: 'Discovery / Initial Meeting', shortLabel: 'initial consultation', adviserHours: 3.0, paraplannerHours: 1.0, adminHours: 1.0, externalAdviserHours: 3.0, externalParaplannerHours: 0, externalAdminHours: 1.5, defaultOn: true },
+  { id: 'engagementLetter', label: 'Engagement Letter', shortLabel: 'engagement letter', adviserHours: 1.0, paraplannerHours: 1.0, adminHours: 1.0, externalAdviserHours: 1.0, externalParaplannerHours: 0, externalAdminHours: 1.5, defaultOn: true },
+  { id: 'dataCollection', label: 'Data Collection', shortLabel: 'data collection', adviserHours: 1.0, paraplannerHours: 1.5, adminHours: 2.0, externalAdviserHours: 1.0, externalParaplannerHours: 0, externalAdminHours: 3.0, defaultOn: true, perEntity: true },
+  { id: 'scenarioModelling', label: 'Scenario Modelling', shortLabel: 'scenario modelling', adviserHours: 0.5, paraplannerHours: 2.5, adminHours: 0.0, externalAdviserHours: 0, externalParaplannerHours: 0, externalAdminHours: 0, defaultOn: true, perAdditionalScenario: true, hideWhenExternal: true },
 ];
 
 // ── Per-review-meeting tasks (used in Step 3 ongoing) ─────────────────────────

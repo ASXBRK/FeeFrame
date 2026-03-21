@@ -12,7 +12,7 @@ type NavPage = 'landing' | 'about' | 'contact';
 type Page = NavPage | 'quote' | 'analysis';
 
 // ── State ──────────────────────────────────────────────────────────────────────
-const STATE_VERSION = 3; // bumped for Phase 1 engine rebuild
+const STATE_VERSION = 4; // bumped: external paraplanner core task fix
 
 const initialState = {
   view: 'landing', // 'landing' | 'quote' | 'analysis'
@@ -49,17 +49,49 @@ function reducer(state, action) {
         maxQuoteStep: Math.max(state.maxQuoteStep, action.step),
       };
 
-    case 'SET_QUOTE_FIELD':
+    case 'SET_QUOTE_FIELD': {
+      if (action.field === 'paraplanner') {
+        const coreTaskIds = ['discovery', 'engagementLetter', 'dataCollection', 'scenarioModelling'];
+        const cleanedOverrides = { ...state.quote.hourOverrides };
+        for (const id of coreTaskIds) {
+          delete cleanedOverrides[`${id}.adviser`];
+          delete cleanedOverrides[`${id}.paraplanner`];
+          delete cleanedOverrides[`${id}.admin`];
+        }
+        // Switching to external: turn core tasks off (external fee covers the engagement).
+        // Switching back to internal: restore defaultOn values.
+        const isExternal = action.value === 'external';
+        const coreTasks = { ...state.quote.coreTasks };
+        for (const id of coreTaskIds) {
+          coreTasks[id] = isExternal ? false : (defaultQuoteState.coreTasks as Record<string, boolean>)[id] ?? false;
+        }
+        return { ...state, quote: { ...state.quote, [action.field]: action.value, hourOverrides: cleanedOverrides, coreTasks } };
+      }
       return { ...state, quote: { ...state.quote, [action.field]: action.value } };
+    }
 
     case 'SET_STRATEGY': {
       const strategies = { ...state.quote.strategies, [action.id]: action.enabled };
-      return { ...state, quote: { ...state.quote, strategies } };
+      const strategyQuantities = { ...(state.quote.strategyQuantities || {}) };
+      if (!action.enabled) delete strategyQuantities[action.id];
+      return { ...state, quote: { ...state.quote, strategies, strategyQuantities } };
     }
 
     case 'SET_ADDON': {
       const addOns = { ...state.quote.addOns, [action.id]: action.enabled };
-      return { ...state, quote: { ...state.quote, addOns } };
+      const addOnQuantities = { ...(state.quote.addOnQuantities || {}) };
+      if (!action.enabled) delete addOnQuantities[action.id];
+      return { ...state, quote: { ...state.quote, addOns, addOnQuantities } };
+    }
+
+    case 'SET_STRATEGY_QUANTITY': {
+      const strategyQuantities = { ...(state.quote.strategyQuantities || {}), [action.id]: Math.min(10, Math.max(1, action.quantity)) };
+      return { ...state, quote: { ...state.quote, strategyQuantities } };
+    }
+
+    case 'SET_ADDON_QUANTITY': {
+      const addOnQuantities = { ...(state.quote.addOnQuantities || {}), [action.id]: Math.min(10, Math.max(1, action.quantity)) };
+      return { ...state, quote: { ...state.quote, addOnQuantities } };
     }
 
     case 'SET_CORE_TASK': {
@@ -217,7 +249,11 @@ export default function App() {
 
   const goTo = useCallback((view) => dispatch({ type: 'SET_VIEW', view }), []);
 
-  const handleNavigate = useCallback((p: NavPage) => setPage(p), []);
+  const handleNavigate = useCallback((p: string) => {
+    if (p === 'feequote') { goTo('quote'); setPage('quote'); }
+    else if (p === 'feeanalysis') { goTo('analysis'); setPage('analysis'); }
+    else { goTo('landing'); setPage(p as NavPage); }
+  }, [goTo]);
 
   if (state.view === 'quote') {
     return (
@@ -226,6 +262,7 @@ export default function App() {
         dispatch={dispatch}
         onGoHome={() => { goTo('landing'); setPage('landing'); }}
         onGoAnalysis={(fees) => dispatch({ type: 'HANDOFF_TO_ANALYSIS', ...fees })}
+        onNavigate={handleNavigate}
       />
     );
   }
@@ -237,6 +274,7 @@ export default function App() {
         dispatch={dispatch}
         onGoHome={() => { goTo('landing'); setPage('landing'); }}
         onGoQuote={() => goTo('quote')}
+        onNavigate={handleNavigate}
       />
     );
   }
@@ -252,6 +290,7 @@ export default function App() {
         <Landing
           onStartQuote={() => { goTo('quote'); setPage('quote'); }}
           onStartAnalysis={() => { goTo('analysis'); setPage('analysis'); }}
+          onNavigate={handleNavigate}
         />
       )}
     </>

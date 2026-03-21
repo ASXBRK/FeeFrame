@@ -26,7 +26,9 @@ export const defaultQuoteState = {
   strategies: {},
   addOns: {},
   coreTasks: defaultCoreTasks,
-  scenarios: 2,
+  scenarios: 0,
+  strategyQuantities: {},
+  addOnQuantities: {},
 
   // Step 2: Hour overrides — key: "{itemId}.{role}" e.g. "super.adviser"
   hourOverrides: {},
@@ -36,6 +38,7 @@ export const defaultQuoteState = {
   inSpecieHours: 0,
   insuranceImplHours: 0,
   insuranceCommissionOffset: 0,
+  ongoingInsuranceCommissionOffset: 0,
 
   // Step 3: Ongoing service
   hasOngoing: true,
@@ -72,6 +75,10 @@ export const defaultQuoteState = {
   // Entity fee split
   entities: [],
 
-  // Step 5
+  // Step 5: profit margin
+  profitMarginPercent: 0,
+  applyMarginToOngoing: true,
+
+  // Step 5: client paragraph override (null = auto-generated)
   clientParagraphOverride: null,
 };

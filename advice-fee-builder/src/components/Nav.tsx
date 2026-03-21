@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import ffFavicon from '../assets/logos/ff-favicon-teal.svg';
 
-type Page = 'landing' | 'about' | 'contact';
+type NavPage = 'landing' | 'about' | 'contact';
+type AnyPage = NavPage | 'feequote' | 'feeanalysis';
 
-export default function Nav({ current, onNavigate }: { current: Page; onNavigate: (p: Page) => void }) {
+export default function Nav({ current, onNavigate }: { current: NavPage; onNavigate: (p: AnyPage) => void }) {
   const [shadow, setShadow] = useState(false);
 
   useEffect(() => {
@@ -12,7 +13,7 @@ export default function Nav({ current, onNavigate }: { current: Page; onNavigate
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const link = (page: Page, label: string) => {
+  const link = (page: AnyPage, label: string) => {
     const active = current === page;
     return (
       <button
@@ -55,6 +56,8 @@ export default function Nav({ current, onNavigate }: { current: Page; onNavigate
       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
         {link('landing', 'Home')}
         {link('about', 'About')}
+        {link('feequote', 'FeeQuote')}
+        {link('feeanalysis', 'FeeAnalysis')}
         {link('contact', 'Contact')}
       </div>
     </nav>

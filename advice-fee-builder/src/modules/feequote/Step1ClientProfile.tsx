@@ -1,4 +1,5 @@
 import Toggle from '../../components/shared/Toggle';
+import Tooltip from '../../components/shared/Tooltip';
 
 const LIFE_STAGES = [
   { value: 'accumulation', label: 'Accumulation' },
@@ -18,14 +19,16 @@ export default function Step1ClientProfile({ quote, dispatch, onNext }) {
 
         {/* Client name */}
         <div>
-          <label className="block text-sm font-medium text-dark mb-1">
-            Client name or reference <span className="text-mid font-normal">(optional)</span>
-          </label>
+          <div className="flex items-center gap-1.5 mb-1">
+            <label className="text-sm font-medium text-dark">Client name or reference</label>
+            <span className="text-mid font-normal text-sm">(optional)</span>
+            <Tooltip text="This isn't stored anywhere — it's only used to personalise the client letter output. Use first names, e.g. John or John and Sally." />
+          </div>
           <input
             type="text"
             value={quote.clientName}
             onChange={e => set('clientName', e.target.value)}
-            placeholder="e.g. Smith Family"
+            placeholder="e.g. John and Sally"
             className="block w-full sm:w-80 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
           />
         </div>
@@ -71,12 +74,11 @@ export default function Step1ClientProfile({ quote, dispatch, onNext }) {
 
         {/* Entity count */}
         <div>
-          <label className="block text-sm font-medium text-dark mb-1">
-            Number of entities in family group
-          </label>
-          <p className="text-xs text-mid mb-2">
-            Count each separate legal entity — individuals, SMSFs, trusts, and companies (e.g. 2 individuals + 1 SMSF = 3)
-          </p>
+          <div className="flex items-center gap-1.5 mb-1">
+            <label className="text-sm font-medium text-dark">Other entities</label>
+            <Tooltip text="Count any additional legal entities beyond the individual client or couple — e.g. family trust, SMSF, company." />
+          </div>
+          <p className="text-xs text-mid mb-2">e.g. 1 family trust + 1 SMSF = 2</p>
           <div className="flex items-center gap-2">
             <button
               type="button"
