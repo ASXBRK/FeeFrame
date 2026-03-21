@@ -58,7 +58,14 @@ function reducer(state, action) {
           delete cleanedOverrides[`${id}.paraplanner`];
           delete cleanedOverrides[`${id}.admin`];
         }
-        return { ...state, quote: { ...state.quote, [action.field]: action.value, hourOverrides: cleanedOverrides } };
+        // Switching to external: turn core tasks off (external fee covers the engagement).
+        // Switching back to internal: restore defaultOn values.
+        const isExternal = action.value === 'external';
+        const coreTasks = { ...state.quote.coreTasks };
+        for (const id of coreTaskIds) {
+          coreTasks[id] = isExternal ? false : (defaultQuoteState.coreTasks as Record<string, boolean>)[id] ?? false;
+        }
+        return { ...state, quote: { ...state.quote, [action.field]: action.value, hourOverrides: cleanedOverrides, coreTasks } };
       }
       return { ...state, quote: { ...state.quote, [action.field]: action.value } };
     }
