@@ -180,7 +180,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                       {task.perAdditionalScenario && (
                         <div className="text-xs text-mid mt-0.5 flex items-center gap-1.5">
                           <span>Scenarios</span>
-                          <Tooltip text="Fee is charged per scenario. Set to 0 if no scenario modelling is required." />
+                          <Tooltip text="First scenario is included at no extra charge. Fee applies per additional scenario beyond the first." />
                           <NumInput
                             value={quote.scenarios ?? 0}
                             onChange={v => dispatch({ type: 'SET_QUOTE_FIELD', field: 'scenarios', value: Math.max(0, Math.round(v)) })}

@@ -69,12 +69,15 @@ export function calculateQuote(state: any) {
 
   const coreTaskItems = CORE_TASKS.map(task => {
     const enabled = state.coreTasks?.[task.id] ?? task.defaultOn ?? false;
-    if (!enabled || isExternal) {
+    if (!enabled) {
+      return { ...task, fee: 0, totalHours: 0, hours: 0, adviserHoursUsed: 0, paraplannerHoursUsed: 0, adminHoursUsed: 0 };
+    }
+    if (isExternal && task.hideWhenExternal) {
       return { ...task, fee: 0, totalHours: 0, hours: 0, adviserHoursUsed: 0, paraplannerHoursUsed: 0, adminHoursUsed: 0 };
     }
     let multiplier = 1;
     if (task.perEntity) multiplier = totalEntities;
-    if (task.perAdditionalScenario) multiplier = Math.max(0, scenarios);
+    if (task.perAdditionalScenario) multiplier = Math.max(0, scenarios - 1);
     return calcCoreTaskFee(task, multiplier);
   });
 
