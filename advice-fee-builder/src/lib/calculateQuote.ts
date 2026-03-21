@@ -6,9 +6,9 @@ import { roundToNearest100 } from './formatters.js';
  * Returns all computed values with no side effects.
  */
 export function calculateQuote(state: any) {
-  const adviserRate = Number(state.adviserRate) || 106;
-  const paraplannerRate = Number(state.paraplannerRate) || 62;
-  const adminRate = Number(state.adminRate) || 40;
+  const adviserRate = Number(state.adviserRate ?? 106);
+  const paraplannerRate = Number(state.paraplannerRate ?? 62);
+  const adminRate = Number(state.adminRate ?? 40);
   const isExternal = state.paraplanner === 'external';
   const entityCount = Number(state.entityCount) || 0;
   const totalEntities = (state.isCouple ? 2 : 1) + entityCount;
