@@ -3,6 +3,7 @@ import { calculateQuote } from '../../lib/calculateQuote';
 import { formatCurrency, formatHours } from '../../lib/formatters';
 import NumInput from '../../components/shared/NumInput';
 import ConfirmModal from '../../components/shared/ConfirmModal';
+import Tooltip from '../../components/shared/Tooltip';
 
 const TABS = ['Summary', 'Detailed Breakdown', 'Profitability', 'Client Output'];
 
@@ -37,7 +38,10 @@ export default function Step5Summary({ quote, dispatch, onBack, onReset, onNavig
       <div className="bg-white rounded-card border border-light-border px-5 py-3.5 mb-4 print:hidden">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-dark whitespace-nowrap">Profit Margin</label>
+            <label className="text-sm font-medium text-dark whitespace-nowrap flex items-center gap-1.5">
+              Profit Margin
+              <Tooltip text="Industry benchmark: the average Australian advice practice operates at a 21% profit margin (Adviser Ratings 2024). Top-performing practices (top 10%) achieve 47% profit margins before tax (Iress Advisely Index 2024)." />
+            </label>
             <div className="flex items-center gap-1">
               <NumInput
                 value={quote.profitMarginPercent ?? 0}
@@ -530,22 +534,6 @@ function Tab3Profitability({ calc, quote, onNavigate }) {
 
   return (
     <div className="space-y-5">
-      {/* Industry benchmark callout — always visible */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl px-5 py-4">
-        <div className="flex gap-3">
-          <span className="text-blue-500 flex-shrink-0 mt-0.5">ⓘ</span>
-          <div>
-            <div className="text-sm font-semibold text-blue-800 mb-1">Industry Benchmark</div>
-            <div className="text-sm text-blue-800">
-              The average Australian advice practice operates at a <strong>21% profit margin</strong>{' '}
-              <span className="text-xs text-blue-600">(Adviser Ratings 2024)</span>. Top-performing practices (top 10%) achieve{' '}
-              <strong>47% profit margins</strong> before tax{' '}
-              <span className="text-xs text-blue-600">(Iress Advisely Index 2024)</span>.
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Zero margin info */}
       {calc.soaMarginPercent === 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
