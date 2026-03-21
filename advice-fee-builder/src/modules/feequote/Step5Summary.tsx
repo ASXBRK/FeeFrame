@@ -710,9 +710,9 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
           <div className="text-sm font-medium text-dark mb-2">Initial SOA</div>
           <StackedBar segments={[
             { label: 'Adviser time', value: calc.soaAdviserCost, color: 'bg-blue-400' },
-            { label: 'Paraplanning', value: calc.soaParaplannerCost + calc.soaExternalFee, color: 'bg-teal' },
+            { label: calc.soaExternalFee > 0 ? 'External paraplanning' : 'Paraplanning', value: calc.soaParaplannerCost + calc.soaExternalFee, color: 'bg-teal' },
             { label: 'Admin', value: calc.soaAdminCost, color: 'bg-gray-300' },
-            ...(soaMarginValue > 0 ? [{ label: 'Margin', value: soaMarginValue, color: 'bg-green-400' }] : []),
+            ...(calc.soaMarginAmount > 0 ? [{ label: 'Margin', value: calc.soaMarginAmount, color: 'bg-emerald-500' }] : []),
           ]} />
         </div>
 
@@ -724,7 +724,7 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
               { label: 'Adviser time', value: calc.ongoingAdviserCost, color: 'bg-blue-400' },
               { label: 'Paraplanning', value: calc.ongoingParaplannerCost, color: 'bg-teal' },
               { label: 'Admin', value: calc.ongoingAdminCost, color: 'bg-gray-300' },
-              ...(ongoingMarginValue > 0 ? [{ label: 'Margin', value: ongoingMarginValue, color: 'bg-green-400' }] : []),
+              ...(calc.ongoingMarginAmount > 0 ? [{ label: 'Margin', value: calc.ongoingMarginAmount, color: 'bg-emerald-500' }] : []),
             ]} />
           </div>
         )}
