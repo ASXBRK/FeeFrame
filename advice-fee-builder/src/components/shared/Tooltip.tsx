@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 function InfoIcon() {
   return (
@@ -17,23 +18,33 @@ function InfoIcon() {
 }
 
 export default function Tooltip({ text, children }: { text: string; children?: React.ReactNode }) {
-  const [visible, setVisible] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const ref = useRef<HTMLSpanElement>(null);
+
+  function handleMouseEnter() {
+    if (ref.current) {
+      const r = ref.current.getBoundingClientRect();
+      setPos({ top: r.top + window.scrollY, left: r.left + r.width / 2 + window.scrollX });
+    }
+  }
 
   return (
     <span
-      className="relative inline-flex items-center"
-      onMouseEnter={() => setVisible(true)}
-      onMouseLeave={() => setVisible(false)}
+      ref={ref}
+      className="inline-flex items-center"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={() => setPos(null)}
     >
       {children ?? <InfoIcon />}
-      {visible && (
+      {pos && createPortal(
         <span
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-64 rounded-input bg-dark text-white text-xs px-3 py-2 leading-relaxed pointer-events-none shadow-lg"
-          style={{ whiteSpace: 'normal' }}
+          className="fixed z-[9999] w-64 rounded-input bg-dark text-white text-xs px-3 py-2 leading-relaxed pointer-events-none shadow-lg"
+          style={{ top: pos.top, left: pos.left, transform: 'translate(-50%, calc(-100% - 8px))', whiteSpace: 'normal' }}
         >
           {text}
           <span className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-dark" />
-        </span>
+        </span>,
+        document.body,
       )}
     </span>
   );
