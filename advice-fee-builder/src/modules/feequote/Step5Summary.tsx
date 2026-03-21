@@ -533,6 +533,7 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
   const hasOngoingCostData = isFixedOngoing;
 
   const soaDirectCost = calc.soaAdviserCost + calc.soaParaplannerCost + calc.soaAdminCost;
+  const soaTotalCost = soaDirectCost + calc.soaExternalFee;
 
   const soaTrueProfit = calc.adjustedFeeRounded - calc.soaTrueCost;
   const ongoingTrueProfit = calc.totalOngoingRounded - calc.ongoingTrueCost;
