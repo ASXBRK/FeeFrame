@@ -490,7 +490,7 @@ function ImplRow({ label, tooltip, value, inputLabel, onChange, fee, feeOverride
             <button
               type="button"
               onClick={() => setExpanded(e => !e)}
-              className={`text-sm transition-colors ${expanded ? 'text-teal' : 'text-mid hover:text-dark'}`}
+              className={`w-6 text-sm text-center transition-colors ${expanded ? 'text-teal' : 'text-mid hover:text-dark'}`}
               title="Override fee"
             >
               ✏️
