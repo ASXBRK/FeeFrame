@@ -40,7 +40,7 @@ export default function Step5Summary({ quote, dispatch, onBack, onReset, onNavig
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-dark whitespace-nowrap flex items-center gap-1.5">
               Profit Margin
-              <Tooltip text="Industry benchmark: the average Australian advice practice operates at a 21% profit margin (Adviser Ratings 2024). Top-performing practices (top 10%) achieve 47% profit margins before tax (Iress Advisely Index 2024)." />
+              <Tooltip text="The average Australian advice practice operates at a 21% profit margin (Adviser Ratings 2024). Top-performing practices achieve 47% (Iress Advisely Index 2024)." />
             </label>
             <div className="flex items-center gap-1">
               <NumInput
@@ -63,11 +63,9 @@ export default function Step5Summary({ quote, dispatch, onBack, onReset, onNavig
             <span className="text-sm text-dark">Apply to ongoing fee</span>
           </label>
         </div>
-      </div>
-
-      {/* Profit margin info box */}
-      <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mt-3 mb-4 print:hidden">
-        <span className="font-medium">ⓘ</span> Your firm's target profit margin applied to all fees. The average Australian advice practice operates at 21% (Adviser Ratings 2024).
+        <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mt-3">
+          💡 Your firm's target profit margin applied to all fees.
+        </div>
       </div>
 
       {/* Tab bar */}

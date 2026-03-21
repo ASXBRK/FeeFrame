@@ -27,7 +27,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
           <h3 className="text-base font-bold font-heading text-dark mb-1">Premiums</h3>
 
           <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mb-4">
-            <span className="font-medium">ⓘ</span> Premiums reflect additional time and complexity involved in serving this client. Selecting more factors increases the premium. You can adjust the amount manually.
+            💡 Premiums reflect additional time and complexity involved in serving this client. Selecting more factors increases the premium. You can adjust the amount manually.
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5">
@@ -77,7 +77,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
           <h3 className="text-base font-bold font-heading text-dark mb-1">Discounts</h3>
 
           <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mb-4">
-            <span className="font-medium">ⓘ</span> Discounts reflect factors that reduce the cost and effort of this engagement. You can adjust the amount manually.
+            💡 Discounts reflect factors that reduce the cost and effort of this engagement. You can adjust the amount manually.
           </div>
 
           {/* Relationship discount */}
