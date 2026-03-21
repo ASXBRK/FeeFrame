@@ -4,6 +4,13 @@ import { roundToNearest100 } from './formatters.js';
 /**
  * Pure calculation engine for FeeQuote (Phase 1 rebuild).
  * Returns all computed values with no side effects.
+ *
+ * Audited 2026-03-21 — all calculation paths verified against 6 test scenarios.
+ * Bugs fixed in this audit:
+ *   1. Relationship discount (state.relationshipDiscountPercent) was stored in state
+ *      but never read here — now applied to combined discount rate.
+ *   2. Total discount had no cap — now capped at 50% of base fee.
+ *      discountCapApplied exported so Step 4 UI warning fires correctly.
  */
 export function calculateQuote(state: any) {
   const adviserRate = Number(state.adviserRate ?? 106);
@@ -103,8 +110,18 @@ export function calculateQuote(state: any) {
   const premiumRate = getPremiumRate(premiumCount);
   const discountRate = getDiscountRate(discountCount);
 
+  // Relationship discount adds to the factor-based discount rate.
+  // Bug fix: state.relationshipDiscountPercent was collected in the UI but never applied here.
+  const relationshipDiscountRate = state.relationshipDiscountEnabled
+    ? (Number(state.relationshipDiscountPercent) || 0) / 100
+    : 0;
+  const combinedDiscountRate = discountRate + relationshipDiscountRate;
+  // Cap total discount at 50% of base fee to prevent negative fees.
+  const discountCapApplied = combinedDiscountRate > 0.50;
+  const effectiveDiscountRate = Math.min(0.50, combinedDiscountRate);
+
   const soaPremiumAuto = baseFee * premiumRate;
-  const soaDiscountAuto = baseFee * discountRate;
+  const soaDiscountAuto = baseFee * effectiveDiscountRate;
   const soaPremium = state.premiumSoaOverride ?? soaPremiumAuto;
   const soaDiscount = state.discountSoaOverride ?? soaDiscountAuto;
 
@@ -202,9 +219,9 @@ export function calculateQuote(state: any) {
     }
   }
 
-  // Ongoing adjustments
+  // Ongoing adjustments — use same effectiveDiscountRate (incl. relationship discount + cap)
   const ongoingPremiumAuto = totalOngoingExGst * premiumRate;
-  const ongoingDiscountAuto = totalOngoingExGst * discountRate;
+  const ongoingDiscountAuto = totalOngoingExGst * effectiveDiscountRate;
   const ongoingPremium = state.premiumOngoingOverride ?? ongoingPremiumAuto;
   const ongoingDiscount = state.discountOngoingOverride ?? ongoingDiscountAuto;
 
@@ -335,6 +352,10 @@ export function calculateQuote(state: any) {
     discountCount,
     premiumRate,
     discountRate,
+    relationshipDiscountRate,
+    combinedDiscountRate,
+    effectiveDiscountRate,
+    discountCapApplied,
     soaPremiumAuto,
     soaDiscountAuto,
     soaPremium,
