@@ -9,6 +9,7 @@ import { formatCurrency } from '../../lib/formatters';
 
 export default function Step3OngoingService({ quote, dispatch, onNext, onBack }) {
   const [entitiesOpen, setEntitiesOpen] = useState(false);
+  const [incentivesOpen, setIncentivesOpen] = useState(false);
   const calc = calculateQuote(quote);
 
   const set = (field, value) => dispatch({ type: 'SET_QUOTE_FIELD', field, value });
@@ -126,6 +127,9 @@ export default function Step3OngoingService({ quote, dispatch, onNext, onBack })
               </button>
               {entitiesOpen && <EntitySplit quote={quote} dispatch={dispatch} calc={calc} />}
             </div>
+
+            {/* Client incentives */}
+            <ClientIncentives quote={quote} set={set} calc={calc} />
           </>
         )}
       </div>
@@ -476,6 +480,109 @@ function SubscriptionModel({ quote, set, calc }) {
           <span className="text-sm text-mid">/ hour</span>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Client incentives ──────────────────────────────────────────────────────────
+function ClientIncentives({ quote, set, calc }) {
+  const [open, setOpen] = useState(false);
+
+  const soaDiscountOn = (quote.soaDiscountPercent ?? 0) > 0;
+  const discountOptions = [25, 50, 75, 100];
+  const noImpl = calc.implTotal === 0;
+
+  const soaOriginal = calc.soaTotalInclGst;
+  const soaDiscounted = calc.soaIncentivisedFee;
+  const soaSaving = calc.soaDiscountAmount;
+
+  return (
+    <div className="bg-white rounded-card border border-light-border overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-light-surface transition-colors"
+      >
+        <div>
+          <h3 className="text-base font-bold font-heading text-dark">Client Incentives <span className="text-mid font-normal">(optional)</span></h3>
+          <p className="text-xs text-mid mt-0.5">Offer a discount on initial fees to incentivise an ongoing arrangement.</p>
+        </div>
+        <span className="text-mid text-xs ml-4">{open ? '▲' : '▼'}</span>
+      </button>
+
+      {open && (
+        <div className="px-5 pb-5 space-y-5 border-t border-light-border pt-4">
+
+          {/* SOA fee discount */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-dark">Discount SOA fee</span>
+              <Toggle
+                checked={soaDiscountOn}
+                onChange={v => set('soaDiscountPercent', v ? 25 : 0)}
+                label="Discount SOA fee"
+              />
+            </div>
+            {soaDiscountOn && (
+              <>
+                <div className="flex gap-2">
+                  {discountOptions.map(pct => (
+                    <button
+                      key={pct}
+                      type="button"
+                      onClick={() => set('soaDiscountPercent', pct)}
+                      className={`px-4 py-2 rounded-input text-sm font-medium transition-colors ${
+                        quote.soaDiscountPercent === pct
+                          ? 'bg-teal text-white'
+                          : 'bg-light-surface text-dark hover:bg-light-border'
+                      }`}
+                    >
+                      {pct}%
+                    </button>
+                  ))}
+                </div>
+                <div className="text-sm">
+                  {quote.soaDiscountPercent === 100 ? (
+                    <>
+                      <span className="text-gray-400 line-through mr-1">{formatCurrency(soaOriginal)}</span>
+                      <span className="text-gray-300 mr-1">→</span>
+                      <span className="font-semibold text-gray-900 mr-2">Waived</span>
+                      <span className="text-green-600">(saving {formatCurrency(soaSaving)})</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-gray-400 line-through mr-1">{formatCurrency(soaOriginal)}</span>
+                      <span className="text-gray-300 mr-1">→</span>
+                      <span className="font-semibold text-gray-900 mr-2">{formatCurrency(soaDiscounted)}</span>
+                      <span className="text-green-600">(saving {formatCurrency(soaSaving)})</span>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Implementation fee waiver */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className={`text-sm font-medium ${noImpl ? 'text-mid' : 'text-dark'}`}>Waive implementation fee</span>
+              <Toggle
+                checked={!!quote.waiveImplementation}
+                onChange={v => set('waiveImplementation', v)}
+                label="Waive implementation fee"
+                disabled={noImpl}
+              />
+            </div>
+            {noImpl ? (
+              <p className="text-xs text-mid">No implementation fees to waive.</p>
+            ) : quote.waiveImplementation ? (
+              <p className="text-sm text-green-600">Implementation fee of {formatCurrency(calc.implTotal)} waived.</p>
+            ) : null}
+          </div>
+
+          <p className="text-xs text-gray-400 italic">These discounts apply when the client proceeds with the ongoing service arrangement.</p>
+        </div>
+      )}
     </div>
   );
 }

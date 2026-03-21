@@ -50,6 +50,9 @@ function reducer(state, action) {
       };
 
     case 'SET_QUOTE_FIELD': {
+      if (action.field === 'hasOngoing' && !action.value) {
+        return { ...state, quote: { ...state.quote, hasOngoing: false, soaDiscountPercent: 0, waiveImplementation: false } };
+      }
       if (action.field === 'paraplanner') {
         const coreTaskIds = ['discovery', 'engagementLetter', 'dataCollection', 'scenarioModelling'];
         const cleanedOverrides = { ...state.quote.hourOverrides };

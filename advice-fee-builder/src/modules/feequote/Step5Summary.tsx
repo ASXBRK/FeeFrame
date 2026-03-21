@@ -163,6 +163,49 @@ function Tab1Summary({ calc, quote }) {
         )}
       </div>
 
+      {/* Incentivised fees — only shown when incentives are active */}
+      {calc.hasIncentives && (
+        <div className="bg-white rounded-card border-l-4 border-l-green-500 border border-light-border p-5">
+          <h3 className="text-xs font-semibold font-heading text-mid uppercase tracking-wide mb-4">With Ongoing Arrangement</h3>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between items-center">
+              <span className="text-mid">SOA Preparation Fee (incl GST)</span>
+              <span className="flex items-center gap-2">
+                {calc.soaDiscountPercent > 0 && (
+                  <span className="text-gray-400 line-through">{formatCurrency(calc.soaTotalInclGst)}</span>
+                )}
+                <span className="font-semibold text-gray-900">
+                  {calc.soaDiscountPercent === 100 ? 'Waived' : formatCurrency(calc.soaIncentivisedFee)}
+                </span>
+                {calc.soaDiscountPercent > 0 && (
+                  <span className="text-green-600 text-xs">-{calc.soaDiscountPercent}%</span>
+                )}
+              </span>
+            </div>
+            {calc.implTotal > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-mid">Implementation Fees (incl GST)</span>
+                <span className="flex items-center gap-2">
+                  {calc.waiveImplementation && (
+                    <span className="text-gray-400 line-through">{formatCurrency(calc.implTotal)}</span>
+                  )}
+                  <span className="font-semibold text-gray-900">
+                    {calc.waiveImplementation ? 'Waived' : formatCurrency(calc.implTotal)}
+                  </span>
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between items-center border-t-2 border-light-border pt-3 mt-2">
+              <span className="text-base font-bold text-dark">Total Initial Fees</span>
+              <span className="flex items-center gap-3">
+                <span className="text-base font-bold text-teal">{formatCurrency(calc.totalIncentivisedInitialFees)}</span>
+                <span className="text-green-600 text-sm font-medium">saving {formatCurrency(calc.totalIncentiveSaving)}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Ongoing fees */}
       <div className="bg-white rounded-card border border-light-border p-5">
         <h3 className="text-xs font-semibold font-heading text-mid uppercase tracking-wide mb-4">Ongoing Fees</h3>
@@ -208,7 +251,10 @@ function Tab1Summary({ calc, quote }) {
               {calc.billingPlan.map((row, i) => (
                 <tr key={i}>
                   <td className="py-2.5 text-dark font-medium pr-3">{row.phase}</td>
-                  <td className="py-2.5 text-mid pr-3 hidden sm:table-cell">{row.description}</td>
+                  <td className="py-2.5 pr-3 hidden sm:table-cell">
+                    <span className="text-mid">{row.description}</span>
+                    {row.note && <span className="block text-xs text-green-600 mt-0.5">{row.note}</span>}
+                  </td>
                   <td className="py-2.5 text-right font-semibold text-dark">{formatCurrency(row.amount)}</td>
                   <td className="py-2.5 text-mid pl-3 hidden md:table-cell">{row.when}</td>
                   <td className="py-2.5 text-mid pl-3 hidden md:table-cell">{row.how}</td>
@@ -526,6 +572,10 @@ function Tab3Profitability({ calc, quote, onNavigate }) {
     callouts.push(`Your margin of ${calc.soaMarginPercent}% is below the industry average of 21%. While this may be appropriate for some engagements, sustained low margins can impact business viability.`);
   }
 
+  const firstYearMarginWithIncentives = calc.hasIncentives
+    ? firstYearMargin - calc.totalIncentiveSaving
+    : firstYearMargin;
+
   return (
     <div className="space-y-5">
       {/* Zero margin info */}
@@ -535,6 +585,31 @@ function Tab3Profitability({ calc, quote, onNavigate }) {
             <span className="text-amber-500 flex-shrink-0 mt-0.5">⚠</span>
             <div className="text-sm text-amber-800">
               <span className="font-semibold">No profit margin applied.</span> Your quoted fees currently reflect cost only. Use the margin input above to add your target profitability.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Incentives impact callout */}
+      {calc.hasIncentives && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
+          <div className="flex gap-3">
+            <span className="text-amber-500 flex-shrink-0 mt-0.5">⚠</span>
+            <div className="text-sm text-amber-800 space-y-1">
+              <div className="font-semibold">Client incentives applied</div>
+              {calc.soaDiscountPercent > 0 && (
+                <div>SOA discount ({calc.soaDiscountPercent}%): -{formatCurrency(calc.soaDiscountAmount)}</div>
+              )}
+              {calc.waiveImplementation && calc.implTotal > 0 && (
+                <div>Implementation waiver: -{formatCurrency(calc.implTotal)}</div>
+              )}
+              <div className="font-medium pt-1">
+                Total first-year margin impact: -{formatCurrency(calc.totalIncentiveSaving)}
+              </div>
+              <div>
+                Your first-year margin with incentives: <span className="font-semibold">{formatCurrency(firstYearMarginWithIncentives)}</span>
+                <span className="text-amber-600"> (was {formatCurrency(firstYearMargin)} without incentives)</span>
+              </div>
             </div>
           </div>
         </div>

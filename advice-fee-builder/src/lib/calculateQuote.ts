@@ -223,12 +223,29 @@ export function calculateQuote(state: any) {
   const impliedHourlyRateSoa = totalBaseHours > 0 ? adjustedFeeRounded / totalBaseHours : 0;
   const impliedHourlyRateOngoing = totalOngoingHours > 0 ? totalOngoingRounded / totalOngoingHours : 0;
 
+  // ── Client incentives ─────────────────────────────────────────────────────
+  const soaDiscountPercent = Number(state.soaDiscountPercent) || 0;
+  const soaDiscountAmount = soaTotalInclGst * (soaDiscountPercent / 100);
+  const soaIncentivisedFee = soaTotalInclGst - soaDiscountAmount;
+  const waiveImplementation = !!state.waiveImplementation;
+  const implIncentivisedFee = waiveImplementation ? 0 : implTotal;
+  const totalIncentivisedInitialFees = soaIncentivisedFee + implIncentivisedFee;
+  const totalIncentiveSaving = soaDiscountAmount + (waiveImplementation ? implTotal : 0);
+  const hasIncentives = soaDiscountPercent > 0 || waiveImplementation;
+
   // ── Billing plan ──────────────────────────────────────────────────────────
+  const soaPhaseAmount = hasIncentives ? soaIncentivisedFee / 2 : soaTotalInclGst / 2;
+  const soaPhaseNote = hasIncentives && soaDiscountPercent > 0
+    ? `Discounted from ${fmtCcy(soaTotalInclGst / 2)} — subject to ongoing agreement`
+    : undefined;
+  const implPhaseNote = waiveImplementation && implTotal > 0
+    ? `Waived — subject to ongoing agreement`
+    : undefined;
   const billingPlan = [
-    { phase: '1 — Onboarding', description: '50% of SOA fee', amount: soaTotalInclGst / 2, when: 'On signing engagement letter', how: 'BPay' },
-    { phase: '2 — SOA Delivery', description: '50% of SOA fee', amount: soaTotalInclGst / 2, when: 'On SOA presentation', how: 'Platform' },
-    { phase: '3 — Implementation', description: 'Full implementation fee', amount: implTotal, when: 'On implementation', how: 'Platform' },
-    { phase: '4 — Ongoing Service', description: 'Annual fee (quarterly)', amount: totalOngoingInclGst / 4, when: 'Quarterly in arrears', how: 'Platform' },
+    { phase: '1 — Onboarding', description: '50% of SOA fee', amount: soaPhaseAmount, when: 'On signing engagement letter', how: 'BPay', note: soaPhaseNote },
+    { phase: '2 — SOA Delivery', description: '50% of SOA fee', amount: soaPhaseAmount, when: 'On SOA presentation', how: 'Platform', note: soaPhaseNote },
+    { phase: '3 — Implementation', description: waiveImplementation && implTotal > 0 ? 'Implementation fee waived' : 'Full implementation fee', amount: implIncentivisedFee, when: 'On implementation', how: 'Platform', note: implPhaseNote },
+    { phase: '4 — Ongoing Service', description: 'Annual fee (quarterly)', amount: totalOngoingInclGst / 4, when: 'Quarterly in arrears', how: 'Platform', note: undefined },
   ];
 
   // ── Client paragraph ──────────────────────────────────────────────────────
@@ -371,6 +388,16 @@ export function calculateQuote(state: any) {
     accountKeepingFee: 0,
     marginLendingFee: 0,
     strategyCount: STRATEGIES.filter(s => state.strategies?.[s.id]).length,
+
+    // Client incentives
+    soaDiscountPercent,
+    soaDiscountAmount,
+    soaIncentivisedFee,
+    waiveImplementation,
+    implIncentivisedFee,
+    totalIncentivisedInitialFees,
+    totalIncentiveSaving,
+    hasIncentives,
 
     // Output
     billingPlan,
