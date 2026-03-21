@@ -533,13 +533,11 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
   const hasOngoingCostData = isFixedOngoing;
 
   const soaDirectCost = calc.soaAdviserCost + calc.soaParaplannerCost + calc.soaAdminCost;
-  const soaTotalCost = soaDirectCost + calc.soaExternalFee;
-  const soaMarginValue = calc.adjustedFeeRounded - soaTotalCost;
 
-  const ongoingTotalCost = calc.ongoingAdviserCost + calc.ongoingParaplannerCost + calc.ongoingAdminCost;
-  const ongoingMarginValue = calc.totalOngoingRounded - ongoingTotalCost;
+  const soaTrueProfit = calc.adjustedFeeRounded - calc.soaTrueCost;
+  const ongoingTrueProfit = calc.totalOngoingRounded - calc.ongoingTrueCost;
 
-  const firstYearMargin = calc.soaMarginAmount + (hasOngoingCostData ? calc.ongoingMarginAmount : 0);
+  const firstYearMargin = soaTrueProfit + (hasOngoingCostData ? ongoingTrueProfit : 0);
 
   // Smart callouts
   const callouts: string[] = [];
@@ -639,17 +637,17 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">SOA Cost → Fee</div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-gray-500">{formatCurrency(calc.soaCostBeforeMargin)}</span>
+            <span className="text-gray-500">{formatCurrency(calc.soaTrueCost)}</span>
             <span className="text-gray-300">→</span>
             <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.adjustedFeeRounded)}</span>
           </div>
           <div className="text-sm text-gray-500 mt-1.5">
             Margin:{' '}
-            <span className={calc.soaMarginAmount > 0 ? 'font-semibold text-green-600' : 'text-gray-400'}>
-              {formatCurrency(calc.soaMarginAmount)}
+            <span className={soaTrueProfit > 0 ? 'font-semibold text-green-600' : soaTrueProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
+              {formatCurrency(soaTrueProfit)}
             </span>
             {' '}
-            <span className="text-gray-400">({calc.soaMarginPercent}%)</span>
+            <span className="text-gray-400">({calc.adjustedFeeRounded > 0 ? Math.round((soaTrueProfit / calc.adjustedFeeRounded) * 100) : 0}%)</span>
           </div>
         </div>
 
@@ -661,18 +659,18 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
           ) : hasOngoingCostData ? (
             <>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-gray-500">{formatCurrency(calc.ongoingCostBeforeMargin)}</span>
+                <span className="text-gray-500">{formatCurrency(calc.ongoingTrueCost)}</span>
                 <span className="text-gray-300">→</span>
                 <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.totalOngoingRounded)}</span>
                 <span className="text-sm text-gray-400">/yr</span>
               </div>
               <div className="text-sm text-gray-500 mt-1.5">
                 Margin:{' '}
-                <span className={calc.ongoingMarginAmount > 0 ? 'font-semibold text-green-600' : 'text-gray-400'}>
-                  {formatCurrency(calc.ongoingMarginAmount)}
+                <span className={ongoingTrueProfit > 0 ? 'font-semibold text-green-600' : ongoingTrueProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
+                  {formatCurrency(ongoingTrueProfit)}
                 </span>
                 {' '}
-                <span className="text-gray-400">({calc.ongoingMarginPercent}%)</span>
+                <span className="text-gray-400">({calc.totalOngoingRounded > 0 ? Math.round((ongoingTrueProfit / calc.totalOngoingRounded) * 100) : 0}%)</span>
               </div>
             </>
           ) : (
@@ -691,7 +689,7 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
         {/* Card 3: Total first year profit */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Total First Year</div>
-          <div className={`text-2xl font-bold ${firstYearMargin > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+          <div className={`text-2xl font-bold ${firstYearMargin > 0 ? 'text-green-600' : firstYearMargin < 0 ? 'text-red-600' : 'text-gray-400'}`}>
             {formatCurrency(firstYearMargin)}
           </div>
           {(isPercentageOngoing || isSubscriptionOngoing) ? (
@@ -712,8 +710,11 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
             { label: 'Adviser time', value: calc.soaAdviserCost, color: 'bg-blue-400' },
             { label: calc.soaExternalFee > 0 ? 'External paraplanning' : 'Paraplanning', value: calc.soaParaplannerCost + calc.soaExternalFee, color: 'bg-teal' },
             { label: 'Admin', value: calc.soaAdminCost, color: 'bg-gray-300' },
-            ...(calc.soaMarginAmount > 0 ? [{ label: 'Margin', value: calc.soaMarginAmount, color: 'bg-emerald-500' }] : []),
+            ...(soaTrueProfit > 0 ? [{ label: 'Margin', value: soaTrueProfit, color: 'bg-emerald-500' }] : []),
           ]} />
+          {soaTrueProfit < 0 && (
+            <p className="text-xs text-red-600 mt-1">Loss: {formatCurrency(soaTrueProfit)} — fee is below cost</p>
+          )}
         </div>
 
         {/* Fixed ongoing cost breakdown */}
@@ -724,8 +725,11 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
               { label: 'Adviser time', value: calc.ongoingAdviserCost, color: 'bg-blue-400' },
               { label: 'Paraplanning', value: calc.ongoingParaplannerCost, color: 'bg-teal' },
               { label: 'Admin', value: calc.ongoingAdminCost, color: 'bg-gray-300' },
-              ...(calc.ongoingMarginAmount > 0 ? [{ label: 'Margin', value: calc.ongoingMarginAmount, color: 'bg-emerald-500' }] : []),
+              ...(ongoingTrueProfit > 0 ? [{ label: 'Margin', value: ongoingTrueProfit, color: 'bg-emerald-500' }] : []),
             ]} />
+            {ongoingTrueProfit < 0 && (
+              <p className="text-xs text-red-600 mt-1">Loss: {formatCurrency(ongoingTrueProfit)} — fee is below cost</p>
+            )}
           </div>
         )}
 

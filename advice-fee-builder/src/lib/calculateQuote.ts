@@ -92,6 +92,7 @@ export function calculateQuote(state: any) {
   const soaParaplannerCost = isExternal ? 0 : lineItems.reduce((s, l) => s + l.paraplannerHoursUsed * paraplannerRate, 0);
   const soaAdminCost = lineItems.reduce((s, l) => s + l.adminHoursUsed * adminRate, 0);
   const soaExternalFee = isExternal ? effectiveParaplannerFee : 0;
+  const soaTrueCost = soaAdviserCost + soaParaplannerCost + soaAdminCost + soaExternalFee;
 
   // ── Step 4: Adjustments ────────────────────────────────────────────────────
   const premiumCount = PREMIUM_FACTORS.filter((_, i) => state.premiumFactors?.[i]).length;
@@ -158,6 +159,7 @@ export function calculateQuote(state: any) {
     + annualTaskItems.reduce((s, t) => s + t.paraplannerHoursUsed * paraplannerRate, 0);
   const ongoingAdminCost = reviewTaskItems.reduce((s, t) => s + t.adminHoursUsed * adminRate, 0) * reviewMeetings
     + annualTaskItems.reduce((s, t) => s + t.adminHoursUsed * adminRate, 0);
+  const ongoingTrueCost = ongoingAdviserCost + ongoingParaplannerCost + ongoingAdminCost;
 
   // Variable / percentage-based FUM
   let variableFee = 0;
@@ -317,11 +319,13 @@ export function calculateQuote(state: any) {
     soaParaplannerCost,
     soaAdminCost,
     soaExternalFee,
+    soaTrueCost,
 
     // Ongoing cost components
     ongoingAdviserCost,
     ongoingParaplannerCost,
     ongoingAdminCost,
+    ongoingTrueCost,
 
     // Adjustments
     premiumCount,
