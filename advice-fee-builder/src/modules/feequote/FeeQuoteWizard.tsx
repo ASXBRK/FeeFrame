@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import logoLight from '../../assets/logos/feeframe-primary-light.svg';
 import QuoteSidebar from './QuoteSidebar';
 import Step1ClientProfile from './Step1ClientProfile';
 import Step2ScopeOfAdvice from './Step2ScopeOfAdvice';
@@ -68,6 +69,25 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
             />
           )}
         </main>
+
+        {/* Bottom bar */}
+        <div className="bg-white border-t border-gray-200 px-6 py-3 print:hidden">
+          <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <img src={logoLight} alt="FeeFrame" className="h-4 opacity-50" />
+              <span>·</span>
+              <span>Built for Australian advice practices</span>
+              <span>·</span>
+              <span>Free to use</span>
+              <span>·</span>
+              <span>No data stored</span>
+            </div>
+            <div className="flex items-center gap-4 text-xs">
+              <button onClick={onGoHome} className="text-gray-400 hover:text-gray-600 transition-colors">About</button>
+              <button onClick={onGoHome} className="text-gray-400 hover:text-gray-600 transition-colors">Contact</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <ConfirmModal
