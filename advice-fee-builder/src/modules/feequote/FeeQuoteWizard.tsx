@@ -71,18 +71,18 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
         </main>
 
         {/* Bottom bar */}
-        <div className="bg-white border-t border-gray-200 px-6 py-3 print:hidden">
-          <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-xs text-gray-400">
-              <img src={logoLight} alt="FeeFrame" className="h-4 opacity-50" />
-              <span>·</span>
+        <div className="bg-white border-t border-gray-300 px-6 py-5 print:hidden">
+          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-0">
+            <div className="flex items-center gap-2.5 text-sm text-gray-400">
+              <img src={logoLight} alt="FeeFrame" className="h-5 opacity-60" />
+              <span className="text-gray-300">·</span>
               <span>Built for Australian advice practices</span>
-              <span>·</span>
+              <span className="text-gray-300">·</span>
               <span>Free to use</span>
-              <span>·</span>
+              <span className="text-gray-300">·</span>
               <span>No data stored</span>
             </div>
-            <div className="flex items-center gap-4 text-xs">
+            <div className="flex items-center gap-4 text-sm sm:ml-6">
               <button onClick={onGoHome} className="text-gray-400 hover:text-gray-600 transition-colors">About</button>
               <button onClick={onGoHome} className="text-gray-400 hover:text-gray-600 transition-colors">Contact</button>
             </div>
