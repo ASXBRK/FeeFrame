@@ -73,6 +73,10 @@ export const defaultQuoteState = {
   // Entity fee split
   entities: [],
 
-  // Step 5
+  // Step 5: profit margin
+  profitMarginPercent: 0,
+  applyMarginToOngoing: true,
+
+  // Step 5: client paragraph override (null = auto-generated)
   clientParagraphOverride: null,
 };

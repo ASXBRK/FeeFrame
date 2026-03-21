@@ -13,6 +13,8 @@ export function calculateQuote(state: any) {
   const entityCount = Number(state.entityCount) || 0;
   const totalEntities = (state.isCouple ? 2 : 1) + entityCount;
   const scenarios = Number(state.scenarios) || 0;
+  const marginPercent = Number(state.profitMarginPercent) || 0;
+  const applyMarginToOngoing = state.applyMarginToOngoing !== false;
 
   // ── Helper: calc fee for one line item ────────────────────────────────────
   function calcLineItemFee(item: any, multiplier = 1) {
@@ -67,6 +69,12 @@ export function calculateQuote(state: any) {
   const baseFee = isExternal ? effectiveParaplannerFee + soaLineTotal : soaLineTotal;
   const totalBaseHours = lineItems.reduce((s, l) => s + l.totalHours, 0);
 
+  // SOA cost components (for profitability)
+  const soaAdviserCost = lineItems.reduce((s, l) => s + l.adviserHoursUsed * adviserRate, 0);
+  const soaParaplannerCost = isExternal ? 0 : lineItems.reduce((s, l) => s + l.paraplannerHoursUsed * paraplannerRate, 0);
+  const soaAdminCost = lineItems.reduce((s, l) => s + l.adminHoursUsed * adminRate, 0);
+  const soaExternalFee = isExternal ? effectiveParaplannerFee : 0;
+
   // ── Step 4: Adjustments ────────────────────────────────────────────────────
   const premiumCount = PREMIUM_FACTORS.filter((_, i) => state.premiumFactors?.[i]).length;
   const discountCount = DISCOUNT_FACTORS.filter((_, i) => state.discountFactors?.[i]).length;
@@ -78,7 +86,10 @@ export function calculateQuote(state: any) {
   const soaPremium = state.premiumSoaOverride ?? soaPremiumAuto;
   const soaDiscount = state.discountSoaOverride ?? soaDiscountAuto;
 
-  const adjustedFeeRounded = roundToNearest100(baseFee + soaPremium - soaDiscount);
+  // Apply margin AFTER adjustments, BEFORE rounding/GST
+  const soaCostBeforeMargin = baseFee + soaPremium - soaDiscount;
+  const soaMarginAmount = soaCostBeforeMargin * (marginPercent / 100);
+  const adjustedFeeRounded = roundToNearest100(soaCostBeforeMargin + soaMarginAmount);
   const soaGst = adjustedFeeRounded * 0.1;
   const soaTotalInclGst = adjustedFeeRounded + soaGst;
 
@@ -118,6 +129,17 @@ export function calculateQuote(state: any) {
   const reviewMeetings = Number(state.reviewMeetings) || 0;
   const reviewMeetingFee = costPerReview * reviewMeetings;
   const fixedOngoingFee = reviewMeetingFee + totalAnnualTaskFee;
+
+  // Total ongoing hours (review × meetings + annual tasks)
+  const totalOngoingHours = totalReviewHours * reviewMeetings + annualTaskItems.reduce((s, t) => s + t.totalHours, 0);
+
+  // Ongoing cost components (for profitability)
+  const ongoingAdviserCost = reviewTaskItems.reduce((s, t) => s + t.adviserHoursUsed * adviserRate, 0) * reviewMeetings
+    + annualTaskItems.reduce((s, t) => s + t.adviserHoursUsed * adviserRate, 0);
+  const ongoingParaplannerCost = reviewTaskItems.reduce((s, t) => s + t.paraplannerHoursUsed * paraplannerRate, 0) * reviewMeetings
+    + annualTaskItems.reduce((s, t) => s + t.paraplannerHoursUsed * paraplannerRate, 0);
+  const ongoingAdminCost = reviewTaskItems.reduce((s, t) => s + t.adminHoursUsed * adminRate, 0) * reviewMeetings
+    + annualTaskItems.reduce((s, t) => s + t.adminHoursUsed * adminRate, 0);
 
   // Variable / percentage-based FUM
   let variableFee = 0;
@@ -164,12 +186,24 @@ export function calculateQuote(state: any) {
   const ongoingDiscount = state.discountOngoingOverride ?? ongoingDiscountAuto;
 
   const ongoingCommissionOffset = Number(state.ongoingInsuranceCommissionOffset) || 0;
+
+  // Apply margin to ongoing AFTER adjustments, BEFORE rounding/GST
+  const ongoingCostBeforeMargin = Math.max(0, totalOngoingExGst + ongoingPremium - ongoingDiscount - ongoingCommissionOffset);
+  const ongoingMarginAmount = hasOngoing && applyMarginToOngoing
+    ? ongoingCostBeforeMargin * (marginPercent / 100)
+    : 0;
+  const ongoingMarginPercent = hasOngoing && applyMarginToOngoing ? marginPercent : 0;
+
   const totalOngoingRounded = hasOngoing
-    ? roundToNearest100(Math.max(0, totalOngoingExGst + ongoingPremium - ongoingDiscount - ongoingCommissionOffset))
+    ? roundToNearest100(ongoingCostBeforeMargin + ongoingMarginAmount)
     : 0;
   const ongoingGst = totalOngoingRounded * 0.1;
   const totalOngoingInclGst = totalOngoingRounded + ongoingGst;
   const monthlyOngoing = totalOngoingInclGst / 12;
+
+  // Implied hourly rates
+  const impliedHourlyRateSoa = totalBaseHours > 0 ? adjustedFeeRounded / totalBaseHours : 0;
+  const impliedHourlyRateOngoing = totalOngoingHours > 0 ? totalOngoingRounded / totalOngoingHours : 0;
 
   // ── Billing plan ──────────────────────────────────────────────────────────
   const billingPlan = [
@@ -243,6 +277,17 @@ export function calculateQuote(state: any) {
     totalBaseHours,
     baseFee,
 
+    // SOA cost components
+    soaAdviserCost,
+    soaParaplannerCost,
+    soaAdminCost,
+    soaExternalFee,
+
+    // Ongoing cost components
+    ongoingAdviserCost,
+    ongoingParaplannerCost,
+    ongoingAdminCost,
+
     // Adjustments
     premiumCount,
     discountCount,
@@ -256,6 +301,16 @@ export function calculateQuote(state: any) {
     ongoingDiscountAuto,
     ongoingPremium,
     ongoingDiscount,
+
+    // Margin
+    soaCostBeforeMargin,
+    soaMarginAmount,
+    soaMarginPercent: marginPercent,
+    ongoingCostBeforeMargin,
+    ongoingMarginAmount,
+    ongoingMarginPercent,
+
+    // SOA final
     adjustedFeeRounded,
     soaGst,
     soaTotalInclGst,
@@ -272,6 +327,7 @@ export function calculateQuote(state: any) {
     hasOngoing,
     costPerReview,
     totalReviewHours,
+    totalOngoingHours,
     reviewMeetings,
     fixedOngoingFee,
     totalAnnualTaskFee,
@@ -282,6 +338,10 @@ export function calculateQuote(state: any) {
     ongoingGst,
     totalOngoingInclGst,
     monthlyOngoing,
+
+    // Implied rates
+    impliedHourlyRateSoa,
+    impliedHourlyRateOngoing,
 
     // Backward-compat aliases (for Step 5)
     complexityCount: premiumCount,
