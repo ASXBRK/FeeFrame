@@ -228,7 +228,11 @@ export default function App() {
 
   const goTo = useCallback((view) => dispatch({ type: 'SET_VIEW', view }), []);
 
-  const handleNavigate = useCallback((p: NavPage) => setPage(p), []);
+  const handleNavigate = useCallback((p: string) => {
+    if (p === 'feequote') { goTo('quote'); setPage('quote'); }
+    else if (p === 'feeanalysis') { goTo('analysis'); setPage('analysis'); }
+    else { goTo('landing'); setPage(p as NavPage); }
+  }, [goTo]);
 
   if (state.view === 'quote') {
     return (
@@ -237,6 +241,7 @@ export default function App() {
         dispatch={dispatch}
         onGoHome={() => { goTo('landing'); setPage('landing'); }}
         onGoAnalysis={(fees) => dispatch({ type: 'HANDOFF_TO_ANALYSIS', ...fees })}
+        onNavigate={handleNavigate}
       />
     );
   }
@@ -248,6 +253,7 @@ export default function App() {
         dispatch={dispatch}
         onGoHome={() => { goTo('landing'); setPage('landing'); }}
         onGoQuote={() => goTo('quote')}
+        onNavigate={handleNavigate}
       />
     );
   }
@@ -263,6 +269,7 @@ export default function App() {
         <Landing
           onStartQuote={() => { goTo('quote'); setPage('quote'); }}
           onStartAnalysis={() => { goTo('analysis'); setPage('analysis'); }}
+          onNavigate={handleNavigate}
         />
       )}
     </>

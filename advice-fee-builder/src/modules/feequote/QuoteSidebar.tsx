@@ -14,8 +14,8 @@ export default function QuoteSidebar({ currentStep, maxStep, onStepClick, onGoHo
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-56 bg-dark text-white min-h-screen flex-shrink-0">
         <div className="px-5 py-8 border-b border-dark-border">
-          <button onClick={onGoHome} className="block hover:opacity-75 transition-opacity">
-            <img src={feequoteLogo} alt="FeeQuote" className="h-10" style={{ filter: 'brightness(0) invert(1)' }} />
+          <button onClick={onGoHome} className="block w-full hover:opacity-75 transition-opacity">
+            <img src={feequoteLogo} alt="FeeQuote" className="w-full" style={{ filter: 'brightness(0) invert(1)' }} />
           </button>
         </div>
 
@@ -54,7 +54,7 @@ export default function QuoteSidebar({ currentStep, maxStep, onStepClick, onGoHo
       {/* Mobile top bar */}
       <div className="md:hidden bg-dark text-white px-4 py-3 flex items-center justify-between">
         <button onClick={onGoHome} className="flex items-center hover:opacity-75 transition-opacity">
-          <img src={feequoteLogo} alt="FeeQuote" className="h-6" style={{ filter: 'brightness(0) invert(1)' }} />
+          <img src={feequoteLogo} alt="FeeQuote" className="h-7" style={{ filter: 'brightness(0) invert(1)' }} />
         </button>
         <div className="flex gap-1">
           {STEPS.map((step) => {

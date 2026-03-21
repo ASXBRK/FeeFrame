@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import logoLight from '../../assets/logos/feeframe-primary-light.svg';
 import QuoteSidebar from './QuoteSidebar';
+import FooterBar from '../../components/shared/FooterBar';
 import Step1ClientProfile from './Step1ClientProfile';
 import Step2ScopeOfAdvice from './Step2ScopeOfAdvice';
 import Step3OngoingService from './Step3OngoingService';
@@ -8,7 +8,7 @@ import Step4Adjustments from './Step4Adjustments';
 import Step5Summary from './Step5Summary';
 import ConfirmModal from '../../components/shared/ConfirmModal';
 
-export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis }: { state: any; dispatch: any; onGoHome: () => void; onGoAnalysis: (fees: any) => void }) {
+export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis, onNavigate }: { state: any; dispatch: any; onGoHome: () => void; onGoAnalysis: (fees: any) => void; onNavigate: (page: string) => void }) {
   const [showReset, setShowReset] = useState(false);
 
   const { quoteStep, maxQuoteStep, quote } = state;
@@ -70,24 +70,13 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
           )}
         </main>
 
-        {/* Bottom bar */}
-        <div className="bg-white border-t border-gray-300 px-6 py-5 print:hidden">
-          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-0">
-            <div className="flex items-center gap-2.5 text-sm text-gray-400">
-              <img src={logoLight} alt="FeeFrame" className="h-5 opacity-60" />
-              <span className="text-gray-300">·</span>
-              <span>Built for Australian advice practices</span>
-              <span className="text-gray-300">·</span>
-              <span>Free to use</span>
-              <span className="text-gray-300">·</span>
-              <span>No data stored</span>
-            </div>
-            <div className="flex items-center gap-4 text-sm sm:ml-6">
-              <button onClick={onGoHome} className="text-gray-400 hover:text-gray-600 transition-colors">About</button>
-              <button onClick={onGoHome} className="text-gray-400 hover:text-gray-600 transition-colors">Contact</button>
-            </div>
-          </div>
-        </div>
+        <FooterBar
+          currentPage="feequote"
+          onNavigate={(page) => {
+            if (page === 'home') onGoHome();
+            else onNavigate(page);
+          }}
+        />
       </div>
 
       <ConfirmModal
