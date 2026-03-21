@@ -477,11 +477,10 @@ function StackedBar({ segments }: { segments: { label: string; value: number; co
 }
 
 function Tab3Profitability({ calc, quote, onNavigate }) {
-  const soaRate = calc.impliedHourlyRateSoa;
-  const ongoingRate = calc.impliedHourlyRateOngoing;
   const isFixedOngoing = calc.hasOngoing && quote.ongoingModel === 'fixedOnly';
   const isPercentageOngoing = calc.hasOngoing && quote.ongoingModel === 'percentageBased';
   const isSubscriptionOngoing = calc.hasOngoing && quote.ongoingModel === 'subscription';
+  const hasOngoingCostData = isFixedOngoing;
 
   const soaDirectCost = calc.soaAdviserCost + calc.soaParaplannerCost + calc.soaAdminCost;
   const soaTotalCost = soaDirectCost + calc.soaExternalFee;
@@ -490,9 +489,7 @@ function Tab3Profitability({ calc, quote, onNavigate }) {
   const ongoingTotalCost = calc.ongoingAdviserCost + calc.ongoingParaplannerCost + calc.ongoingAdminCost;
   const ongoingMarginValue = calc.totalOngoingRounded - ongoingTotalCost;
 
-  const totalFees = calc.adjustedFeeRounded + (isFixedOngoing ? calc.totalOngoingRounded : 0);
-  const totalMargin = soaMarginValue + (isFixedOngoing ? ongoingMarginValue : 0);
-  const totalMarginPct = totalFees > 0 ? (totalMargin / totalFees) * 100 : 0;
+  const firstYearMargin = calc.soaMarginAmount + (hasOngoingCostData ? calc.ongoingMarginAmount : 0);
 
   // Smart callouts
   const callouts: string[] = [];
@@ -529,9 +526,6 @@ function Tab3Profitability({ calc, quote, onNavigate }) {
     callouts.push(`Your margin of ${calc.soaMarginPercent}% is below the industry average of 21%. While this may be appropriate for some engagements, sustained low margins can impact business viability.`);
   }
 
-  const showOngoingRateCard = isFixedOngoing && calc.totalOngoingHours > 0;
-  const gridCols = showOngoingRateCard ? 'sm:grid-cols-3' : 'sm:grid-cols-2';
-
   return (
     <div className="space-y-5">
       {/* Zero margin info */}
@@ -546,39 +540,72 @@ function Tab3Profitability({ calc, quote, onNavigate }) {
         </div>
       )}
 
-      {/* Effective rate cards — neutral, no colour coding */}
-      <div className={`grid gap-4 ${gridCols}`}>
-        {/* SOA rate */}
-        <div className="rounded-card border border-gray-200 bg-white p-4">
-          <div className="text-xs font-semibold font-heading uppercase tracking-wide text-mid mb-1">Effective Rate — Initial SOA</div>
-          <div className="text-2xl font-bold font-heading text-dark">
-            {soaRate > 0 ? `${formatCurrency(soaRate)}/hr` : '—'}
+      {/* Metric cards */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        {/* Card 1: SOA cost → fee */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">SOA Cost → Fee</div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-gray-500">{formatCurrency(calc.soaCostBeforeMargin)}</span>
+            <span className="text-gray-300">→</span>
+            <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.adjustedFeeRounded)}</span>
           </div>
-          <div className="text-xs text-mid mt-1">
-            {formatCurrency(calc.adjustedFeeRounded)} fee ÷ {calc.totalBaseHours.toFixed(1)} total hours
+          <div className="text-sm text-gray-500 mt-1.5">
+            Margin:{' '}
+            <span className={calc.soaMarginAmount > 0 ? 'font-semibold text-green-600' : 'text-gray-400'}>
+              {formatCurrency(calc.soaMarginAmount)}
+            </span>
+            {' '}
+            <span className="text-gray-400">({calc.soaMarginPercent}%)</span>
           </div>
         </div>
 
-        {/* Ongoing rate — fixed fee only */}
-        {showOngoingRateCard && (
-          <div className="rounded-card border border-gray-200 bg-white p-4">
-            <div className="text-xs font-semibold font-heading uppercase tracking-wide text-mid mb-1">Effective Rate — Ongoing</div>
-            <div className="text-2xl font-bold font-heading text-dark">
-              {ongoingRate > 0 ? `${formatCurrency(ongoingRate)}/hr` : '—'}
-            </div>
-            <div className="text-xs text-mid mt-1">
-              {formatCurrency(calc.totalOngoingRounded)} fee ÷ {calc.totalOngoingHours.toFixed(1)} total hours
-            </div>
-          </div>
-        )}
+        {/* Card 2: Ongoing cost → fee */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Ongoing Cost → Fee</div>
+          {!calc.hasOngoing ? (
+            <div className="text-sm text-gray-400">No ongoing fee</div>
+          ) : hasOngoingCostData ? (
+            <>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-gray-500">{formatCurrency(calc.ongoingCostBeforeMargin)}</span>
+                <span className="text-gray-300">→</span>
+                <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.totalOngoingRounded)}</span>
+                <span className="text-sm text-gray-400">/yr</span>
+              </div>
+              <div className="text-sm text-gray-500 mt-1.5">
+                Margin:{' '}
+                <span className={calc.ongoingMarginAmount > 0 ? 'font-semibold text-green-600' : 'text-gray-400'}>
+                  {formatCurrency(calc.ongoingMarginAmount)}
+                </span>
+                {' '}
+                <span className="text-gray-400">({calc.ongoingMarginPercent}%)</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-gray-400">—</span>
+                <span className="text-gray-300">→</span>
+                <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.totalOngoingRounded)}</span>
+                <span className="text-sm text-gray-400">/yr</span>
+              </div>
+              <div className="text-sm text-gray-400 mt-1.5">N/A — no cost data</div>
+            </>
+          )}
+        </div>
 
-        {/* Total margin card */}
-        <div className="rounded-card border border-gray-200 bg-white p-4">
-          <div className="text-xs font-semibold font-heading uppercase tracking-wide text-mid mb-1">Total Margin</div>
-          <div className="text-2xl font-bold font-heading text-dark">
-            {formatCurrency(totalMargin)}
+        {/* Card 3: Total first year profit */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Total First Year</div>
+          <div className={`text-2xl font-bold ${firstYearMargin > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+            {formatCurrency(firstYearMargin)}
           </div>
-          <div className="text-xs text-mid mt-1">{totalMarginPct.toFixed(1)}% of total fees</div>
+          {(isPercentageOngoing || isSubscriptionOngoing) ? (
+            <div className="text-sm text-gray-400 mt-1">SOA margin only — ongoing cost data not available</div>
+          ) : (
+            <div className="text-sm text-gray-400 mt-1">Combined first year profit</div>
+          )}
         </div>
       </div>
 
