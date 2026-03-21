@@ -207,10 +207,10 @@ export function calculateQuote(state: any) {
 
   // Apply margin to ongoing AFTER adjustments, BEFORE rounding/GST
   const ongoingCostBeforeMargin = Math.max(0, totalOngoingExGst + ongoingPremium - ongoingDiscount - ongoingCommissionOffset);
-  const ongoingMarginAmount = hasOngoing && applyMarginToOngoing
+  const ongoingMarginAmount = hasOngoing && applyMarginToOngoing && state.ongoingModel === 'fixedOnly'
     ? ongoingCostBeforeMargin * (marginPercent / 100)
     : 0;
-  const ongoingMarginPercent = hasOngoing && applyMarginToOngoing ? marginPercent : 0;
+  const ongoingMarginPercent = hasOngoing && applyMarginToOngoing && state.ongoingModel === 'fixedOnly' ? marginPercent : 0;
 
   const totalOngoingRounded = hasOngoing
     ? roundToNearest100(ongoingCostBeforeMargin + ongoingMarginAmount)
