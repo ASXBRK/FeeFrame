@@ -26,7 +26,7 @@ export const defaultQuoteState = {
   strategies: {},
   addOns: {},
   coreTasks: defaultCoreTasks,
-  scenarios: 2,
+  scenarios: 0,
 
   // Step 2: Hour overrides — key: "{itemId}.{role}" e.g. "super.adviser"
   hourOverrides: {},

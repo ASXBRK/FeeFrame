@@ -54,7 +54,7 @@ export function calculateQuote(state: any) {
     }
     let multiplier = 1;
     if (task.perEntity) multiplier = totalEntities;
-    if (task.perAdditionalScenario) multiplier = Math.max(0, scenarios - 2);
+    if (task.perAdditionalScenario) multiplier = Math.max(0, scenarios);
     return calcCoreTaskFee(task, multiplier);
   });
 
@@ -198,7 +198,7 @@ export function calculateQuote(state: any) {
   clientParagraph += `. `;
   if (totalHoursApprox > 0) {
     clientParagraph += `This includes approximately ${totalHoursApprox} hour${totalHoursApprox !== 1 ? 's' : ''} of research, analysis, and preparation`;
-    if (scenarios > 1) clientParagraph += `, including ${scenarios} scenario analyses to support your decision-making,`;
+    if (scenarios > 0) clientParagraph += `, including ${scenarios} scenario ${scenarios === 1 ? 'analysis' : 'analyses'} to support your decision-making,`;
     clientParagraph += ` and a full compliance and quality review. `;
   }
   if (hasImpl) {
@@ -224,7 +224,7 @@ export function calculateQuote(state: any) {
   } else {
     serviceSummaryItems.push(`Comprehensive Statement of Advice`);
   }
-  if (scenarios > 1) serviceSummaryItems.push(`Financial modelling with ${scenarios} scenario analyses`);
+  if (scenarios > 0) serviceSummaryItems.push(`Financial modelling with ${scenarios} scenario ${scenarios === 1 ? 'analysis' : 'analyses'}`);
   if (totalHoursApprox > 0) serviceSummaryItems.push(`${totalHoursApprox} hours of research, analysis, and preparation`);
   serviceSummaryItems.push(`Full compliance and quality review`);
   if (investmentAccounts > 0) serviceSummaryItems.push(`Implementation across ${investmentAccounts} investment and superannuation account${investmentAccounts !== 1 ? 's' : ''}`);
