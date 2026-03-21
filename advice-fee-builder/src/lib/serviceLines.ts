@@ -33,20 +33,20 @@ export const CORE_TASKS = [
 
 // ── Per-review-meeting tasks (used in Step 3 ongoing) ─────────────────────────
 export const REVIEW_TASKS = [
-  { id: 'prepareReport', label: 'Prepare report / presentation', adviserHours: 0.5, paraplannerHours: 1.5, adminHours: 0.5 },
-  { id: 'adminCor', label: 'Admin — correspondence', adviserHours: 0, paraplannerHours: 0, adminHours: 0.5 },
-  { id: 'conductMeeting', label: 'Conduct review meeting', adviserHours: 1.0, paraplannerHours: 0, adminHours: 0 },
-  { id: 'fileNote', label: 'File note', adviserHours: 0.5, paraplannerHours: 0, adminHours: 0 },
-  { id: 'adviceAdjustments', label: 'Advice adjustments', adviserHours: 0.5, paraplannerHours: 1.0, adminHours: 0 },
-  { id: 'implementation', label: 'Implementation', adviserHours: 0, paraplannerHours: 0.5, adminHours: 0.5 },
-  { id: 'compliancePaperwork', label: 'Compliance paperwork', adviserHours: 0, paraplannerHours: 0.5, adminHours: 0.5 },
+  { id: 'prepareReport', label: 'Prepare report / presentation', adviserHours: 1.0, paraplannerHours: 3.0, adminHours: 1.0 },
+  { id: 'adminCor', label: 'Admin — correspondence', adviserHours: 0, paraplannerHours: 0, adminHours: 1.5 },
+  { id: 'conductMeeting', label: 'Conduct review meeting', adviserHours: 1.5, paraplannerHours: 0, adminHours: 0 },
+  { id: 'fileNote', label: 'File note', adviserHours: 0.5, paraplannerHours: 0.5, adminHours: 0 },
+  { id: 'adviceAdjustments', label: 'Advice adjustments', adviserHours: 1.0, paraplannerHours: 2.0, adminHours: 0.5 },
+  { id: 'implementation', label: 'Implementation', adviserHours: 0, paraplannerHours: 1.0, adminHours: 1.0 },
+  { id: 'compliancePaperwork', label: 'Compliance paperwork', adviserHours: 0, paraplannerHours: 1.0, adminHours: 1.0 },
 ];
 
 // ── Annual tasks (fixed per year regardless of meeting count) ──────────────────
 export const ANNUAL_TASKS = [
-  { id: 'ongoingMonitoring', label: 'Ongoing monitoring', adviserHours: 1.0, paraplannerHours: 2.0, adminHours: 0 },
-  { id: 'adHocQueries', label: 'Ad-hoc client queries', adviserHours: 1.0, paraplannerHours: 0, adminHours: 0.5 },
-  { id: 'accountAdmin', label: 'Account administration', adviserHours: 0, paraplannerHours: 0, adminHours: 1.0 },
+  { id: 'ongoingMonitoring', label: 'Ongoing monitoring', adviserHours: 2.0, paraplannerHours: 4.0, adminHours: 1.0 },
+  { id: 'adHocQueries', label: 'Ad-hoc client queries', adviserHours: 2.0, paraplannerHours: 0.5, adminHours: 1.0 },
+  { id: 'accountAdmin', label: 'Account administration', adviserHours: 0, paraplannerHours: 0.5, adminHours: 2.0 },
 ];
 
 // ── Premium factors (replaces COMPLEXITY_FACTORS) ─────────────────────────────
