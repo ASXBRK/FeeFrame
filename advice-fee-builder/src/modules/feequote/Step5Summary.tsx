@@ -65,6 +65,11 @@ export default function Step5Summary({ quote, dispatch, onBack, onReset, onNavig
         </div>
       </div>
 
+      {/* Profit margin info box */}
+      <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mt-3 mb-4 print:hidden">
+        <span className="font-medium">ⓘ</span> Your firm's target profit margin applied to all fees. The average Australian advice practice operates at 21% (Adviser Ratings 2024).
+      </div>
+
       {/* Tab bar */}
       <div className="flex gap-1 mb-5 border-b border-light-border print:hidden">
         {TABS.map((t, i) => (
@@ -763,10 +768,10 @@ function Tab3Profitability({ calc, quote, onNavigate }) {
       {callouts.length > 0 && (
         <div className="space-y-3">
           {callouts.map((msg, i) => (
-            <div key={i} className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-4">
+            <div key={i} className="bg-teal-50 border border-teal-200 rounded-xl px-5 py-4">
               <div className="flex gap-3">
-                <span className="text-gray-400 flex-shrink-0 mt-0.5">💡</span>
-                <p className="text-sm text-gray-700">{msg}</p>
+                <span className="flex-shrink-0 mt-0.5">💡</span>
+                <p className="text-sm text-teal-800">{msg}</p>
               </div>
             </div>
           ))}
