@@ -12,7 +12,7 @@ type NavPage = 'landing' | 'about' | 'contact';
 type Page = NavPage | 'quote' | 'analysis';
 
 // ── State ──────────────────────────────────────────────────────────────────────
-const STATE_VERSION = 3; // bumped for Phase 1 engine rebuild
+const STATE_VERSION = 4; // bumped: external paraplanner core task fix
 
 const initialState = {
   view: 'landing', // 'landing' | 'quote' | 'analysis'

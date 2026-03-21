@@ -69,7 +69,7 @@ export function calculateQuote(state: any) {
 
   const coreTaskItems = CORE_TASKS.map(task => {
     const enabled = state.coreTasks?.[task.id] ?? task.defaultOn ?? false;
-    if (!enabled || (isExternal && task.hideWhenExternal)) {
+    if (!enabled || isExternal) {
       return { ...task, fee: 0, totalHours: 0, hours: 0, adviserHoursUsed: 0, paraplannerHoursUsed: 0, adminHoursUsed: 0 };
     }
     let multiplier = 1;
