@@ -71,6 +71,8 @@ export const defaultQuoteState = {
   premiumOngoingOverride: null,
   discountSoaOverride: null,
   discountOngoingOverride: null,
+  relationshipDiscountEnabled: false,
+  relationshipDiscountPercent: 10,
 
   // Entity fee split
   entities: [],

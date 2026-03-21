@@ -12,7 +12,7 @@ type NavPage = 'landing' | 'about' | 'contact';
 type Page = NavPage | 'quote' | 'analysis';
 
 // ── State ──────────────────────────────────────────────────────────────────────
-const STATE_VERSION = 4; // bumped: external paraplanner core task fix
+const STATE_VERSION = 5; // bumped: premium/discount overhaul + relationship discount
 
 const initialState = {
   view: 'landing', // 'landing' | 'quote' | 'analysis'
@@ -119,12 +119,16 @@ function reducer(state, action) {
 
     case 'SET_PREMIUM_FACTOR': {
       const premiumFactors = { ...state.quote.premiumFactors, [action.index]: action.value };
-      return { ...state, quote: { ...state.quote, premiumFactors } };
+      return { ...state, quote: { ...state.quote, premiumFactors, premiumSoaOverride: null, premiumOngoingOverride: null } };
     }
 
     case 'SET_DISCOUNT_FACTOR': {
       const discountFactors = { ...state.quote.discountFactors, [action.index]: action.value };
-      return { ...state, quote: { ...state.quote, discountFactors } };
+      return { ...state, quote: { ...state.quote, discountFactors, discountSoaOverride: null, discountOngoingOverride: null } };
+    }
+
+    case 'SET_RELATIONSHIP_DISCOUNT': {
+      return { ...state, quote: { ...state.quote, ...action.fields, discountSoaOverride: null, discountOngoingOverride: null } };
     }
 
     // Legacy aliases kept for any surviving references
@@ -132,11 +136,11 @@ function reducer(state, action) {
       return state;
     case 'SET_COMPLEXITY_FACTOR': {
       const premiumFactors = { ...state.quote.premiumFactors, [action.index]: action.value };
-      return { ...state, quote: { ...state.quote, premiumFactors } };
+      return { ...state, quote: { ...state.quote, premiumFactors, premiumSoaOverride: null, premiumOngoingOverride: null } };
     }
     case 'SET_EASE_FACTOR': {
       const discountFactors = { ...state.quote.discountFactors, [action.index]: action.value };
-      return { ...state, quote: { ...state.quote, discountFactors } };
+      return { ...state, quote: { ...state.quote, discountFactors, discountSoaOverride: null, discountOngoingOverride: null } };
     }
     case 'SET_REVIEW_HOUR': {
       const reviewHourOverrides = { ...state.quote.reviewHourOverrides, [action.key]: action.value };

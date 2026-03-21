@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import Tooltip from '../../components/shared/Tooltip';
 import NumInput from '../../components/shared/NumInput';
+import Toggle from '../../components/shared/Toggle';
 import { PREMIUM_FACTORS, DISCOUNT_FACTORS } from '../../lib/serviceLines';
 import { calculateQuote } from '../../lib/calculateQuote';
-import { formatCurrency, formatPercent } from '../../lib/formatters';
+import { formatCurrency } from '../../lib/formatters';
 
 export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
   const calc = calculateQuote(quote);
@@ -12,6 +13,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
   const setPremium = (i, v) => dispatch({ type: 'SET_PREMIUM_FACTOR', index: i, value: v });
   const setDiscount = (i, v) => dispatch({ type: 'SET_DISCOUNT_FACTOR', index: i, value: v });
   const setField = (field, value) => dispatch({ type: 'SET_QUOTE_FIELD', field, value });
+  const setRelationship = (fields) => dispatch({ type: 'SET_RELATIONSHIP_DISCOUNT', fields });
 
   return (
     <div>
@@ -20,10 +22,13 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
 
       <div className="space-y-5">
 
-        {/* Premiums */}
+        {/* ── Premiums ── */}
         <div className="bg-white rounded-card border border-light-border p-5">
           <h3 className="text-base font-bold font-heading text-dark mb-1">Premiums</h3>
-          <p className="text-xs text-mid mb-4">Select any factors that justify a premium on this engagement.</p>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800 mb-4">
+            ⓘ Premiums reflect additional time and complexity involved in serving this client. Selecting more factors increases the premium. You can adjust the amount manually.
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5">
             {PREMIUM_FACTORS.map((factor, i) => (
@@ -42,12 +47,6 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
             ))}
           </div>
 
-          <div className="bg-warning-bg border border-warning rounded-input px-4 py-3 mb-3">
-            <div className="text-sm text-warning-text">
-              Factors selected: <strong>{calc.premiumCount}</strong> → Premium rate: <strong>{formatPercent(calc.premiumRate, 0)}</strong>
-            </div>
-          </div>
-
           <div className="space-y-2">
             <AdjustmentRow
               label="SOA premium"
@@ -56,7 +55,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
               overrideValue={quote.premiumSoaOverride}
               onOverride={v => setField('premiumSoaOverride', v)}
               onClear={() => setField('premiumSoaOverride', null)}
-              colorClass="text-warning-text"
+              colorClass="text-amber-700"
             />
             {hasOngoing && (
               <AdjustmentRow
@@ -67,17 +66,54 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
                 onOverride={v => setField('premiumOngoingOverride', v)}
                 onClear={() => setField('premiumOngoingOverride', null)}
                 suffix="p.a."
-                colorClass="text-warning-text"
+                colorClass="text-amber-700"
               />
             )}
           </div>
         </div>
 
-        {/* Discounts */}
+        {/* ── Discounts ── */}
         <div className="bg-white rounded-card border border-light-border p-5">
           <h3 className="text-base font-bold font-heading text-dark mb-1">Discounts</h3>
-          <p className="text-xs text-mid mb-4">Select any factors that reduce the cost of this engagement.</p>
 
+          <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800 mb-4">
+            ⓘ Discounts reflect factors that reduce the cost and effort of this engagement. You can adjust the amount manually.
+          </div>
+
+          {/* Relationship discount */}
+          <div className="bg-light-surface border border-light-border rounded-card px-4 py-3 mb-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <span className="text-sm font-semibold text-dark">Relationship Discount</span>
+                <span className="ml-2 text-xs text-mid font-normal">(optional)</span>
+              </div>
+              <Toggle
+                checked={!!quote.relationshipDiscountEnabled}
+                onChange={v => setRelationship({ relationshipDiscountEnabled: v })}
+              />
+            </div>
+            {quote.relationshipDiscountEnabled && (
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center gap-3">
+                  <label className="text-sm text-dark">Relationship discount</label>
+                  <div className="flex items-center gap-1.5">
+                    <NumInput
+                      value={Number(quote.relationshipDiscountPercent) || 10}
+                      onChange={v => setRelationship({ relationshipDiscountPercent: Math.min(50, Math.max(0, v)) })}
+                      min={0}
+                      max={50}
+                      step={5}
+                      className="w-20 rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal"
+                    />
+                    <span className="text-sm text-dark">%</span>
+                    <Tooltip text="For referrals from existing clients, professional networks, staff, friends or family, or existing client family groups. Set the discount percentage that applies to your firm." />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Engagement factor checkboxes */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5">
             {DISCOUNT_FACTORS.map((factor, i) => (
               <label key={i} className="flex items-start gap-3 cursor-pointer group">
@@ -95,11 +131,11 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
             ))}
           </div>
 
-          <div className="bg-healthy-bg border border-healthy rounded-input px-4 py-3 mb-3">
-            <div className="text-sm text-healthy-text">
-              Factors selected: <strong>{calc.discountCount}</strong> → Discount rate: <strong>{formatPercent(calc.discountRate, 0)}</strong>
-            </div>
-          </div>
+          {calc.discountCapApplied && (
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-input px-3 py-2 mb-3">
+              Total discount capped at 50%.
+            </p>
+          )}
 
           <div className="space-y-2">
             <AdjustmentRow
@@ -109,7 +145,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
               overrideValue={quote.discountSoaOverride}
               onOverride={v => setField('discountSoaOverride', v)}
               onClear={() => setField('discountSoaOverride', null)}
-              colorClass="text-healthy-text"
+              colorClass="text-green-700"
             />
             {hasOngoing && (
               <AdjustmentRow
@@ -120,7 +156,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
                 onOverride={v => setField('discountOngoingOverride', v)}
                 onClear={() => setField('discountOngoingOverride', null)}
                 suffix="p.a."
-                colorClass="text-healthy-text"
+                colorClass="text-green-700"
               />
             )}
           </div>
@@ -147,7 +183,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
   );
 }
 
-// ── AdjustmentRow — shows auto-calculated value with optional pencil override ─
+// ── AdjustmentRow ──────────────────────────────────────────────────────────────
 function AdjustmentRow({ label, sign, autoValue, overrideValue, onOverride, onClear, suffix = '', colorClass }: {
   label: string; sign: string; autoValue: number; overrideValue: number | null;
   onOverride: (v: number) => void; onClear: () => void; suffix?: string; colorClass: string;
