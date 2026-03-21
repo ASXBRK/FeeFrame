@@ -112,6 +112,9 @@ export default function Step3OngoingService({ quote, dispatch, onNext, onBack })
               </div>
             </div>
 
+            {/* Client incentives */}
+            <ClientIncentives quote={quote} set={set} calc={calc} />
+
             {/* Entity fee split */}
             <div className="bg-white rounded-card border border-light-border overflow-hidden">
               <button
@@ -127,9 +130,6 @@ export default function Step3OngoingService({ quote, dispatch, onNext, onBack })
               </button>
               {entitiesOpen && <EntitySplit quote={quote} dispatch={dispatch} calc={calc} />}
             </div>
-
-            {/* Client incentives */}
-            <ClientIncentives quote={quote} set={set} calc={calc} />
           </>
         )}
       </div>
