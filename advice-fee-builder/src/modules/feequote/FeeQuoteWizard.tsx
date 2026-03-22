@@ -24,6 +24,11 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
     setShowReset(false);
   }
 
+  function handleNavigate(page) {
+    if (page === 'home') onGoHome();
+    else onNavigate(page);
+  }
+
   const sharedProps = { quote, dispatch, onNext: next, onBack: back };
 
   return (
@@ -37,7 +42,7 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
       />
 
       {/* Content column: offset by sidebar width on desktop, fills remaining height */}
-      <div className="flex-1 flex flex-col min-w-0 md:ml-56">
+      <div className="flex-1 flex flex-col min-w-0 md:ml-56 h-screen">
         {/* Progress bar — sticky so it stays visible as content scrolls */}
         <div className="bg-white border-b border-light-border px-6 py-3 flex items-center justify-between print:hidden sticky top-0 z-30 flex-shrink-0">
           <div>
@@ -59,7 +64,7 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
           </button>
         </div>
 
-        {/* Scrollable step content — pb-24 ensures content clears the fixed bottom nav */}
+        {/* Scrollable step content — pb-24 clears the floating nav buttons */}
         <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 pb-24 max-w-4xl w-full mx-auto">
           {quoteStep === 1 && <Step1ClientProfile {...sharedProps} />}
           {quoteStep === 2 && <Step2ScopeOfAdvice {...sharedProps} />}
@@ -74,39 +79,34 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
             />
           )}
 
-          {/* Footer inside scrollable area — visible when scrolled to end */}
-          <FooterBar
-            currentPage="feequote"
-            onNavigate={(page) => {
-              if (page === 'home') onGoHome();
-              else onNavigate(page);
-            }}
-          />
-        </main>
-
-        {/* Bottom navigation bar — sticky so Back/Next are always reachable */}
-        <div className="bg-white border-t border-light-border px-6 py-3 print:hidden sticky bottom-0 z-30 flex-shrink-0">
-          <div className="max-w-4xl w-full mx-auto flex justify-between items-center">
-            {quoteStep > 1 ? (
-              <button
-                onClick={back}
-                className="text-sm text-mid hover:text-dark font-medium py-2.5 px-4 rounded-input border border-light-border hover:border-mid transition-colors"
-              >
-                ← Back
-              </button>
-            ) : (
-              <div />
-            )}
-            {quoteStep < 5 && (
-              <button
-                onClick={next}
-                className="bg-teal hover:opacity-90 text-white font-semibold py-2.5 px-6 rounded-input transition-opacity text-sm"
-              >
-                {STEP_LABELS[quoteStep]}
-              </button>
-            )}
+          {/* Footer — scrolls with content, visible when scrolled to the bottom */}
+          <div className="mt-12">
+            <FooterBar currentPage="feequote" onNavigate={handleNavigate} />
           </div>
-        </div>
+        </main>
+      </div>
+
+      {/* Floating navigation buttons — fixed to viewport, never hidden behind content.
+          Mobile: full-width bottom bar. Desktop: floating bottom-right. */}
+      <div className="fixed bottom-0 left-0 right-0 md:bottom-8 md:right-8 md:left-auto flex items-center gap-3 z-30 print:hidden bg-white border-t border-light-border px-4 py-3 md:bg-transparent md:border-0 md:p-0 justify-between md:justify-end">
+        {quoteStep > 1 ? (
+          <button
+            onClick={back}
+            className="bg-white text-mid hover:text-dark font-medium py-2.5 px-5 rounded-input border border-light-border hover:border-mid shadow-card hover:shadow-card-hover transition-all text-sm"
+          >
+            ← Back
+          </button>
+        ) : (
+          <div className="md:hidden" />
+        )}
+        {quoteStep < 5 && (
+          <button
+            onClick={next}
+            className="bg-teal hover:opacity-90 text-white font-medium py-2.5 px-6 rounded-input shadow-card hover:shadow-card-hover transition-all text-sm"
+          >
+            {STEP_LABELS[quoteStep]}
+          </button>
+        )}
       </div>
 
       <ConfirmModal
