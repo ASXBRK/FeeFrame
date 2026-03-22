@@ -8,7 +8,7 @@ import feeanalysisLogo from '../../assets/logos/feeanalysis-light.svg';
 
 const TABS = ['Summary', 'Detailed Breakdown', 'Profitability', 'Client Output'];
 
-export default function Step5Summary({ quote, dispatch, onBack, onReset, onNavigate, onGoAnalysis }) {
+export default function Step5Summary({ quote, dispatch, onReset, onNavigate, onGoAnalysis }) {
   const [tab, setTab] = useState(0);
   const [copied, setCopied] = useState(false);
   const [editingParagraph, setEditingParagraph] = useState(false);
@@ -115,15 +115,6 @@ export default function Step5Summary({ quote, dispatch, onBack, onReset, onNavig
         />
       )}
 
-      {/* Navigation */}
-      <div className="flex justify-between mt-6 print:hidden">
-        <button
-          onClick={onBack}
-          className="text-sm text-mid hover:text-dark font-medium py-2.5 px-4 rounded-input border border-light-border hover:border-mid transition-colors"
-        >
-          ← Back
-        </button>
-      </div>
     </div>
   );
 }

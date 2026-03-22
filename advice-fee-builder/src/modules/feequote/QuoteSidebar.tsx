@@ -11,8 +11,8 @@ const STEPS = [
 export default function QuoteSidebar({ currentStep, maxStep, onStepClick, onGoHome }: { currentStep: number; maxStep: number; onStepClick: (n: number) => void; onGoHome: () => void }) {
   return (
     <>
-      {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-56 bg-dark text-white min-h-screen flex-shrink-0">
+      {/* Desktop sidebar — fixed so it stays locked while content scrolls */}
+      <aside className="hidden md:flex flex-col w-56 bg-dark text-white fixed top-0 left-0 h-screen flex-shrink-0 z-40">
         <div className="px-5 py-8 border-b border-dark-border">
           <button onClick={onGoHome} className="block w-full hover:opacity-75 transition-opacity">
             <img src={feequoteLogo} alt="FeeQuote" className="w-full" style={{ filter: 'brightness(0) invert(1)' }} />
@@ -51,8 +51,8 @@ export default function QuoteSidebar({ currentStep, maxStep, onStepClick, onGoHo
         </nav>
       </aside>
 
-      {/* Mobile top bar */}
-      <div className="md:hidden bg-dark text-white px-4 py-3 flex items-center justify-between">
+      {/* Mobile top bar — sticky so it stays at the top as content scrolls */}
+      <div className="md:hidden bg-dark text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40">
         <button onClick={onGoHome} className="flex items-center hover:opacity-75 transition-opacity">
           <img src={feequoteLogo} alt="FeeQuote" className="h-7" style={{ filter: 'brightness(0) invert(1)' }} />
         </button>
