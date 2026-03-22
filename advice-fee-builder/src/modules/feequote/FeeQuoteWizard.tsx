@@ -41,8 +41,8 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
         onGoHome={onGoHome}
       />
 
-      {/* Content column: offset by sidebar width on desktop, fills remaining height */}
-      <div className="flex-1 flex flex-col min-w-0 md:ml-56 h-screen">
+      {/* Content column: overflow-auto here so scrollbar sits at the browser edge */}
+      <div className="flex-1 flex flex-col min-w-0 md:ml-56 h-screen overflow-y-auto">
         {/* Progress bar — sticky so it stays visible as content scrolls */}
         <div className="bg-white border-b border-light-border px-6 py-3 flex items-center justify-between print:hidden sticky top-0 z-30 flex-shrink-0">
           <div>
@@ -65,7 +65,7 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
         </div>
 
         {/* Scrollable step content — pb-24 clears the floating nav buttons */}
-        <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 pb-24 max-w-4xl w-full mx-auto">
+        <main className="flex-1 px-4 sm:px-6 py-6 pb-24 max-w-4xl w-full mx-auto">
           {quoteStep === 1 && <Step1ClientProfile {...sharedProps} />}
           {quoteStep === 2 && <Step2ScopeOfAdvice {...sharedProps} />}
           {quoteStep === 3 && <Step3OngoingService {...sharedProps} />}
