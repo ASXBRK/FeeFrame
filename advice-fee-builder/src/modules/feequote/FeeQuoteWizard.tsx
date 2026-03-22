@@ -64,8 +64,8 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
           </button>
         </div>
 
-        {/* Scrollable step content — pb-24 clears the floating nav buttons */}
-        <main className="flex-1 px-4 sm:px-6 py-6 pb-24 max-w-4xl w-full mx-auto">
+        {/* Step content — pb-12 clears floating nav; footer below provides additional bottom space */}
+        <main className="flex-1 px-4 sm:px-6 py-6 pb-12 max-w-4xl w-full mx-auto">
           {quoteStep === 1 && <Step1ClientProfile {...sharedProps} />}
           {quoteStep === 2 && <Step2ScopeOfAdvice {...sharedProps} />}
           {quoteStep === 3 && <Step3OngoingService {...sharedProps} />}
@@ -78,12 +78,12 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
               onNavigate={onNavigate}
             />
           )}
-
-          {/* Footer — scrolls with content, visible when scrolled to the bottom */}
-          <div className="mt-12">
-            <FooterBar currentPage="feequote" onNavigate={handleNavigate} />
-          </div>
         </main>
+
+        {/* Footer — full width (outside max-w-4xl), pushed to bottom on short pages */}
+        <div className="mt-auto print:hidden">
+          <FooterBar currentPage="feequote" onNavigate={handleNavigate} />
+        </div>
       </div>
 
       {/* Floating navigation buttons — fixed to viewport, never hidden behind content.
