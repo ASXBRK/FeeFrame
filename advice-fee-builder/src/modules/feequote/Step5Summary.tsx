@@ -825,7 +825,7 @@ function Tab2Breakdown({ calc, quote }) {
 }
 
 // ── Tab 3: Profitability ───────────────────────────────────────────────────────
-function StackedBar({ segments }: { segments: { label: string; value: number; color: string }[] }) {
+function StackedBar({ segments }: { segments: { label: string; value: number; color: string; textColor?: string }[] }) {
   const total = segments.reduce((s, seg) => s + Math.max(0, seg.value), 0);
   if (total === 0) return <div className="h-6 bg-gray-100 rounded" />;
   return (
@@ -846,7 +846,7 @@ function StackedBar({ segments }: { segments: { label: string; value: number; co
       </div>
       <div className="flex flex-wrap gap-x-4 gap-y-1">
         {segments.filter(s => s.value > 0).map(seg => (
-          <div key={seg.label} className="flex items-center gap-1.5 text-xs text-mid">
+          <div key={seg.label} className={`flex items-center gap-1.5 text-xs ${seg.textColor || 'text-mid'}`}>
             <span className={`inline-block w-2.5 h-2.5 rounded-sm ${seg.color}`} />
             {seg.label}: {formatCurrency(seg.value)}
           </div>
@@ -1041,14 +1041,14 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
         <div>
           <div className="text-sm font-medium text-dark mb-2">Initial SOA</div>
           <StackedBar segments={[
-            { label: 'Adviser time', value: calc.soaAdviserCost, color: 'bg-blue-400' },
-            { label: calc.soaExternalFee > 0 ? 'External paraplanning' : 'Paraplanning', value: calc.soaParaplannerCost + calc.soaExternalFee, color: 'bg-teal' },
-            { label: 'Admin', value: calc.soaAdminCost, color: 'bg-gray-300' },
-            ...(soaTrueProfit > 0 ? [{ label: 'Margin', value: soaTrueProfit, color: 'bg-emerald-500' }] : []),
-            { label: 'GST', value: calc.soaTotalInclGst - calc.adjustedFeeRounded, color: 'bg-gray-100' },
+            { label: 'Adviser time', value: calc.soaAdviserCost, color: 'bg-slate-700', textColor: 'text-slate-700' },
+            { label: calc.soaExternalFee > 0 ? 'External paraplanning' : 'Paraplanning', value: calc.soaParaplannerCost + calc.soaExternalFee, color: 'bg-violet-600', textColor: 'text-violet-600' },
+            { label: 'Admin', value: calc.soaAdminCost, color: 'bg-amber-600', textColor: 'text-amber-600' },
+            ...(soaTrueProfit > 0 ? [{ label: 'Margin', value: soaTrueProfit, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
+            { label: 'GST', value: calc.soaTotalInclGst - calc.adjustedFeeRounded, color: 'bg-slate-200', textColor: 'text-slate-400' },
           ]} />
           {soaTrueProfit < 0 && (
-            <p className="text-xs text-red-600 mt-1">Loss: {formatCurrency(soaTrueProfit)} — fee is below cost</p>
+            <p className="text-sm text-red-600 font-medium mt-1">Loss: {formatCurrency(soaTrueProfit)}</p>
           )}
         </div>
 
@@ -1057,14 +1057,14 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
           <div>
             <div className="text-sm font-medium text-dark mb-2">Ongoing (annual)</div>
             <StackedBar segments={[
-              { label: 'Adviser time', value: calc.ongoingAdviserCost, color: 'bg-blue-400' },
-              { label: 'Paraplanning', value: calc.ongoingParaplannerCost, color: 'bg-teal' },
-              { label: 'Admin', value: calc.ongoingAdminCost, color: 'bg-gray-300' },
-              ...(ongoingTrueProfit > 0 ? [{ label: 'Margin', value: ongoingTrueProfit, color: 'bg-emerald-500' }] : []),
-              { label: 'GST', value: calc.totalOngoingInclGst - calc.totalOngoingRounded, color: 'bg-gray-100' },
+              { label: 'Adviser time', value: calc.ongoingAdviserCost, color: 'bg-slate-700', textColor: 'text-slate-700' },
+              { label: 'Paraplanning', value: calc.ongoingParaplannerCost, color: 'bg-violet-600', textColor: 'text-violet-600' },
+              { label: 'Admin', value: calc.ongoingAdminCost, color: 'bg-amber-600', textColor: 'text-amber-600' },
+              ...(ongoingTrueProfit > 0 ? [{ label: 'Margin', value: ongoingTrueProfit, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
+              { label: 'GST', value: calc.totalOngoingInclGst - calc.totalOngoingRounded, color: 'bg-slate-200', textColor: 'text-slate-400' },
             ]} />
             {ongoingTrueProfit < 0 && (
-              <p className="text-xs text-red-600 mt-1">Loss: {formatCurrency(ongoingTrueProfit)} — fee is below cost</p>
+              <p className="text-sm text-red-600 font-medium mt-1">Loss: {formatCurrency(ongoingTrueProfit)}</p>
             )}
           </div>
         )}
