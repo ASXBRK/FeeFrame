@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import QuoteSidebar from './QuoteSidebar';
 import FooterBar from '../../components/shared/FooterBar';
 import Step1ClientProfile from './Step1ClientProfile';
@@ -12,6 +12,26 @@ const STEP_LABELS = ['', 'Next: Scope of Advice →', 'Next: Ongoing Service →
 
 export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis, onNavigate }: { state: any; dispatch: any; onGoHome: () => void; onGoAnalysis: (fees: any) => void; onNavigate: (page: string) => void }) {
   const [showReset, setShowReset] = useState(false);
+  const [footerOffset, setFooterOffset] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    const footer = footerRef.current;
+    if (!scrollContainer || !footer) return;
+
+    function handleScroll() {
+      const containerRect = scrollContainer!.getBoundingClientRect();
+      const footerRect = footer!.getBoundingClientRect();
+      const overlap = containerRect.bottom - footerRect.top;
+      setFooterOffset(overlap > 0 ? overlap + 16 : 0);
+    }
+
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [quoteStep]);
 
   const { quoteStep, maxQuoteStep, quote } = state;
 
@@ -42,7 +62,7 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
       />
 
       {/* Content column: overflow-auto here so scrollbar sits at the browser edge */}
-      <div className="flex-1 flex flex-col min-w-0 md:ml-56 h-screen overflow-y-auto">
+      <div ref={scrollContainerRef} className="flex-1 flex flex-col min-w-0 md:ml-56 h-screen overflow-y-auto">
         {/* Progress bar — sticky so it stays visible as content scrolls */}
         <div className="bg-white border-b border-light-border px-6 py-3 flex items-center justify-between print:hidden sticky top-0 z-30 flex-shrink-0">
           <div>
@@ -81,14 +101,13 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
         </main>
 
         {/* Footer — full width (outside max-w-4xl), pushed to bottom on short pages */}
-        <div className="mt-auto print:hidden">
+        <div ref={footerRef} className="mt-auto print:hidden">
           <FooterBar currentPage="feequote" onNavigate={handleNavigate} />
         </div>
       </div>
 
-      {/* Floating navigation buttons — fixed to viewport, never hidden behind content.
-          Mobile: full-width bottom bar. Desktop: floating bottom-right. */}
-      <div className="fixed bottom-0 left-0 right-0 md:bottom-8 md:right-8 md:left-auto flex items-center gap-3 z-30 print:hidden bg-white border-t border-light-border px-4 py-3 md:bg-transparent md:border-0 md:p-0 justify-between md:justify-end">
+      {/* Mobile: full-width nav bar pinned to bottom */}
+      <div className="fixed bottom-0 left-0 right-0 md:hidden flex items-center gap-3 z-30 print:hidden bg-white border-t border-light-border px-4 py-3 justify-between">
         {quoteStep > 1 ? (
           <button
             onClick={back}
@@ -97,7 +116,30 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
             ← Back
           </button>
         ) : (
-          <div className="md:hidden" />
+          <div />
+        )}
+        {quoteStep < 5 && (
+          <button
+            onClick={next}
+            className="bg-teal hover:opacity-90 text-white font-medium py-2.5 px-6 rounded-input shadow-card hover:shadow-card-hover transition-all text-sm"
+          >
+            {STEP_LABELS[quoteStep]}
+          </button>
+        )}
+      </div>
+
+      {/* Desktop: floating buttons, slide up when footer becomes visible */}
+      <div
+        className="hidden md:flex fixed right-8 items-center gap-3 z-30 print:hidden transition-all duration-150"
+        style={{ bottom: `${Math.max(32, footerOffset + 24)}px` }}
+      >
+        {quoteStep > 1 && (
+          <button
+            onClick={back}
+            className="bg-white text-mid hover:text-dark font-medium py-2.5 px-5 rounded-input border border-light-border hover:border-mid shadow-card hover:shadow-card-hover transition-all text-sm"
+          >
+            ← Back
+          </button>
         )}
         {quoteStep < 5 && (
           <button
