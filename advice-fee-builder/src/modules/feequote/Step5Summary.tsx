@@ -406,7 +406,7 @@ function BillingPlanSection({ calc, quote, dispatch }) {
                   {row.annual && <span className="block text-xs text-mid font-normal">{formatCurrency(row.annual)} p.a.</span>}
                 </td>
                 <td className="py-2.5 text-mid pl-3 hidden md:table-cell">{row.when}</td>
-                <td className="py-2.5 text-mid pl-3 hidden md:table-cell">{row.method}</td>
+                <td className="py-2.5 text-mid pl-3 hidden md:table-cell">{row.method || '—'}</td>
               </tr>
             ))}
           </tbody>
@@ -423,8 +423,8 @@ function BillingPlanSection({ calc, quote, dispatch }) {
           {!entityAllocationEnabled ? (
             <button onClick={handleEnableEntityAllocation} className="text-xs text-teal hover:underline">Enable</button>
           ) : (
-            <button onClick={() => setEntityExpanded(e => !e)} className="text-xs text-teal hover:underline">
-              {entityExpanded ? 'Collapse' : 'Expand'}
+            <button onClick={() => setEntityExpanded(e => !e)} className="text-xs text-mid hover:text-dark transition-colors ml-4">
+              {entityExpanded ? '▲' : '▼'}
             </button>
           )}
         </div>
