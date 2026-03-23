@@ -134,21 +134,6 @@ export default function Step3OngoingService({ quote, dispatch, onNext, onBack })
         )}
       </div>
 
-      {/* Navigation */}
-      <div className="flex justify-between mt-6">
-        <button
-          onClick={onBack}
-          className="text-sm text-mid hover:text-dark font-medium py-2.5 px-4 rounded-input border border-light-border hover:border-mid transition-colors"
-        >
-          ← Back
-        </button>
-        <button
-          onClick={onNext}
-          className="bg-teal hover:opacity-90 text-white font-semibold py-3 px-6 rounded-lg transition-opacity text-sm"
-        >
-          Next: Adjustments →
-        </button>
-      </div>
     </div>
   );
 }

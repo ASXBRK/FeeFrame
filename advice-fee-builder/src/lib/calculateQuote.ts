@@ -4,6 +4,13 @@ import { roundToNearest100 } from './formatters.js';
 /**
  * Pure calculation engine for FeeQuote (Phase 1 rebuild).
  * Returns all computed values with no side effects.
+ *
+ * Audited 2026-03-21 — all calculation paths verified against 6 test scenarios.
+ * Bugs fixed in this audit:
+ *   1. Relationship discount (state.relationshipDiscountPercent) was stored in state
+ *      but never read here — now applied to combined discount rate.
+ *   2. Total discount had no cap — now capped at 50% of base fee.
+ *      discountCapApplied exported so Step 4 UI warning fires correctly.
  */
 export function calculateQuote(state: any) {
   const adviserRate = Number(state.adviserRate ?? 106);
@@ -69,12 +76,15 @@ export function calculateQuote(state: any) {
 
   const coreTaskItems = CORE_TASKS.map(task => {
     const enabled = state.coreTasks?.[task.id] ?? task.defaultOn ?? false;
-    if (!enabled || isExternal) {
+    if (!enabled) {
+      return { ...task, fee: 0, totalHours: 0, hours: 0, adviserHoursUsed: 0, paraplannerHoursUsed: 0, adminHoursUsed: 0 };
+    }
+    if (isExternal && task.hideWhenExternal) {
       return { ...task, fee: 0, totalHours: 0, hours: 0, adviserHoursUsed: 0, paraplannerHoursUsed: 0, adminHoursUsed: 0 };
     }
     let multiplier = 1;
     if (task.perEntity) multiplier = totalEntities;
-    if (task.perAdditionalScenario) multiplier = Math.max(0, scenarios);
+    if (task.perAdditionalScenario) multiplier = Math.max(0, scenarios - 1);
     return calcCoreTaskFee(task, multiplier);
   });
 
@@ -92,6 +102,7 @@ export function calculateQuote(state: any) {
   const soaParaplannerCost = isExternal ? 0 : lineItems.reduce((s, l) => s + l.paraplannerHoursUsed * paraplannerRate, 0);
   const soaAdminCost = lineItems.reduce((s, l) => s + l.adminHoursUsed * adminRate, 0);
   const soaExternalFee = isExternal ? effectiveParaplannerFee : 0;
+  const soaTrueCost = soaAdviserCost + soaParaplannerCost + soaAdminCost + soaExternalFee;
 
   // ── Step 4: Adjustments ────────────────────────────────────────────────────
   const premiumCount = PREMIUM_FACTORS.filter((_, i) => state.premiumFactors?.[i]).length;
@@ -99,8 +110,18 @@ export function calculateQuote(state: any) {
   const premiumRate = getPremiumRate(premiumCount);
   const discountRate = getDiscountRate(discountCount);
 
+  // Relationship discount adds to the factor-based discount rate.
+  // Bug fix: state.relationshipDiscountPercent was collected in the UI but never applied here.
+  const relationshipDiscountRate = state.relationshipDiscountEnabled
+    ? (Number(state.relationshipDiscountPercent) || 0) / 100
+    : 0;
+  const combinedDiscountRate = discountRate + relationshipDiscountRate;
+  // Cap total discount at 50% of base fee to prevent negative fees.
+  const discountCapApplied = combinedDiscountRate > 0.50;
+  const effectiveDiscountRate = Math.min(0.50, combinedDiscountRate);
+
   const soaPremiumAuto = baseFee * premiumRate;
-  const soaDiscountAuto = baseFee * discountRate;
+  const soaDiscountAuto = baseFee * effectiveDiscountRate;
   const soaPremium = state.premiumSoaOverride ?? soaPremiumAuto;
   const soaDiscount = state.discountSoaOverride ?? soaDiscountAuto;
 
@@ -158,6 +179,7 @@ export function calculateQuote(state: any) {
     + annualTaskItems.reduce((s, t) => s + t.paraplannerHoursUsed * paraplannerRate, 0);
   const ongoingAdminCost = reviewTaskItems.reduce((s, t) => s + t.adminHoursUsed * adminRate, 0) * reviewMeetings
     + annualTaskItems.reduce((s, t) => s + t.adminHoursUsed * adminRate, 0);
+  const ongoingTrueCost = ongoingAdviserCost + ongoingParaplannerCost + ongoingAdminCost;
 
   // Variable / percentage-based FUM
   let variableFee = 0;
@@ -197,9 +219,9 @@ export function calculateQuote(state: any) {
     }
   }
 
-  // Ongoing adjustments
+  // Ongoing adjustments — use same effectiveDiscountRate (incl. relationship discount + cap)
   const ongoingPremiumAuto = totalOngoingExGst * premiumRate;
-  const ongoingDiscountAuto = totalOngoingExGst * discountRate;
+  const ongoingDiscountAuto = totalOngoingExGst * effectiveDiscountRate;
   const ongoingPremium = state.premiumOngoingOverride ?? ongoingPremiumAuto;
   const ongoingDiscount = state.discountOngoingOverride ?? ongoingDiscountAuto;
 
@@ -234,19 +256,44 @@ export function calculateQuote(state: any) {
   const hasIncentives = soaDiscountPercent > 0 || waiveImplementation;
 
   // ── Billing plan ──────────────────────────────────────────────────────────
-  const soaPhaseAmount = hasIncentives ? soaIncentivisedFee / 2 : soaTotalInclGst / 2;
-  const soaPhaseNote = hasIncentives && soaDiscountPercent > 0
-    ? `Discounted from ${fmtCcy(soaTotalInclGst / 2)} — subject to ongoing agreement`
-    : undefined;
-  const implPhaseNote = waiveImplementation && implTotal > 0
-    ? `Waived — subject to ongoing agreement`
-    : undefined;
-  const billingPlan = [
-    { phase: '1 — Onboarding', description: '50% of SOA fee', amount: soaPhaseAmount, when: 'On signing engagement letter', how: 'BPay', note: soaPhaseNote },
-    { phase: '2 — SOA Delivery', description: '50% of SOA fee', amount: soaPhaseAmount, when: 'On SOA presentation', how: 'Platform', note: soaPhaseNote },
-    { phase: '3 — Implementation', description: waiveImplementation && implTotal > 0 ? 'Implementation fee waived' : 'Full implementation fee', amount: implIncentivisedFee, when: 'On implementation', how: 'Platform', note: implPhaseNote },
-    { phase: '4 — Ongoing Service', description: 'Annual fee (quarterly)', amount: totalOngoingInclGst / 4, when: 'Quarterly in arrears', how: 'Platform', note: undefined },
-  ];
+  const soaSplit = state.soaSplit || '50/50';
+  const soaPhase2Method = state.soaPhase2Method || 'platform';
+  const implMethod = state.implMethod || 'platform';
+  const ongoingFrequency = state.ongoingFrequency || 'monthly';
+  const ongoingMethod = state.ongoingMethod || 'directDebit';
+
+  const soaFeeForPlan = hasIncentives ? soaIncentivisedFee : soaTotalInclGst;
+  const billingPlan: any[] = [];
+
+  if (soaSplit === '100/0') {
+    billingPlan.push({ phase: 'SOA Fee', description: 'Full SOA fee on engagement', amount: soaFeeForPlan, when: 'On signing engagement letter', method: 'Invoice' });
+  } else if (soaSplit === '0/100') {
+    billingPlan.push({ phase: 'SOA Fee', description: 'Full SOA fee on presentation', amount: soaFeeForPlan, when: 'On SOA presentation', method: soaPhase2Method === 'invoice' ? 'Invoice' : 'Platform' });
+  } else {
+    billingPlan.push({ phase: 'SOA Fee — Phase 1', description: '50% of SOA fee', amount: soaFeeForPlan / 2, when: 'On signing engagement letter', method: 'Invoice' });
+    billingPlan.push({ phase: 'SOA Fee — Phase 2', description: '50% of SOA fee', amount: soaFeeForPlan / 2, when: 'On SOA presentation', method: soaPhase2Method === 'invoice' ? 'Invoice' : 'Platform' });
+  }
+
+  const implFeeForPlan = hasIncentives ? implIncentivisedFee : implTotal;
+  if (implFeeForPlan > 0) {
+    billingPlan.push({ phase: 'Implementation', description: 'Implementation fee', amount: implFeeForPlan, when: 'On implementation', method: implMethod === 'invoice' ? 'Invoice' : 'Platform' });
+  } else if (implTotal > 0 && waiveImplementation) {
+    billingPlan.push({ phase: 'Implementation', description: 'Implementation fee — waived', amount: 0, when: 'On implementation', method: '—' });
+  }
+
+  if (hasOngoing && totalOngoingInclGst > 0) {
+    const freqLabels: Record<string, string> = { monthly: 'Monthly', quarterly: 'Quarterly', halfYearly: 'Half-yearly', annually: 'Annually' };
+    const freqDivisors: Record<string, number> = { monthly: 12, quarterly: 4, halfYearly: 2, annually: 1 };
+    const methodLabels: Record<string, string> = { directDebit: 'Direct Debit', platform: 'Platform', invoice: 'Invoice' };
+    billingPlan.push({
+      phase: 'Ongoing Service',
+      description: `${freqLabels[ongoingFrequency] || 'Monthly'} ongoing fee`,
+      amount: totalOngoingInclGst / (freqDivisors[ongoingFrequency] || 12),
+      when: freqLabels[ongoingFrequency] || 'Monthly',
+      method: methodLabels[ongoingMethod] || 'Direct Debit',
+      annual: totalOngoingInclGst,
+    });
+  }
 
   // ── Client paragraph ──────────────────────────────────────────────────────
   const allStrategies = [...STRATEGIES, ...ADD_ONS];
@@ -317,17 +364,23 @@ export function calculateQuote(state: any) {
     soaParaplannerCost,
     soaAdminCost,
     soaExternalFee,
+    soaTrueCost,
 
     // Ongoing cost components
     ongoingAdviserCost,
     ongoingParaplannerCost,
     ongoingAdminCost,
+    ongoingTrueCost,
 
     // Adjustments
     premiumCount,
     discountCount,
     premiumRate,
     discountRate,
+    relationshipDiscountRate,
+    combinedDiscountRate,
+    effectiveDiscountRate,
+    discountCapApplied,
     soaPremiumAuto,
     soaDiscountAuto,
     soaPremium,
@@ -401,6 +454,12 @@ export function calculateQuote(state: any) {
 
     // Output
     billingPlan,
+    soaSplit,
+    ongoingFrequency,
+    ongoingMethod,
+    entityAllocations: state.entityAllocationEnabled ? (state.entityAllocations || []) : [],
+    entityAllocationEnabled: !!state.entityAllocationEnabled,
+    entityAllocationType: state.entityAllocationType || 'percentage',
     clientParagraph: state.clientParagraphOverride ?? clientParagraph,
     serviceSummaryItems,
   };

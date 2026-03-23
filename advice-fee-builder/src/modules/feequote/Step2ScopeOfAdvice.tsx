@@ -180,7 +180,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                       {task.perAdditionalScenario && (
                         <div className="text-xs text-mid mt-0.5 flex items-center gap-1.5">
                           <span>Scenarios</span>
-                          <Tooltip text="Fee is charged per scenario. Set to 0 if no scenario modelling is required." />
+                          <Tooltip text="First scenario is included at no extra charge. Fee applies per additional scenario beyond the first." />
                           <NumInput
                             value={quote.scenarios ?? 0}
                             onChange={v => dispatch({ type: 'SET_QUOTE_FIELD', field: 'scenarios', value: Math.max(0, Math.round(v)) })}
@@ -309,21 +309,6 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
         <div className="ml-auto text-xs text-mid">Adjustments applied in Step 4</div>
       </div>
 
-      {/* Navigation */}
-      <div className="flex justify-between mt-6">
-        <button
-          onClick={onBack}
-          className="text-sm text-mid hover:text-dark font-medium py-2.5 px-4 rounded-input border border-light-border hover:border-mid transition-colors"
-        >
-          ← Back
-        </button>
-        <button
-          onClick={onNext}
-          className="bg-teal hover:opacity-90 text-white font-semibold py-3 px-6 rounded-lg transition-opacity text-sm"
-        >
-          Next: Ongoing Service →
-        </button>
-      </div>
     </div>
   );
 }

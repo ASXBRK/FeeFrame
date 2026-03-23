@@ -7,7 +7,7 @@ const LIFE_STAGES = [
   { value: 'retirement', label: 'Retirement' },
 ];
 
-export default function Step1ClientProfile({ quote, dispatch, onNext }) {
+export default function Step1ClientProfile({ quote, dispatch }) {
   const set = (field, value) => dispatch({ type: 'SET_QUOTE_FIELD', field, value });
 
   return (
@@ -97,15 +97,6 @@ export default function Step1ClientProfile({ quote, dispatch, onNext }) {
         </div>
       </div>
 
-      {/* Navigation */}
-      <div className="flex justify-end mt-6">
-        <button
-          onClick={onNext}
-          className="bg-teal hover:opacity-90 text-white font-semibold py-3 px-6 rounded-lg transition-opacity text-sm"
-        >
-          Next: Scope of Advice →
-        </button>
-      </div>
     </div>
   );
 }
