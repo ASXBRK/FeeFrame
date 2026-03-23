@@ -71,6 +71,8 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                   <NumInput
                     value={quote.paraplannerFee}
                     onChange={v => set('paraplannerFee', v)}
+                    min={0}
+                    max={50000}
                     className="w-36 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                   />
                   <span className="text-sm text-mid">ex GST</span>
@@ -110,6 +112,8 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                     <NumInput
                       value={quote[field] ?? def}
                       onChange={v => set(field, v)}
+                      min={0}
+                      max={500}
                       className="w-24 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                     />
                   )}
@@ -166,7 +170,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
             {CORE_TASKS.filter(task => !(isExternal && task.hideWhenExternal)).map(task => {
               const calcItem = calc.coreTaskItems.find(c => c.id === task.id);
               const fee = calcItem?.fee ?? 0;
-              const enabled = quote.coreTasks?.[task.id] ?? task.defaultOn ?? false;
+              const enabled = task.alwaysOn ? true : (quote.coreTasks?.[task.id] ?? task.defaultOn ?? false);
               const isExpanded = expandedIds.has(task.id);
 
               return (
@@ -174,6 +178,9 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                   <div className="px-5 py-3.5 flex items-center gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-dark">{task.label}</div>
+                      {task.alwaysOn && (
+                        <div className="text-xs text-mid mt-0.5">Included in every engagement</div>
+                      )}
                       {task.perEntity && (
                         <div className="text-xs text-mid mt-0.5">× {calc.totalEntities} entities</div>
                       )}
@@ -183,20 +190,25 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                           <Tooltip text="First scenario is included at no extra charge. Fee applies per additional scenario beyond the first." />
                           <NumInput
                             value={quote.scenarios ?? 0}
-                            onChange={v => dispatch({ type: 'SET_QUOTE_FIELD', field: 'scenarios', value: Math.max(0, Math.round(v)) })}
+                            onChange={v => dispatch({ type: 'SET_QUOTE_FIELD', field: 'scenarios', value: Math.max(0, Math.min(10, Math.round(v))) })}
+                            min={0}
+                            max={10}
                             integer
                             emptyDefault={0}
                             className="w-10 rounded-input border border-light-border px-1.5 py-0.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 inline-block"
                           />
+                          <span className="text-xs text-mid">(max 10)</span>
                         </div>
                       )}
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      <Toggle
-                        checked={enabled}
-                        onChange={v => dispatch({ type: 'SET_CORE_TASK', id: task.id, enabled: v })}
-                        label={task.label}
-                      />
+                      {!task.alwaysOn && (
+                        <Toggle
+                          checked={enabled}
+                          onChange={v => dispatch({ type: 'SET_CORE_TASK', id: task.id, enabled: v })}
+                          label={task.label}
+                        />
+                      )}
                       <button
                         type="button"
                         onClick={() => toggleExpand(task.id)}
@@ -246,6 +258,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
               feeOverride={quote.implInvestmentOverride}
               onFeeOverride={v => set('implInvestmentOverride', v)}
               allowOverride
+              inputMax={20}
             />
             <ImplRow
               label="In-specie transfers of existing assets"
@@ -254,6 +267,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
               inputLabel="hours"
               onChange={v => set('inSpecieHours', v)}
               fee={calc.implInSpecieFee}
+              inputMax={50}
             />
             <ImplRow
               label="Insurance implementation"
@@ -262,6 +276,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
               inputLabel="hours"
               onChange={v => set('insuranceImplHours', v)}
               fee={calc.implInsuranceFee}
+              inputMax={50}
             />
             <div className="flex items-center gap-4 pt-2 border-t border-light-border">
               <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -273,6 +288,8 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                 <NumInput
                   value={quote.insuranceCommissionOffset}
                   onChange={v => set('insuranceCommissionOffset', v)}
+                  min={0}
+                  max={50000}
                   className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
                 />
                 <span className="text-xs text-mid w-14" />
@@ -358,7 +375,7 @@ function ScopeSection({ heading, subheading, tooltipText = null, items, enabledM
                       <button
                         type="button"
                         onClick={() => onQuantityChange(item.id, quantity + 1)}
-                        disabled={quantity >= 10}
+                        disabled={quantity >= 5}
                         className="w-5 h-5 rounded border border-light-border bg-white text-mid hover:bg-light-surface disabled:opacity-30 flex items-center justify-center text-xs leading-none"
                       >
                         +
@@ -427,6 +444,8 @@ function HourEditor({ item, getHour, onHourOverride, isExternal, quantity = 1, f
               <NumInput
                 value={getHour(item, role)}
                 onChange={v => onHourOverride(item.id, role, v)}
+                min={0}
+                max={50}
                 className="w-16 rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0"
               />
             )}
@@ -444,7 +463,7 @@ function HourEditor({ item, getHour, onHourOverride, isExternal, quantity = 1, f
 }
 
 // ── ImplRow ───────────────────────────────────────────────────────────────────
-function ImplRow({ label, tooltip, value, inputLabel, onChange, fee, feeOverride = null, onFeeOverride = null, allowOverride = false }) {
+function ImplRow({ label, tooltip, value, inputLabel, onChange, fee, feeOverride = null, onFeeOverride = null, allowOverride = false, inputMax = undefined }) {
   const [expanded, setExpanded] = useState(false);
   const isOverridden = feeOverride !== null && feeOverride !== undefined;
   const displayFee = isOverridden ? feeOverride : fee;
@@ -460,6 +479,8 @@ function ImplRow({ label, tooltip, value, inputLabel, onChange, fee, feeOverride
           <NumInput
             value={value}
             onChange={onChange}
+            min={0}
+            max={inputMax}
             className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
           />
           <span className="text-xs text-mid w-14">{inputLabel}</span>

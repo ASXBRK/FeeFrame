@@ -24,6 +24,8 @@ export default function TierEditor({ tiers, dispatch }) {
                   <NumInput
                     value={tier.from}
                     onChange={v => setTier(i, 'from', v)}
+                    min={0}
+                    max={50000000}
                     className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                   />
                 </td>
@@ -34,6 +36,8 @@ export default function TierEditor({ tiers, dispatch }) {
                     <NumInput
                       value={tier.to}
                       onChange={v => setTier(i, 'to', v)}
+                      min={0}
+                      max={50000000}
                       className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                     />
                   )}
@@ -42,6 +46,8 @@ export default function TierEditor({ tiers, dispatch }) {
                   <NumInput
                     value={tier.rate}
                     onChange={v => setTier(i, 'rate', v)}
+                    min={0}
+                    max={5}
                     className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                   />
                 </td>
