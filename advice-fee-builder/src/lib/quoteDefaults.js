@@ -81,6 +81,18 @@ export const defaultQuoteState = {
   profitMarginPercent: 0,
   applyMarginToOngoing: true,
 
+  // Step 5: billing plan
+  soaSplit: '50/50',           // '0/100' | '50/50' | '100/0'
+  soaPhase2Method: 'platform', // 'platform' | 'invoice'
+  implMethod: 'platform',      // 'platform' | 'invoice'
+  ongoingFrequency: 'monthly', // 'monthly' | 'quarterly' | 'halfYearly' | 'annually'
+  ongoingMethod: 'directDebit',// 'directDebit' | 'platform' | 'invoice'
+
+  // Step 5: entity allocation
+  entityAllocationEnabled: false,
+  entityAllocationType: 'percentage', // 'percentage' | 'dollar'
+  entityAllocations: [],
+
   // Step 5: client paragraph override (null = auto-generated)
   clientParagraphOverride: null,
 };

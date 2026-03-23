@@ -88,7 +88,7 @@ export default function Step5Summary({ quote, dispatch, onReset, onNavigate, onG
 
       {/* Print — always render Summary content */}
       <div className={tab !== 0 ? 'print:block hidden' : ''}>
-        {tab === 0 && <Tab1Summary calc={calc} quote={quote} />}
+        {tab === 0 && <Tab1Summary calc={calc} quote={quote} dispatch={dispatch} />}
       </div>
       {tab === 1 && <Tab2Breakdown calc={calc} quote={quote} />}
       {tab === 2 && <Tab3Profitability calc={calc} quote={quote} onNavigate={onNavigate} onGoAnalysis={onGoAnalysis} />}
@@ -120,7 +120,7 @@ export default function Step5Summary({ quote, dispatch, onReset, onNavigate, onG
 }
 
 // ── Tab 1: Summary ─────────────────────────────────────────────────────────────
-function Tab1Summary({ calc, quote }) {
+function Tab1Summary({ calc, quote, dispatch }) {
   return (
     <div className="space-y-5">
       {/* Initial fees */}
@@ -228,36 +228,375 @@ function Tab1Summary({ calc, quote }) {
         )}
       </div>
 
-      {/* Billing plan */}
-      <div className="bg-white rounded-card border border-light-border p-5">
-        <h3 className="text-xs font-semibold font-heading text-mid uppercase tracking-wide mb-4">Suggested Billing Plan</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-light-border">
-                <th className="text-left py-2 text-xs font-medium text-mid">Phase</th>
-                <th className="text-left py-2 text-xs font-medium text-mid hidden sm:table-cell">Description</th>
-                <th className="text-right py-2 text-xs font-medium text-mid">Amount</th>
-                <th className="text-left py-2 text-xs font-medium text-mid hidden md:table-cell">When</th>
-                <th className="text-left py-2 text-xs font-medium text-mid hidden md:table-cell">How</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-light-border">
-              {calc.billingPlan.map((row, i) => (
-                <tr key={i}>
-                  <td className="py-2.5 text-dark font-medium pr-3">{row.phase}</td>
-                  <td className="py-2.5 pr-3 hidden sm:table-cell">
-                    <span className="text-mid">{row.description}</span>
-                    {row.note && <span className="block text-xs text-green-600 mt-0.5">{row.note}</span>}
-                  </td>
-                  <td className="py-2.5 text-right font-semibold text-dark">{formatCurrency(row.amount)}</td>
-                  <td className="py-2.5 text-mid pl-3 hidden md:table-cell">{row.when}</td>
-                  <td className="py-2.5 text-mid pl-3 hidden md:table-cell">{row.how}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <BillingPlanSection calc={calc} quote={quote} dispatch={dispatch} />
+    </div>
+  );
+}
+
+// ── Entity types ───────────────────────────────────────────────────────────────
+const ENTITY_TYPES = [
+  { value: 'individual', label: 'Individual' },
+  { value: 'joint', label: 'Joint' },
+  { value: 'superannuation', label: 'Superannuation' },
+  { value: 'smsf', label: 'SMSF' },
+  { value: 'familyTrust', label: 'Family Trust' },
+  { value: 'company', label: 'Company' },
+  { value: 'investmentBond', label: 'Investment Bond' },
+  { value: 'other', label: 'Other' },
+];
+
+// ── Billing Plan Section ────────────────────────────────────────────────────────
+function BillingPlanSection({ calc, quote, dispatch }) {
+  const [entityExpanded, setEntityExpanded] = useState(false);
+
+  const soaSplit = quote.soaSplit || '50/50';
+  const soaPhase2Method = quote.soaPhase2Method || 'platform';
+  const implMethod = quote.implMethod || 'platform';
+  const ongoingFrequency = quote.ongoingFrequency || 'monthly';
+  const ongoingMethod = quote.ongoingMethod || 'directDebit';
+  const entityAllocationEnabled = !!quote.entityAllocationEnabled;
+  const entityAllocationType = quote.entityAllocationType || 'percentage';
+  const entityAllocations: any[] = quote.entityAllocations || [];
+  const isPct = entityAllocationType === 'percentage';
+
+  const soaFee = calc.hasIncentives ? calc.soaIncentivisedFee : calc.soaTotalInclGst;
+
+  function set(field, value) {
+    dispatch({ type: 'SET_QUOTE_FIELD', field, value });
+  }
+
+  function handleEnableEntityAllocation() {
+    set('entityAllocationEnabled', true);
+    if (entityAllocations.length === 0) {
+      const rows: any[] = [];
+      if (quote.isCouple) {
+        rows.push({ type: 'joint', name: quote.clientName?.trim() || 'Primary clients', soaAllocation: 100, ongoingAllocation: 100 });
+      } else {
+        rows.push({ type: 'individual', name: quote.clientName?.trim() || 'Primary client', soaAllocation: 100, ongoingAllocation: 100 });
+      }
+      for (let i = 0; i < (Number(quote.entityCount) || 0); i++) {
+        rows.push({ type: '', name: '', soaAllocation: 0, ongoingAllocation: 0 });
+      }
+      set('entityAllocations', rows);
+    }
+    setEntityExpanded(true);
+  }
+
+  function updateRow(idx: number, field: string, value: any) {
+    const next = [...entityAllocations];
+    next[idx] = { ...next[idx], [field]: value };
+    set('entityAllocations', next);
+  }
+
+  const soaTotal = entityAllocations.reduce((s, r) => s + (Number(r.soaAllocation) || 0), 0);
+  const ongoingTotal = entityAllocations.reduce((s, r) => s + (Number(r.ongoingAllocation) || 0), 0);
+  const soaInvalid = isPct ? Math.abs(soaTotal - 100) > 0.01 : Math.abs(soaTotal - soaFee) > 1;
+  const ongoingInvalid = calc.hasOngoing && calc.totalOngoingInclGst > 0
+    && (isPct ? Math.abs(ongoingTotal - 100) > 0.01 : Math.abs(ongoingTotal - calc.totalOngoingInclGst) > 1);
+
+  const freqDivisors: Record<string, number> = { monthly: 12, quarterly: 4, halfYearly: 2, annually: 1 };
+  const freqPeriodLabels: Record<string, string> = { monthly: 'month', quarterly: 'quarter', halfYearly: 'half-year', annually: 'year' };
+  const ongoingPeriodAmt = calc.totalOngoingInclGst / (freqDivisors[ongoingFrequency] || 12);
+
+  const soaContextDesc = () => {
+    if (soaSplit === '0/100') return `Full SOA fee of ${formatCurrency(soaFee)} payable on presentation of advice`;
+    if (soaSplit === '100/0') return `Full SOA fee of ${formatCurrency(soaFee)} payable on engagement`;
+    return `${formatCurrency(soaFee / 2)} on engagement, ${formatCurrency(soaFee / 2)} on presentation of advice`;
+  };
+
+  const inputCls = 'rounded-input border border-light-border px-2 py-1 text-sm text-dark bg-white focus:outline-none focus:ring-1 focus:ring-teal';
+
+  return (
+    <div className="bg-white rounded-card border border-light-border p-5 space-y-5">
+      <h3 className="text-xs font-semibold font-heading text-mid uppercase tracking-wide">Billing Plan</h3>
+
+      {/* SOA payment split */}
+      <div>
+        <label className="text-sm font-medium text-dark block mb-2">SOA payment schedule</label>
+        <div className="flex gap-2">
+          {(['0/100', '50/50', '100/0'] as const).map(opt => (
+            <button
+              key={opt}
+              onClick={() => set('soaSplit', opt)}
+              className={`px-3 py-1.5 text-sm rounded-input border transition-colors ${
+                soaSplit === opt
+                  ? 'bg-teal text-white border-teal'
+                  : 'bg-white text-mid border-light-border hover:border-teal hover:text-dark'
+              }`}
+            >
+              {opt}
+            </button>
+          ))}
         </div>
+        <p className="text-xs text-mid mt-2">{soaContextDesc()}</p>
+      </div>
+
+      {/* Payment method rows */}
+      <div className="space-y-2.5">
+        {(soaSplit === '50/50' || soaSplit === '100/0') && (
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-mid w-36 flex-shrink-0">On engagement</span>
+            <span className="text-dark">Invoice</span>
+            <span className="text-xs text-mid">(engagement fees are always invoiced directly)</span>
+          </div>
+        )}
+        {(soaSplit === '50/50' || soaSplit === '0/100') && (
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-mid w-36 flex-shrink-0">On presentation</span>
+            <select value={soaPhase2Method} onChange={e => set('soaPhase2Method', e.target.value)} className={inputCls}>
+              <option value="platform">Platform</option>
+              <option value="invoice">Invoice</option>
+            </select>
+          </div>
+        )}
+        {calc.implTotal > 0 && !calc.waiveImplementation && (
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-mid w-36 flex-shrink-0">Implementation fee</span>
+            <span className="text-dark font-medium">{formatCurrency(calc.hasIncentives ? calc.implIncentivisedFee : calc.implTotal)}</span>
+            <span className="text-mid">Method</span>
+            <select value={implMethod} onChange={e => set('implMethod', e.target.value)} className={inputCls}>
+              <option value="platform">Platform</option>
+              <option value="invoice">Invoice</option>
+            </select>
+          </div>
+        )}
+        {calc.implTotal > 0 && calc.waiveImplementation && (
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-mid w-36 flex-shrink-0">Implementation fee</span>
+            <span className="text-dark">Waived</span>
+          </div>
+        )}
+        {calc.hasOngoing && calc.totalOngoingInclGst > 0 && (
+          <div className="flex items-center gap-3 text-sm flex-wrap">
+            <span className="text-mid w-36 flex-shrink-0">Ongoing frequency</span>
+            <select value={ongoingFrequency} onChange={e => set('ongoingFrequency', e.target.value)} className={inputCls}>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="halfYearly">Half-yearly</option>
+              <option value="annually">Annually</option>
+            </select>
+            <span className="text-mid">Method</span>
+            <select value={ongoingMethod} onChange={e => set('ongoingMethod', e.target.value)} className={inputCls}>
+              <option value="directDebit">Direct Debit</option>
+              <option value="platform">Platform</option>
+              <option value="invoice">Invoice</option>
+            </select>
+            <span className="text-dark font-medium">{formatCurrency(ongoingPeriodAmt)} per {freqPeriodLabels[ongoingFrequency] || 'month'}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Read-only billing plan table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-light-border">
+              <th className="text-left py-2 text-xs font-medium text-mid">Phase</th>
+              <th className="text-right py-2 text-xs font-medium text-mid">Amount</th>
+              <th className="text-left py-2 text-xs font-medium text-mid pl-3 hidden md:table-cell">When</th>
+              <th className="text-left py-2 text-xs font-medium text-mid pl-3 hidden md:table-cell">Method</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-light-border">
+            {calc.billingPlan.map((row, i) => (
+              <tr key={i}>
+                <td className="py-2.5 text-dark font-medium pr-3">{row.phase}</td>
+                <td className="py-2.5 text-right font-semibold text-dark">
+                  {row.amount === 0 ? '—' : formatCurrency(row.amount)}
+                  {row.annual && <span className="block text-xs text-mid font-normal">{formatCurrency(row.annual)} p.a.</span>}
+                </td>
+                <td className="py-2.5 text-mid pl-3 hidden md:table-cell">{row.when}</td>
+                <td className="py-2.5 text-mid pl-3 hidden md:table-cell">{row.method}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Entity allocation — collapsible */}
+      <div className="border-t border-light-border pt-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-sm font-medium text-dark">Entity Allocation</span>
+            <span className="text-xs text-mid ml-1">(optional)</span>
+          </div>
+          {!entityAllocationEnabled ? (
+            <button onClick={handleEnableEntityAllocation} className="text-xs text-teal hover:underline">Enable</button>
+          ) : (
+            <button onClick={() => setEntityExpanded(e => !e)} className="text-xs text-teal hover:underline">
+              {entityExpanded ? 'Collapse' : 'Expand'}
+            </button>
+          )}
+        </div>
+        <p className="text-xs text-mid mt-0.5">Allocate fees across entities for the client letter.</p>
+
+        {entityAllocationEnabled && entityExpanded && (
+          <div className="mt-3 space-y-3">
+            <div className="flex items-start gap-2 bg-teal-50 border border-teal-200 rounded-xl px-3 py-2 text-xs text-teal-800">
+              <span className="mt-0.5 flex-shrink-0">ⓘ</span>
+              <span>Specify how fees are split across entities in the client group. If not customised, all fees will be attributed to the primary client in the client letter.</span>
+            </div>
+
+            {/* Split type toggle */}
+            <div className="flex gap-2">
+              {(['percentage', 'dollar'] as const).map(type => (
+                <button
+                  key={type}
+                  onClick={() => set('entityAllocationType', type)}
+                  className={`px-3 py-1 text-xs rounded-input border transition-colors ${
+                    entityAllocationType === type
+                      ? 'bg-teal text-white border-teal'
+                      : 'bg-white text-mid border-light-border hover:border-teal'
+                  }`}
+                >
+                  {type === 'percentage' ? 'Split by percentage' : 'Split by dollar'}
+                </button>
+              ))}
+            </div>
+
+            {/* Entity table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-light-border">
+                    <th className="text-left py-1.5 text-xs font-medium text-mid pr-2">Entity Type</th>
+                    <th className="text-left py-1.5 text-xs font-medium text-mid pr-2">Entity Name</th>
+                    <th className="text-left py-1.5 text-xs font-medium text-mid pr-2">SOA</th>
+                    <th className="text-left py-1.5 text-xs font-medium text-mid pr-2">Ongoing</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {entityAllocations.map((row, idx) => (
+                    <tr key={idx}>
+                      <td className="py-1 pr-2">
+                        <select value={row.type || ''} onChange={e => updateRow(idx, 'type', e.target.value)} className={`${inputCls} w-full`}>
+                          <option value="">Select type</option>
+                          {ENTITY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                        </select>
+                      </td>
+                      <td className="py-1 pr-2">
+                        <input
+                          type="text"
+                          value={row.name || ''}
+                          onChange={e => updateRow(idx, 'name', e.target.value)}
+                          placeholder="Entity name"
+                          className={`${inputCls} w-full`}
+                        />
+                      </td>
+                      <td className="py-1 pr-2">
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            value={row.soaAllocation ?? ''}
+                            onChange={e => updateRow(idx, 'soaAllocation', Number(e.target.value))}
+                            className={`${inputCls} w-20`}
+                          />
+                          <span className="text-xs text-mid">{isPct ? '%' : '$'}</span>
+                        </div>
+                      </td>
+                      <td className="py-1 pr-2">
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            value={row.ongoingAllocation ?? ''}
+                            onChange={e => updateRow(idx, 'ongoingAllocation', Number(e.target.value))}
+                            className={`${inputCls} w-20`}
+                          />
+                          <span className="text-xs text-mid">{isPct ? '%' : '$'}</span>
+                        </div>
+                      </td>
+                      <td className="py-1">
+                        <button
+                          onClick={() => set('entityAllocations', entityAllocations.filter((_, i) => i !== idx))}
+                          disabled={entityAllocations.length <= 1}
+                          className="text-xs text-mid hover:text-risk disabled:opacity-30"
+                        >
+                          ✕
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t border-light-border">
+                    <td colSpan={2} className="py-1 text-xs text-mid">Total</td>
+                    <td className="py-1 text-xs font-medium">
+                      <span className={soaInvalid ? 'text-warning-text' : 'text-healthy-text'}>
+                        {isPct ? `${soaTotal}%` : formatCurrency(soaTotal)}
+                      </span>
+                      {soaInvalid && (
+                        <span className="block text-warning-text text-xs">
+                          {isPct ? `Should equal 100%` : `SOA fee is ${formatCurrency(soaFee)}`}
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-1 text-xs font-medium">
+                      {calc.hasOngoing && calc.totalOngoingInclGst > 0 ? (
+                        <>
+                          <span className={ongoingInvalid ? 'text-warning-text' : 'text-healthy-text'}>
+                            {isPct ? `${ongoingTotal}%` : formatCurrency(ongoingTotal)}
+                          </span>
+                          {ongoingInvalid && (
+                            <span className="block text-warning-text text-xs">
+                              {isPct ? `Should equal 100%` : `Ongoing fee is ${formatCurrency(calc.totalOngoingInclGst)}`}
+                            </span>
+                          )}
+                        </>
+                      ) : <span className="text-mid">—</span>}
+                    </td>
+                    <td />
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <button onClick={() => set('entityAllocations', [...entityAllocations, { type: '', name: '', soaAllocation: 0, ongoingAllocation: 0 }])} className="text-xs text-teal hover:underline">
+              + Add entity
+            </button>
+
+            {/* Summary table */}
+            {entityAllocations.some(r => r.name || r.type) && (
+              <div>
+                <p className="text-xs font-medium text-mid mb-1">Fee Allocation by Entity</p>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-light-border">
+                      <th className="text-left py-1.5 text-xs font-medium text-mid">Entity</th>
+                      <th className="text-left py-1.5 text-xs font-medium text-mid">Type</th>
+                      <th className="text-left py-1.5 text-xs font-medium text-mid">SOA</th>
+                      {calc.hasOngoing && calc.totalOngoingInclGst > 0 && <th className="text-left py-1.5 text-xs font-medium text-mid">Ongoing</th>}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-light-border">
+                    {entityAllocations.filter(r => r.name || r.type).map((row, i) => {
+                      const typLabel = ENTITY_TYPES.find(t => t.value === row.type)?.label || row.type || '—';
+                      const soaAmt = isPct ? soaFee * ((Number(row.soaAllocation) || 0) / 100) : Number(row.soaAllocation) || 0;
+                      const ongoingAmt = isPct ? calc.totalOngoingInclGst * ((Number(row.ongoingAllocation) || 0) / 100) : Number(row.ongoingAllocation) || 0;
+                      return (
+                        <tr key={i}>
+                          <td className="py-1.5 text-dark">{row.name || '—'}</td>
+                          <td className="py-1.5 text-mid">{typLabel}</td>
+                          <td className="py-1.5 text-dark">{isPct ? `${row.soaAllocation}% (${formatCurrency(soaAmt)})` : formatCurrency(soaAmt)}</td>
+                          {calc.hasOngoing && calc.totalOngoingInclGst > 0 && (
+                            <td className="py-1.5 text-dark">{isPct ? `${row.ongoingAllocation}% (${formatCurrency(ongoingAmt)})` : formatCurrency(ongoingAmt)}</td>
+                          )}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <button
+              onClick={() => { set('entityAllocationEnabled', false); set('entityAllocations', []); setEntityExpanded(false); }}
+              className="text-xs text-mid hover:text-risk"
+            >
+              Disable entity allocation
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

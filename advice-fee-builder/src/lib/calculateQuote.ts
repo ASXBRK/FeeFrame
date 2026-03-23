@@ -256,19 +256,44 @@ export function calculateQuote(state: any) {
   const hasIncentives = soaDiscountPercent > 0 || waiveImplementation;
 
   // ── Billing plan ──────────────────────────────────────────────────────────
-  const soaPhaseAmount = hasIncentives ? soaIncentivisedFee / 2 : soaTotalInclGst / 2;
-  const soaPhaseNote = hasIncentives && soaDiscountPercent > 0
-    ? `Discounted from ${fmtCcy(soaTotalInclGst / 2)} — subject to ongoing agreement`
-    : undefined;
-  const implPhaseNote = waiveImplementation && implTotal > 0
-    ? `Waived — subject to ongoing agreement`
-    : undefined;
-  const billingPlan = [
-    { phase: '1 — Onboarding', description: '50% of SOA fee', amount: soaPhaseAmount, when: 'On signing engagement letter', how: 'BPay', note: soaPhaseNote },
-    { phase: '2 — SOA Delivery', description: '50% of SOA fee', amount: soaPhaseAmount, when: 'On SOA presentation', how: 'Platform', note: soaPhaseNote },
-    { phase: '3 — Implementation', description: waiveImplementation && implTotal > 0 ? 'Implementation fee waived' : 'Full implementation fee', amount: implIncentivisedFee, when: 'On implementation', how: 'Platform', note: implPhaseNote },
-    { phase: '4 — Ongoing Service', description: 'Annual fee (quarterly)', amount: totalOngoingInclGst / 4, when: 'Quarterly in arrears', how: 'Platform', note: undefined },
-  ];
+  const soaSplit = state.soaSplit || '50/50';
+  const soaPhase2Method = state.soaPhase2Method || 'platform';
+  const implMethod = state.implMethod || 'platform';
+  const ongoingFrequency = state.ongoingFrequency || 'monthly';
+  const ongoingMethod = state.ongoingMethod || 'directDebit';
+
+  const soaFeeForPlan = hasIncentives ? soaIncentivisedFee : soaTotalInclGst;
+  const billingPlan: any[] = [];
+
+  if (soaSplit === '100/0') {
+    billingPlan.push({ phase: 'SOA Fee', description: 'Full SOA fee on engagement', amount: soaFeeForPlan, when: 'On signing engagement letter', method: 'Invoice' });
+  } else if (soaSplit === '0/100') {
+    billingPlan.push({ phase: 'SOA Fee', description: 'Full SOA fee on presentation', amount: soaFeeForPlan, when: 'On SOA presentation', method: soaPhase2Method === 'invoice' ? 'Invoice' : 'Platform' });
+  } else {
+    billingPlan.push({ phase: 'SOA Fee — Phase 1', description: '50% of SOA fee', amount: soaFeeForPlan / 2, when: 'On signing engagement letter', method: 'Invoice' });
+    billingPlan.push({ phase: 'SOA Fee — Phase 2', description: '50% of SOA fee', amount: soaFeeForPlan / 2, when: 'On SOA presentation', method: soaPhase2Method === 'invoice' ? 'Invoice' : 'Platform' });
+  }
+
+  const implFeeForPlan = hasIncentives ? implIncentivisedFee : implTotal;
+  if (implFeeForPlan > 0) {
+    billingPlan.push({ phase: 'Implementation', description: 'Implementation fee', amount: implFeeForPlan, when: 'On implementation', method: implMethod === 'invoice' ? 'Invoice' : 'Platform' });
+  } else if (implTotal > 0 && waiveImplementation) {
+    billingPlan.push({ phase: 'Implementation', description: 'Implementation fee — waived', amount: 0, when: 'On implementation', method: '—' });
+  }
+
+  if (hasOngoing && totalOngoingInclGst > 0) {
+    const freqLabels: Record<string, string> = { monthly: 'Monthly', quarterly: 'Quarterly', halfYearly: 'Half-yearly', annually: 'Annually' };
+    const freqDivisors: Record<string, number> = { monthly: 12, quarterly: 4, halfYearly: 2, annually: 1 };
+    const methodLabels: Record<string, string> = { directDebit: 'Direct Debit', platform: 'Platform', invoice: 'Invoice' };
+    billingPlan.push({
+      phase: 'Ongoing Service',
+      description: `${freqLabels[ongoingFrequency] || 'Monthly'} ongoing fee`,
+      amount: totalOngoingInclGst / (freqDivisors[ongoingFrequency] || 12),
+      when: freqLabels[ongoingFrequency] || 'Monthly',
+      method: methodLabels[ongoingMethod] || 'Direct Debit',
+      annual: totalOngoingInclGst,
+    });
+  }
 
   // ── Client paragraph ──────────────────────────────────────────────────────
   const allStrategies = [...STRATEGIES, ...ADD_ONS];
@@ -429,6 +454,12 @@ export function calculateQuote(state: any) {
 
     // Output
     billingPlan,
+    soaSplit,
+    ongoingFrequency,
+    ongoingMethod,
+    entityAllocations: state.entityAllocationEnabled ? (state.entityAllocations || []) : [],
+    entityAllocationEnabled: !!state.entityAllocationEnabled,
+    entityAllocationType: state.entityAllocationType || 'percentage',
     clientParagraph: state.clientParagraphOverride ?? clientParagraph,
     serviceSummaryItems,
   };
