@@ -54,7 +54,10 @@ function reducer(state, action) {
         return { ...state, quote: { ...state.quote, hasOngoing: false, soaDiscountPercent: 0, waiveImplementation: false } };
       }
       if (action.field === 'paraplanner') {
-        const coreTaskIds = ['discovery', 'engagementLetter', 'dataCollection', 'scenarioModelling'];
+        // Bug fix: 'soaReviewPresentation' was missing from this list; it was added as a 5th core task
+        // after this reducer was written, so its hour overrides were never cleared on paraplanner switch,
+        // leaving internal-mode hour overrides active when external defaults should apply (and vice versa).
+        const coreTaskIds = ['discovery', 'engagementLetter', 'dataCollection', 'scenarioModelling', 'soaReviewPresentation'];
         const cleanedOverrides = { ...state.quote.hourOverrides };
         for (const id of coreTaskIds) {
           delete cleanedOverrides[`${id}.adviser`];

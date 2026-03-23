@@ -1,16 +1,27 @@
 import { STRATEGIES, ADD_ONS, CORE_TASKS, REVIEW_TASKS, ANNUAL_TASKS, PREMIUM_FACTORS, DISCOUNT_FACTORS, getPremiumRate, getDiscountRate, formatStrategyList } from './serviceLines.js';
 import { roundToNearest100 } from './formatters.js';
 
+// Full repo audit 2026-03-23 — 3 bugs found and fixed. See audit report.
 /**
  * Pure calculation engine for FeeQuote (Phase 1 rebuild).
  * Returns all computed values with no side effects.
  *
  * Audited 2026-03-21 — all calculation paths verified against 6 test scenarios.
- * Bugs fixed in this audit:
+ * Bugs fixed in prior audit:
  *   1. Relationship discount (state.relationshipDiscountPercent) was stored in state
  *      but never read here — now applied to combined discount rate.
  *   2. Total discount had no cap — now capped at 50% of base fee.
  *      discountCapApplied exported so Step 4 UI warning fires correctly.
+ * Bugs fixed in 2026-03-23 audit:
+ *   3. quoteDefaults.ts was missing relationshipDiscountEnabled/Percent — deepMerge
+ *      in App.tsx only restores keys present in defaults, so saved relationship
+ *      discount was silently lost on localStorage restore.
+ *   4. Reducer paraplanner switch hardcoded 4 core task IDs; 'soaReviewPresentation'
+ *      (added later as alwaysOn task) was omitted, so its hour overrides were never
+ *      cleared when switching internal↔external.
+ *   5. Tab2 Detailed Breakdown discount percentage label used discountRate (engagement
+ *      factors only) but dollar amounts used effectiveDiscountRate (combined with
+ *      relationship discount) — label was wrong whenever relationship discount active.
  */
 export function calculateQuote(state: any) {
   const adviserRate = Number(state.adviserRate ?? 106);

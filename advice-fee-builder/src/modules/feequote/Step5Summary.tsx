@@ -663,7 +663,10 @@ function Tab2Breakdown({ calc, quote }) {
               {calc.soaDiscount > 0 && (
                 <tr>
                   <td className="py-2 text-healthy-text" colSpan={5}>
-                    Discounts ({calc.discountCount} factor{calc.discountCount !== 1 ? 's' : ''}, -{Math.round(calc.discountRate * 100)}%)
+                    {/* Bug fix: was calc.discountRate (engagement-factor rate only); dollar amount uses
+                        effectiveDiscountRate (engagement + relationship combined), so label was wrong
+                        whenever a relationship discount was active — e.g. label said -5% but amount was -25%. */}
+                    Discounts ({calc.discountCount} factor{calc.discountCount !== 1 ? 's' : ''}, -{Math.round(calc.effectiveDiscountRate * 100)}%)
                   </td>
                   <td className="py-2 text-right font-medium text-healthy-text">-{formatCurrency(calc.soaDiscount)}</td>
                 </tr>
@@ -792,7 +795,8 @@ function Tab2Breakdown({ calc, quote }) {
                 {calc.ongoingDiscount > 0 && (
                   <tr>
                     <td className="py-2 text-healthy-text" colSpan={5}>
-                      Discounts (-{Math.round(calc.discountRate * 100)}%)
+                      {/* Bug fix: same as SOA discount label — was calc.discountRate, should be effectiveDiscountRate */}
+                      Discounts (-{Math.round(calc.effectiveDiscountRate * 100)}%)
                     </td>
                     <td className="py-2 text-right font-medium text-healthy-text">-{formatCurrency(calc.ongoingDiscount)}</td>
                   </tr>
