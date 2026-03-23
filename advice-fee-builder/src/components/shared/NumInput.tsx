@@ -4,15 +4,18 @@ import { useState, useEffect } from 'react';
  * Number input that allows the field to be blank while typing.
  * Commits the parsed value to onChange on every valid keystroke (live calc updates).
  * If the field is left blank on blur, reverts to emptyDefault (0).
+ * If min/max are provided, the value is clamped to that range on blur.
  */
 type Props = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'type'> & {
   value: number;
   onChange: (value: number) => void;
   emptyDefault?: number;
   integer?: boolean;
+  min?: number;
+  max?: number;
 };
 
-export default function NumInput({ value, onChange, emptyDefault = 0, integer = false, className = '', ...rest }: Props) {
+export default function NumInput({ value, onChange, emptyDefault = 0, integer = false, min, max, className = '', ...rest }: Props) {
   const [draft, setDraft] = useState(String(value));
   const [focused, setFocused] = useState(false);
 
@@ -24,6 +27,8 @@ export default function NumInput({ value, onChange, emptyDefault = 0, integer = 
   return (
     <input
       {...rest}
+      min={min}
+      max={max}
       type="text"
       inputMode={integer ? 'numeric' : 'decimal'}
       className={className}
@@ -45,7 +50,9 @@ export default function NumInput({ value, onChange, emptyDefault = 0, integer = 
       onBlur={() => {
         setFocused(false);
         const n = parseFloat(draft);
-        const final = isNaN(n) ? emptyDefault : (integer ? Math.round(n) : n);
+        let final = isNaN(n) ? (min ?? emptyDefault) : (integer ? Math.round(n) : n);
+        if (min !== undefined) final = Math.max(min, final);
+        if (max !== undefined) final = Math.min(max, final);
         setDraft(String(final));
         onChange(final);
       }}

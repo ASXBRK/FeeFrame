@@ -97,6 +97,8 @@ export default function Step3OngoingService({ quote, dispatch, onNext, onBack })
                   <NumInput
                     value={quote.ongoingInsuranceCommissionOffset}
                     onChange={v => set('ongoingInsuranceCommissionOffset', v)}
+                    min={0}
+                    max={50000}
                     className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
                   />
                   <span className="text-xs text-mid w-14">p.a.</span>
@@ -175,11 +177,13 @@ function FixedFeeModel({ quote, dispatch, calc }) {
           <div className="flex items-center gap-2">
             <NumInput
               value={quote.reviewMeetings}
-              onChange={v => set('reviewMeetings', Math.max(0, Math.round(v)))}
+              onChange={v => set('reviewMeetings', Math.max(0, Math.min(12, Math.round(v))))}
               integer
+              min={0}
+              max={12}
               className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
             />
-            <span className="text-xs text-mid">per year</span>
+            <span className="text-xs text-mid">per year (max 12)</span>
           </div>
         </div>
       </div>
@@ -215,6 +219,8 @@ function FixedFeeModel({ quote, dispatch, calc }) {
                           <NumInput
                             value={getReviewHour(task, role)}
                             onChange={v => setReviewOverride(task.id, role, v)}
+                            min={0}
+                            max={50}
                             className="w-16 rounded-input border border-teal px-1.5 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 float-right"
                           />
                         ) : (
@@ -289,6 +295,8 @@ function FixedFeeModel({ quote, dispatch, calc }) {
                           <NumInput
                             value={getAnnualHour(task, role)}
                             onChange={v => setAnnualOverride(task.id, role, v)}
+                            min={0}
+                            max={50}
                             className="w-16 rounded-input border border-teal px-1.5 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 float-right"
                           />
                         ) : (
@@ -340,6 +348,8 @@ function PercentageModel({ quote, dispatch, calc, set }) {
           <NumInput
             value={quote.fum}
             onChange={v => set('fum', v)}
+            min={0}
+            max={50000000}
             className="w-40 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
           />
         </div>
@@ -369,6 +379,8 @@ function PercentageModel({ quote, dispatch, calc, set }) {
           <NumInput
             value={quote.minimumAnnualFee ?? 0}
             onChange={v => set('minimumAnnualFee', v)}
+            min={0}
+            max={50000}
             className="w-32 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
           />
           <span className="text-xs text-mid">p.a.</span>
@@ -404,6 +416,8 @@ function PercentageModel({ quote, dispatch, calc, set }) {
               <NumInput
                 value={quote.additionalPlatformFee ?? 500}
                 onChange={v => set('additionalPlatformFee', v)}
+                min={0}
+                max={5000}
                 className="w-24 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
               />
             </div>
@@ -428,6 +442,8 @@ function SubscriptionModel({ quote, set, calc }) {
           <NumInput
             value={quote.monthlySubscription}
             onChange={v => set('monthlySubscription', v)}
+            min={0}
+            max={5000}
             className="w-28 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
           />
           <span className="text-sm text-mid">/ month</span>
@@ -441,8 +457,10 @@ function SubscriptionModel({ quote, set, calc }) {
         <div className="flex items-center gap-2">
           <NumInput
             value={quote.includedReviews ?? 2}
-            onChange={v => set('includedReviews', Math.max(0, Math.round(v)))}
+            onChange={v => set('includedReviews', Math.max(0, Math.min(12, Math.round(v))))}
             integer
+            min={0}
+            max={12}
             className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
           />
           <span className="text-xs text-mid">review meetings included</span>
@@ -460,6 +478,8 @@ function SubscriptionModel({ quote, set, calc }) {
           <NumInput
             value={quote.additionalServicesRate ?? 0}
             onChange={v => set('additionalServicesRate', v)}
+            min={0}
+            max={1000}
             className="w-28 rounded-input border border-light-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
           />
           <span className="text-sm text-mid">/ hour</span>
