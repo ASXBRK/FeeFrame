@@ -966,11 +966,12 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
       <div className="grid gap-4 sm:grid-cols-3">
         {/* Card 1: SOA cost → fee */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">SOA Cost → Fee</div>
-          <div className="flex items-baseline gap-1.5">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">SOA Cost → Client Fee</div>
+          <div className="flex items-baseline gap-1.5 flex-wrap">
             <span className="text-gray-500">{formatCurrency(calc.soaTrueCost)}</span>
             <span className="text-gray-300">→</span>
-            <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.adjustedFeeRounded)}</span>
+            <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.soaTotalInclGst)}</span>
+            <span className="text-xs text-gray-400">incl GST</span>
           </div>
           <div className="text-sm text-gray-500 mt-1.5">
             Margin:{' '}
@@ -978,21 +979,22 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
               {formatCurrency(soaTrueProfit)}
             </span>
             {' '}
-            <span className="text-gray-400">({calc.adjustedFeeRounded > 0 ? Math.round((soaTrueProfit / calc.adjustedFeeRounded) * 100) : 0}%)</span>
+            <span className="text-gray-400">({calc.adjustedFeeRounded > 0 ? Math.round((soaTrueProfit / calc.adjustedFeeRounded) * 100) : 0}% ex GST)</span>
           </div>
         </div>
 
         {/* Card 2: Ongoing cost → fee */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Ongoing Cost → Fee</div>
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Ongoing Cost → Client Fee</div>
           {!calc.hasOngoing ? (
             <div className="text-sm text-gray-400">No ongoing fee</div>
           ) : hasOngoingCostData ? (
             <>
-              <div className="flex items-baseline gap-1.5">
+              <div className="flex items-baseline gap-1.5 flex-wrap">
                 <span className="text-gray-500">{formatCurrency(calc.ongoingTrueCost)}</span>
                 <span className="text-gray-300">→</span>
-                <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.totalOngoingRounded)}</span>
+                <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.totalOngoingInclGst)}</span>
+                <span className="text-xs text-gray-400">incl GST</span>
                 <span className="text-sm text-gray-400">/yr</span>
               </div>
               <div className="text-sm text-gray-500 mt-1.5">
@@ -1001,15 +1003,16 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
                   {formatCurrency(ongoingTrueProfit)}
                 </span>
                 {' '}
-                <span className="text-gray-400">({calc.totalOngoingRounded > 0 ? Math.round((ongoingTrueProfit / calc.totalOngoingRounded) * 100) : 0}%)</span>
+                <span className="text-gray-400">({calc.totalOngoingRounded > 0 ? Math.round((ongoingTrueProfit / calc.totalOngoingRounded) * 100) : 0}% ex GST)</span>
               </div>
             </>
           ) : (
             <>
-              <div className="flex items-baseline gap-1.5">
+              <div className="flex items-baseline gap-1.5 flex-wrap">
                 <span className="text-gray-400">—</span>
                 <span className="text-gray-300">→</span>
-                <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.totalOngoingRounded)}</span>
+                <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.totalOngoingInclGst)}</span>
+                <span className="text-xs text-gray-400">incl GST</span>
                 <span className="text-sm text-gray-400">/yr</span>
               </div>
               <div className="text-sm text-gray-400 mt-1.5">N/A — no cost data</div>
@@ -1024,9 +1027,9 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
             {formatCurrency(firstYearMargin)}
           </div>
           {(isPercentageOngoing || isSubscriptionOngoing) ? (
-            <div className="text-sm text-gray-400 mt-1">SOA margin only — ongoing cost data not available</div>
+            <div className="text-sm text-gray-400 mt-1">SOA margin only (ex GST) — ongoing cost data not available</div>
           ) : (
-            <div className="text-sm text-gray-400 mt-1">Combined first year profit</div>
+            <div className="text-sm text-gray-400 mt-1">Combined first year margin (ex GST)</div>
           )}
         </div>
       </div>
@@ -1042,6 +1045,7 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
             { label: calc.soaExternalFee > 0 ? 'External paraplanning' : 'Paraplanning', value: calc.soaParaplannerCost + calc.soaExternalFee, color: 'bg-teal' },
             { label: 'Admin', value: calc.soaAdminCost, color: 'bg-gray-300' },
             ...(soaTrueProfit > 0 ? [{ label: 'Margin', value: soaTrueProfit, color: 'bg-emerald-500' }] : []),
+            { label: 'GST', value: calc.soaTotalInclGst - calc.adjustedFeeRounded, color: 'bg-gray-100' },
           ]} />
           {soaTrueProfit < 0 && (
             <p className="text-xs text-red-600 mt-1">Loss: {formatCurrency(soaTrueProfit)} — fee is below cost</p>
@@ -1057,6 +1061,7 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
               { label: 'Paraplanning', value: calc.ongoingParaplannerCost, color: 'bg-teal' },
               { label: 'Admin', value: calc.ongoingAdminCost, color: 'bg-gray-300' },
               ...(ongoingTrueProfit > 0 ? [{ label: 'Margin', value: ongoingTrueProfit, color: 'bg-emerald-500' }] : []),
+              { label: 'GST', value: calc.totalOngoingInclGst - calc.totalOngoingRounded, color: 'bg-gray-100' },
             ]} />
             {ongoingTrueProfit < 0 && (
               <p className="text-xs text-red-600 mt-1">Loss: {formatCurrency(ongoingTrueProfit)} — fee is below cost</p>
