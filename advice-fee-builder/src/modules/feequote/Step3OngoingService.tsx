@@ -8,7 +8,6 @@ import { calculateQuote } from '../../lib/calculateQuote';
 import { formatCurrency } from '../../lib/formatters';
 
 export default function Step3OngoingService({ quote, dispatch, onNext, onBack }) {
-  const [entitiesOpen, setEntitiesOpen] = useState(false);
   const [incentivesOpen, setIncentivesOpen] = useState(false);
   const calc = calculateQuote(quote);
 
@@ -116,22 +115,6 @@ export default function Step3OngoingService({ quote, dispatch, onNext, onBack })
 
             {/* Client incentives */}
             <ClientIncentives quote={quote} set={set} calc={calc} />
-
-            {/* Entity fee split */}
-            <div className="bg-white rounded-card border border-light-border overflow-hidden">
-              <button
-                type="button"
-                onClick={() => setEntitiesOpen(o => !o)}
-                className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-light-surface transition-colors"
-              >
-                <div>
-                  <h3 className="text-base font-bold font-heading text-dark">Entity Fee Split <span className="text-mid font-normal">(optional)</span></h3>
-                  <p className="text-xs text-mid mt-0.5">Allocate the ongoing fee across individual entities.</p>
-                </div>
-                <span className="text-mid text-xs ml-4">{entitiesOpen ? '▲' : '▼'}</span>
-              </button>
-              {entitiesOpen && <EntitySplit quote={quote} dispatch={dispatch} calc={calc} />}
-            </div>
           </>
         )}
       </div>
@@ -587,97 +570,6 @@ function ClientIncentives({ quote, set, calc }) {
 
           <p className="text-xs text-gray-400 italic">These discounts apply when the client proceeds with the ongoing service arrangement.</p>
         </div>
-      )}
-    </div>
-  );
-}
-
-// ── Entity fee split ───────────────────────────────────────────────────────────
-function EntitySplit({ quote, dispatch, calc }) {
-  const totalBalance = quote.entities.reduce((s, e) => s + (Number(e.balance) || 0), 0);
-
-  return (
-    <div className="px-5 pb-5">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-light-border">
-              <th className="text-left py-2 text-xs font-medium text-mid">Entity Name</th>
-              <th className="text-right py-2 text-xs font-medium text-mid">Balance ($)</th>
-              <th className="text-center py-2 text-xs font-medium text-mid">Platform?</th>
-              <th className="text-right py-2 text-xs font-medium text-mid">Fee Allocation</th>
-              <th className="text-right py-2 text-xs font-medium text-mid">% of Balance</th>
-              <th className="py-2 w-8"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-light-border">
-            {quote.entities.map((entity, i) => {
-              const bal = Number(entity.balance) || 0;
-              const feeAlloc = totalBalance > 0 ? (bal / totalBalance) * calc.totalOngoingInclGst : 0;
-              const pctOfBal = bal > 0 ? (feeAlloc / bal) * 100 : 0;
-              return (
-                <tr key={i}>
-                  <td className="py-2 pr-2">
-                    <input
-                      type="text"
-                      value={entity.name}
-                      onChange={e => dispatch({ type: 'SET_ENTITY', index: i, field: 'name', value: e.target.value })}
-                      placeholder="Entity name"
-                      className="w-full rounded-input border border-light-border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
-                    />
-                  </td>
-                  <td className="py-2 pr-2">
-                    <NumInput
-                      value={entity.balance}
-                      onChange={v => dispatch({ type: 'SET_ENTITY', index: i, field: 'balance', value: v })}
-                      className="w-full rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
-                    />
-                  </td>
-                  <td className="py-2 pr-2 text-center">
-                    <input
-                      type="checkbox"
-                      checked={!!entity.onPlatform}
-                      onChange={e => dispatch({ type: 'SET_ENTITY', index: i, field: 'onPlatform', value: e.target.checked })}
-                      className="w-4 h-4 rounded border-light-border text-teal focus:ring-teal"
-                    />
-                  </td>
-                  <td className="py-2 pr-2 text-right text-dark">{formatCurrency(feeAlloc)}</td>
-                  <td className="py-2 pr-2 text-right text-mid">{bal > 0 ? `${pctOfBal.toFixed(2)}%` : '—'}</td>
-                  <td className="py-2">
-                    <button
-                      type="button"
-                      onClick={() => dispatch({ type: 'REMOVE_ENTITY', index: i })}
-                      className="text-light-border hover:text-risk transition-colors"
-                    >
-                      ×
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-          {quote.entities.length > 0 && (
-            <tfoot>
-              <tr className="border-t-2 border-light-border">
-                <td className="py-2 font-semibold text-dark">Total</td>
-                <td className="py-2 text-right font-medium text-dark">{formatCurrency(totalBalance)}</td>
-                <td></td>
-                <td className="py-2 text-right font-semibold text-dark">{formatCurrency(calc.totalOngoingInclGst)}</td>
-                <td></td>
-                <td></td>
-              </tr>
-            </tfoot>
-          )}
-        </table>
-      </div>
-      {quote.entities.length < 6 && (
-        <button
-          type="button"
-          onClick={() => dispatch({ type: 'ADD_ENTITY' })}
-          className="mt-3 text-xs font-medium text-teal hover:opacity-80 transition-opacity"
-        >
-          + Add entity
-        </button>
       )}
     </div>
   );

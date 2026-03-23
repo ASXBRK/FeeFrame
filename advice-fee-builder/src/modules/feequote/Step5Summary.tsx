@@ -414,24 +414,21 @@ function BillingPlanSection({ calc, quote, dispatch }) {
       </div>
 
       {/* Entity allocation — collapsible */}
-      <div className="border-t border-light-border pt-4">
-        <div className="flex items-center justify-between">
+      <div className="border-t border-light-border -mx-5 -mb-5">
+        <button
+          type="button"
+          onClick={() => entityAllocationEnabled ? setEntityExpanded(e => !e) : handleEnableEntityAllocation()}
+          className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-light-surface transition-colors"
+        >
           <div>
-            <span className="text-sm font-medium text-dark">Entity Allocation</span>
-            <span className="text-xs text-mid ml-1">(optional)</span>
+            <h3 className="text-sm font-semibold text-dark">Entity Allocation <span className="text-mid font-normal">(optional)</span></h3>
+            <p className="text-xs text-mid mt-0.5">Allocate fees across entities for the client letter.</p>
           </div>
-          {!entityAllocationEnabled ? (
-            <button onClick={handleEnableEntityAllocation} className="text-xs text-teal hover:underline">Enable</button>
-          ) : (
-            <button onClick={() => setEntityExpanded(e => !e)} className="text-xs text-mid hover:text-dark transition-colors ml-4">
-              {entityExpanded ? '▲' : '▼'}
-            </button>
-          )}
-        </div>
-        <p className="text-xs text-mid mt-0.5">Allocate fees across entities for the client letter.</p>
+          <span className="text-mid text-xs ml-4">{entityExpanded ? '▲' : '▼'}</span>
+        </button>
 
         {entityAllocationEnabled && entityExpanded && (
-          <div className="mt-3 space-y-3">
+          <div className="px-5 pb-5 space-y-3">
             <div className="flex items-start gap-2 bg-teal-50 border border-teal-200 rounded-xl px-3 py-2 text-xs text-teal-800">
               <span className="mt-0.5 flex-shrink-0">ⓘ</span>
               <span>Specify how fees are split across entities in the client group. If not customised, all fees will be attributed to the primary client in the client letter.</span>
