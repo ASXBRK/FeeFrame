@@ -101,7 +101,7 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
         </main>
 
         {/* Footer — full width (outside max-w-4xl), pushed to bottom on short pages */}
-        <div ref={footerRef} className="mt-auto print:hidden">
+        <div ref={footerRef} className="mt-16 print:hidden">
           <FooterBar currentPage="feequote" onNavigate={handleNavigate} />
         </div>
       </div>
@@ -130,8 +130,8 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
 
       {/* Desktop: floating buttons, slide up when footer becomes visible */}
       <div
-        className="hidden md:flex fixed right-8 items-center gap-3 z-30 print:hidden transition-all duration-150"
-        style={{ bottom: `${Math.max(32, footerOffset + 24)}px` }}
+        className="hidden md:flex fixed right-6 md:right-8 items-center gap-3 z-30 print:hidden transition-all duration-150"
+        style={{ bottom: `${Math.max(32, footerOffset + 32)}px` }}
       >
         {quoteStep > 1 && (
           <button
