@@ -84,8 +84,8 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
           </button>
         </div>
 
-        {/* Step content — pb-12 clears floating nav; footer below provides additional bottom space */}
-        <main className="flex-1 px-4 sm:px-6 py-6 pb-12 max-w-4xl w-full mx-auto">
+        {/* Step content — pb-40 clears floating nav (≈48px buttons + spacing) */}
+        <main className="flex-1 px-4 sm:px-6 py-6 pb-40 max-w-4xl w-full mx-auto">
           {quoteStep === 1 && <Step1ClientProfile {...sharedProps} />}
           {quoteStep === 2 && <Step2ScopeOfAdvice {...sharedProps} />}
           {quoteStep === 3 && <Step3OngoingService {...sharedProps} />}
