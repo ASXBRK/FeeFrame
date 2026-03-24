@@ -284,6 +284,8 @@ function DiscountSummaryCard({ calc, quote }) {
   const relPct = Number(quote.relationshipDiscountPercent) || 10;
   const baseInitial = calc.soaTotalInclGst + calc.implGross;
   const pctOfBase = baseInitial > 0 ? calc.totalInitialDiscounts / baseInitial : 0;
+  const baseOngoing = (calc.ongoingRoundedBeforeCommission || 0) + (calc.totalOngoingDiscounts || 0);
+  const pctOngoing = baseOngoing > 0 ? calc.totalOngoingDiscounts / baseOngoing : 0;
 
   return (
     <div className="bg-white rounded-card border border-light-border p-5">
@@ -292,7 +294,7 @@ function DiscountSummaryCard({ calc, quote }) {
         <tbody className="divide-y divide-light-border">
           {calc.discountCount > 0 && (
             <tr>
-              <td className="py-2 text-mid">Engagement factors ({calc.discountCount} × 2.5%)</td>
+              <td className="py-2 text-mid">Engagement factors ({calc.discountCount} factor{calc.discountCount !== 1 ? 's' : ''})</td>
               <td className="py-2 text-right font-medium text-green-600">-{formatCurrency(engSOA)}</td>
             </tr>
           )}
@@ -328,12 +330,12 @@ function DiscountSummaryCard({ calc, quote }) {
           )}
           <tr className="border-t-2 border-gray-300">
             <td className="py-2 font-semibold text-dark">Total discounts on initial fees</td>
-            <td className="py-2 text-right font-semibold text-green-700">-{formatCurrency(calc.totalInitialDiscounts)}</td>
+            <td className="py-2 text-right font-semibold text-green-700">-{formatCurrency(calc.totalInitialDiscounts)}{pctOfBase > 0 ? ` (${Math.round(pctOfBase * 100)}%)` : ''}</td>
           </tr>
           {calc.totalOngoingDiscounts > 0 && (
             <tr>
               <td className="py-2 font-semibold text-dark">Total discounts on ongoing fees</td>
-              <td className="py-2 text-right font-semibold text-green-700">-{formatCurrency(calc.totalOngoingDiscounts)} p.a.</td>
+              <td className="py-2 text-right font-semibold text-green-700">-{formatCurrency(calc.totalOngoingDiscounts)} p.a.{pctOngoing > 0 ? ` (${Math.round(pctOngoing * 100)}%)` : ''}</td>
             </tr>
           )}
         </tbody>
@@ -767,7 +769,7 @@ function Tab2Breakdown({ calc, quote }) {
               {calc.soaPremium > 0 && (
                 <tr>
                   <td className="py-2 text-warning-text" colSpan={5}>
-                    Premiums ({calc.premiumCount} factor{calc.premiumCount !== 1 ? 's' : ''}, +{Math.round(calc.premiumRate * 100)}%)
+                    Premiums ({calc.premiumCount} factor{calc.premiumCount !== 1 ? 's' : ''})
                   </td>
                   <td className="py-2 text-right font-medium text-warning-text">+{formatCurrency(calc.soaPremium)}</td>
                 </tr>
@@ -775,10 +777,7 @@ function Tab2Breakdown({ calc, quote }) {
               {calc.soaDiscount > 0 && (
                 <tr>
                   <td className="py-2 text-healthy-text" colSpan={5}>
-                    {/* Bug fix: was calc.discountRate (engagement-factor rate only); dollar amount uses
-                        effectiveDiscountRate (engagement + relationship combined), so label was wrong
-                        whenever a relationship discount was active — e.g. label said -5% but amount was -25%. */}
-                    Discounts ({calc.discountCount} factor{calc.discountCount !== 1 ? 's' : ''}, -{Math.round(calc.effectiveDiscountRate * 100)}%)
+                    Discounts ({calc.discountCount} factor{calc.discountCount !== 1 ? 's' : ''})
                   </td>
                   <td className="py-2 text-right font-medium text-healthy-text">-{formatCurrency(calc.soaDiscount)}</td>
                 </tr>
@@ -917,7 +916,7 @@ function Tab2Breakdown({ calc, quote }) {
                 {calc.ongoingPremium > 0 && (
                   <tr>
                     <td className="py-2 text-warning-text" colSpan={5}>
-                      Premiums (+{Math.round(calc.premiumRate * 100)}%)
+                      Premiums ({calc.premiumCount} factor{calc.premiumCount !== 1 ? 's' : ''})
                     </td>
                     <td className="py-2 text-right font-medium text-warning-text">+{formatCurrency(calc.ongoingPremium)}</td>
                   </tr>
@@ -925,8 +924,7 @@ function Tab2Breakdown({ calc, quote }) {
                 {calc.ongoingDiscount > 0 && (
                   <tr>
                     <td className="py-2 text-healthy-text" colSpan={5}>
-                      {/* Bug fix: same as SOA discount label — was calc.discountRate, should be effectiveDiscountRate */}
-                      Discounts (-{Math.round(calc.effectiveDiscountRate * 100)}%)
+                      Discounts ({calc.discountCount} factor{calc.discountCount !== 1 ? 's' : ''})
                     </td>
                     <td className="py-2 text-right font-medium text-healthy-text">-{formatCurrency(calc.ongoingDiscount)}</td>
                   </tr>
