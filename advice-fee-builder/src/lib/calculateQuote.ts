@@ -152,8 +152,9 @@ export function calculateQuote(state: any) {
   const implInvestmentFee = state.implInvestmentOverride ?? (investmentAccounts * 550);
   const implInSpecieFee = state.implInSpecieOverride ?? (inSpecieHours * adminRate * 1.1);
   const implInsuranceFee = state.implInsuranceOverride ?? (insuranceImplHours * adminRate * 1.1);
-  const implTotal = Math.max(0, implInvestmentFee + implInSpecieFee + implInsuranceFee - commissionOffset);
-  const totalInitialFees = soaTotalInclGst + implTotal;
+  // implGross = raw implementation before discounts or commission ("sticker price")
+  const implGross = implInvestmentFee + implInSpecieFee + implInsuranceFee;
+  const implTotal = implGross; // backwards-compat alias — commission & discounts applied later
 
   // ── Step 3: Ongoing service ────────────────────────────────────────────────
   const hasOngoing = state.hasOngoing !== false;
@@ -238,6 +239,15 @@ export function calculateQuote(state: any) {
 
   const ongoingCommissionOffset = Number(state.ongoingInsuranceCommissionOffset) || 0;
 
+  // Gross ongoing (before commission) — used for display only
+  const ongoingGrossCost = Math.max(0, totalOngoingExGst + ongoingPremium - ongoingDiscount);
+  const ongoingGrossMargin = hasOngoing && applyMarginToOngoing && state.ongoingModel === 'fixedOnly'
+    ? ongoingGrossCost * (marginPercent / 100)
+    : 0;
+  const ongoingRoundedBeforeCommission = hasOngoing
+    ? roundToNearest100(ongoingGrossCost + ongoingGrossMargin)
+    : 0;
+
   // Apply margin to ongoing AFTER adjustments, BEFORE rounding/GST
   const ongoingCostBeforeMargin = Math.max(0, totalOngoingExGst + ongoingPremium - ongoingDiscount - ongoingCommissionOffset);
   const ongoingMarginAmount = hasOngoing && applyMarginToOngoing && state.ongoingModel === 'fixedOnly'
@@ -260,12 +270,23 @@ export function calculateQuote(state: any) {
   const soaDiscountPercent = Number(state.soaDiscountPercent) || 0;
   const soaDiscountAmount = soaTotalInclGst * (soaDiscountPercent / 100);
   const soaIncentivisedFee = soaTotalInclGst - soaDiscountAmount;
+
   const implDiscountPercent = Number(state.implDiscountPercent) || 0;
-  const implDiscountAmount = implTotal * (implDiscountPercent / 100);
-  const implIncentivisedFee = implTotal - implDiscountAmount;
-  const totalIncentivisedInitialFees = soaIncentivisedFee + implIncentivisedFee;
-  const totalIncentiveSaving = soaDiscountAmount + implDiscountAmount;
+  // Discount applied to gross impl (before commission)
+  const implDiscountAmount = implGross * (implDiscountPercent / 100);
+  const implIncentivisedFee = implGross - implDiscountAmount; // after discount, before commission
+
   const hasIncentives = soaDiscountPercent > 0 || implDiscountPercent > 0;
+  const totalIncentiveSaving = soaDiscountAmount + implDiscountAmount;
+  const totalIncentivisedInitialFees = soaIncentivisedFee + implIncentivisedFee; // before commission
+
+  // Commission applied AFTER incentive discounts (to post-discount amounts)
+  const commissionAppliedToImpl = Math.min(commissionOffset, implIncentivisedFee);
+  const implAfterCommission = Math.max(0, implIncentivisedFee - commissionAppliedToImpl);
+  const commissionOverflow = Math.max(0, commissionOffset - implIncentivisedFee);
+  const soaAfterCommission = Math.max(0, soaIncentivisedFee - commissionOverflow);
+  // Total initial fees = what the client actually pays
+  const totalInitialFees = soaAfterCommission + implAfterCommission;
 
   // ── Billing plan ──────────────────────────────────────────────────────────
   const soaSplit = state.soaSplit || '50/50';
@@ -274,7 +295,8 @@ export function calculateQuote(state: any) {
   const ongoingFrequency = state.ongoingFrequency || 'monthly';
   const ongoingMethod = state.ongoingMethod || 'directDebit';
 
-  const soaFeeForPlan = hasIncentives ? soaIncentivisedFee : soaTotalInclGst;
+  // Billing plan uses actual client-pay amounts (post-discount, post-commission)
+  const soaFeeForPlan = soaAfterCommission;
   const billingPlan: any[] = [];
 
   if (soaSplit === '100/0') {
@@ -286,11 +308,11 @@ export function calculateQuote(state: any) {
     billingPlan.push({ phase: 'SOA Fee — Phase 2', description: '50% of SOA fee', amount: soaFeeForPlan / 2, when: 'On SOA presentation', method: soaPhase2Method === 'invoice' ? 'Invoice' : 'Platform' });
   }
 
-  const implFeeForPlan = hasIncentives ? implIncentivisedFee : implTotal;
-  if (implFeeForPlan > 0) {
-    billingPlan.push({ phase: 'Implementation', description: 'Implementation fee', amount: implFeeForPlan, when: 'On implementation', method: implMethod === 'invoice' ? 'Invoice' : 'Platform' });
-  } else if (implTotal > 0 && implDiscountPercent === 100) {
-    billingPlan.push({ phase: 'Implementation', description: 'Implementation fee — waived', amount: 0, when: 'On implementation', method: '—' });
+  if (implAfterCommission > 0) {
+    billingPlan.push({ phase: 'Implementation', description: 'Implementation fee', amount: implAfterCommission, when: 'On implementation', method: implMethod === 'invoice' ? 'Invoice' : 'Platform' });
+  } else if (implGross > 0) {
+    const zeroReason = implDiscountPercent === 100 ? 'waived' : 'covered by commission';
+    billingPlan.push({ phase: 'Implementation', description: `Implementation fee — ${zeroReason}`, amount: 0, when: 'On implementation', method: '—' });
   }
 
   if (hasOngoing && totalOngoingInclGst > 0) {
@@ -420,10 +442,17 @@ export function calculateQuote(state: any) {
     implInSpecieFee,
     implInsuranceFee,
     commissionOffset,
-    implTotal,
+    commissionAppliedToImpl,
+    commissionOverflow,
+    implGross,
+    implTotal,       // = implGross (backwards-compat alias)
+    implAfterCommission,
+    soaAfterCommission,
     totalInitialFees,
 
     // Ongoing
+    ongoingCommissionOffset,
+    ongoingRoundedBeforeCommission,
     hasOngoing,
     costPerReview,
     totalReviewHours,

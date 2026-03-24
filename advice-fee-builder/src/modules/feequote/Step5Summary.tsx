@@ -139,10 +139,16 @@ function Tab1Summary({ calc, quote, dispatch }) {
             <span className="text-dark">SOA Preparation Fee (incl GST)</span>
             <span className="text-dark">{formatCurrency(calc.soaTotalInclGst)}</span>
           </div>
-          {calc.implTotal > 0 && (
+          {calc.implGross > 0 && (
             <div className="flex justify-between">
               <span className="text-mid">Implementation Fees (incl GST)</span>
-              <span className="text-dark">{formatCurrency(calc.implTotal)}</span>
+              <span className="text-dark">{formatCurrency(calc.implGross)}</span>
+            </div>
+          )}
+          {calc.commissionOffset > 0 && (
+            <div className="flex justify-between">
+              <span className="text-mid">Less: Insurance commission offset</span>
+              <span className="text-risk-text font-medium">-{formatCurrency(calc.commissionOffset)}</span>
             </div>
           )}
           <div className="flex justify-between border-t-2 border-light-border pt-3 mt-2">
@@ -177,12 +183,12 @@ function Tab1Summary({ calc, quote, dispatch }) {
                 )}
               </span>
             </div>
-            {calc.implTotal > 0 && (
+            {calc.implGross > 0 && (
               <div className="flex justify-between items-center">
                 <span className="text-mid">Implementation Fees (incl GST)</span>
                 <span className="flex items-center gap-2">
                   {calc.implDiscountPercent > 0 && (
-                    <span className="text-gray-400 line-through">{formatCurrency(calc.implTotal)}</span>
+                    <span className="text-gray-400 line-through">{formatCurrency(calc.implGross)}</span>
                   )}
                   <span className="font-semibold text-gray-900">
                     {calc.implDiscountPercent === 100 ? 'Waived' : formatCurrency(calc.implIncentivisedFee)}
@@ -193,11 +199,19 @@ function Tab1Summary({ calc, quote, dispatch }) {
                 </span>
               </div>
             )}
+            {calc.commissionOffset > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-mid">Less: Insurance commission offset</span>
+                <span className="font-semibold text-risk-text">-{formatCurrency(calc.commissionOffset)}</span>
+              </div>
+            )}
             <div className="flex justify-between items-center border-t-2 border-light-border pt-3 mt-2">
               <span className="text-base font-bold text-dark">Total Initial Fees</span>
               <span className="flex items-center gap-3">
-                <span className="text-base font-bold text-teal">{formatCurrency(calc.totalIncentivisedInitialFees)}</span>
-                <span className="text-green-600 text-sm font-medium">saving {formatCurrency(calc.totalIncentiveSaving)}</span>
+                <span className="text-base font-bold text-teal">{formatCurrency(calc.totalInitialFees)}</span>
+                {calc.totalIncentiveSaving > 0 && (
+                  <span className="text-green-600 text-sm font-medium">saving {formatCurrency(calc.totalIncentiveSaving)}</span>
+                )}
               </span>
             </div>
           </div>
@@ -209,10 +223,27 @@ function Tab1Summary({ calc, quote, dispatch }) {
         <h3 className="text-xs font-semibold font-heading text-mid uppercase tracking-wide mb-4">Ongoing Fees</h3>
         {calc.hasOngoing && calc.totalOngoingInclGst > 0 ? (
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-mid">Annual Service Fee (excl GST)</span>
-              <span className="text-dark">{formatCurrency(calc.totalOngoingRounded)}</span>
-            </div>
+            {calc.ongoingCommissionOffset > 0 ? (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-mid">Annual Service Fee (excl GST)</span>
+                  <span className="text-dark">{formatCurrency(calc.ongoingRoundedBeforeCommission)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-mid">Less: Ongoing insurance commission</span>
+                  <span className="text-risk-text font-medium">-{formatCurrency(calc.ongoingCommissionOffset)}</span>
+                </div>
+                <div className="flex justify-between font-semibold border-t border-light-border pt-2 mt-2">
+                  <span className="text-dark">Adjusted Annual Fee (excl GST)</span>
+                  <span className="text-dark">{formatCurrency(calc.totalOngoingRounded)}</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex justify-between">
+                <span className="text-mid">Annual Service Fee (excl GST)</span>
+                <span className="text-dark">{formatCurrency(calc.totalOngoingRounded)}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-mid">GST</span>
               <span className="text-dark">{formatCurrency(calc.ongoingGst)}</span>
@@ -352,10 +383,10 @@ function BillingPlanSection({ calc, quote, dispatch }) {
             </select>
           </div>
         )}
-        {calc.implTotal > 0 && calc.implDiscountPercent < 100 && (
+        {calc.implGross > 0 && calc.implAfterCommission > 0 && (
           <div className="flex items-center gap-3 text-sm">
             <span className="text-mid w-36 flex-shrink-0">Implementation fee</span>
-            <span className="text-dark font-medium">{formatCurrency(calc.hasIncentives ? calc.implIncentivisedFee : calc.implTotal)}</span>
+            <span className="text-dark font-medium">{formatCurrency(calc.implAfterCommission)}</span>
             <span className="text-mid">Method</span>
             <select value={implMethod} onChange={e => set('implMethod', e.target.value)} className={inputCls}>
               <option value="platform">Platform</option>
@@ -363,10 +394,10 @@ function BillingPlanSection({ calc, quote, dispatch }) {
             </select>
           </div>
         )}
-        {calc.implTotal > 0 && calc.implDiscountPercent === 100 && (
+        {calc.implGross > 0 && calc.implAfterCommission === 0 && (
           <div className="flex items-center gap-3 text-sm">
             <span className="text-mid w-36 flex-shrink-0">Implementation fee</span>
-            <span className="text-dark">Waived</span>
+            <span className="text-dark">{calc.implDiscountPercent === 100 ? 'Waived' : 'Covered by commission'}</span>
           </div>
         )}
         {calc.hasOngoing && calc.totalOngoingInclGst > 0 && (
@@ -695,7 +726,7 @@ function Tab2Breakdown({ calc, quote }) {
       </div>
 
       {/* Implementation breakdown */}
-      {calc.implTotal > 0 && (
+      {calc.implGross > 0 && (
         <div className="bg-white rounded-card border border-light-border p-5">
           <h3 className="text-base font-bold font-heading text-dark mb-4">Implementation Breakdown</h3>
           <table className="w-full text-sm">
@@ -720,16 +751,34 @@ function Tab2Breakdown({ calc, quote }) {
                   <td className="py-2 text-right font-medium text-dark">{formatCurrency(calc.implInsuranceFee)}</td>
                 </tr>
               )}
-              {calc.commissionOffset > 0 && (
+              {calc.implDiscountPercent > 0 && (
                 <tr>
-                  <td className="py-2 text-mid">Less: Insurance commission offset</td>
-                  <td className="py-2 text-right font-medium text-risk-text">-{formatCurrency(calc.commissionOffset)}</td>
+                  <td className="py-2 text-mid">Less: Implementation discount ({calc.implDiscountPercent}%)</td>
+                  <td className="py-2 text-right font-medium text-healthy-text">-{formatCurrency(calc.implDiscountAmount)}</td>
+                </tr>
+              )}
+              {calc.commissionAppliedToImpl > 0 && (
+                <tr>
+                  <td className="py-2 text-mid">Less: Commission applied to implementation</td>
+                  <td className="py-2 text-right font-medium text-risk-text">-{formatCurrency(calc.commissionAppliedToImpl)}</td>
                 </tr>
               )}
               <tr className="border-t-2 border-light-border">
-                <td className="py-2 font-bold text-dark">Total Implementation Fees (incl GST)</td>
-                <td className="py-2 text-right font-bold text-teal">{formatCurrency(calc.implTotal)}</td>
+                <td className="py-2 font-bold text-dark">Implementation net (client pays)</td>
+                <td className="py-2 text-right font-bold text-teal">{formatCurrency(calc.implAfterCommission)}</td>
               </tr>
+              {calc.commissionOverflow > 0 && (
+                <>
+                  <tr className="border-t border-light-border">
+                    <td className="py-2 text-mid">Commission overflow to SOA</td>
+                    <td className="py-2 text-right font-medium text-risk-text">-{formatCurrency(calc.commissionOverflow)}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 text-mid">SOA fee after commission overflow</td>
+                    <td className="py-2 text-right font-medium text-dark">{formatCurrency(calc.soaAfterCommission)}</td>
+                  </tr>
+                </>
+              )}
             </tbody>
           </table>
         </div>
@@ -807,6 +856,12 @@ function Tab2Breakdown({ calc, quote }) {
                     <td className="py-2 text-right font-medium text-mid">+{formatCurrency(calc.ongoingMarginAmount)}</td>
                   </tr>
                 )}
+                {calc.ongoingCommissionOffset > 0 && (
+                  <tr>
+                    <td className="py-2 text-mid" colSpan={5}>Less: Ongoing insurance commission</td>
+                    <td className="py-2 text-right font-medium text-risk-text">-{formatCurrency(calc.ongoingCommissionOffset)}</td>
+                  </tr>
+                )}
                 <tr className="border-t border-light-border">
                   <td className="py-2 font-semibold text-dark" colSpan={5}>Annual Service Fee (excl GST)</td>
                   <td className="py-2 text-right font-bold text-dark">{formatCurrency(calc.totalOngoingRounded)}</td>
@@ -869,8 +924,15 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
   const soaDirectCost = calc.soaAdviserCost + calc.soaParaplannerCost + calc.soaAdminCost;
   const soaTotalCost = soaDirectCost + calc.soaExternalFee;
 
-  const soaTrueProfit = calc.adjustedFeeRounded - calc.soaTrueCost;
-  const ongoingTrueProfit = calc.totalOngoingRounded - calc.ongoingTrueCost;
+  const soaCommission = calc.commissionOffset || 0;
+  const ongoingCommission = calc.ongoingCommissionOffset || 0;
+
+  // Revenue = ex-GST client fee (after incentives + commission) + commission income
+  // soaAfterCommission is incl-GST; dividing by 1.1 gives ex-GST client portion
+  const soaClientFeeExGst = calc.soaAfterCommission > 0 ? calc.soaAfterCommission / 1.1 : 0;
+  const soaTrueProfit = soaClientFeeExGst + soaCommission - calc.soaTrueCost;
+  // ongoingTrueCost already has commission subtracted; add it back to get total practice revenue
+  const ongoingTrueProfit = (calc.totalOngoingRounded + ongoingCommission) - calc.ongoingTrueCost;
 
   const firstYearMargin = soaTrueProfit + (hasOngoingCostData ? ongoingTrueProfit : 0);
 
@@ -908,10 +970,6 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
   if (calc.soaMarginPercent > 0 && calc.soaMarginPercent < 15) {
     callouts.push(`Your margin of ${calc.soaMarginPercent}% is below the industry average of 21%. While this may be appropriate for some engagements, sustained low margins can impact business viability.`);
   }
-
-  const firstYearMarginWithIncentives = calc.hasIncentives
-    ? firstYearMargin - calc.totalIncentiveSaving
-    : firstYearMargin;
 
   const showCtaCard = isPercentageOngoing || isSubscriptionOngoing;
 
@@ -951,16 +1009,32 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
               {calc.soaDiscountPercent > 0 && (
                 <div>SOA discount ({calc.soaDiscountPercent}%): -{formatCurrency(calc.soaDiscountAmount)}</div>
               )}
-              {calc.implDiscountPercent > 0 && calc.implTotal > 0 && (
+              {calc.implDiscountPercent > 0 && calc.implGross > 0 && (
                 <div>Implementation discount ({calc.implDiscountPercent}%): -{formatCurrency(calc.implDiscountAmount)}</div>
               )}
               <div className="font-medium pt-1">
-                Total first-year margin impact: -{formatCurrency(calc.totalIncentiveSaving)}
+                Total discount saving: {formatCurrency(calc.totalIncentiveSaving)}
               </div>
-              <div>
-                Your first-year margin with incentives: <span className="font-semibold">{formatCurrency(firstYearMarginWithIncentives)}</span>
-                <span className="text-amber-600"> (was {formatCurrency(firstYearMargin)} without incentives)</span>
-              </div>
+              <div>First-year margin (after incentives{soaCommission > 0 ? ' + commission' : ''}): <span className="font-semibold">{formatCurrency(firstYearMargin)}</span></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Commission income callout */}
+      {(soaCommission > 0 || ongoingCommission > 0) && (
+        <div className="bg-teal-50 border border-teal-200 rounded-xl px-5 py-4">
+          <div className="flex gap-3">
+            <span className="flex-shrink-0 mt-0.5">💡</span>
+            <div className="text-sm text-teal-800 space-y-1">
+              {soaCommission > 0 && calc.totalInitialFees === 0 ? (
+                <div><span className="font-semibold">Insurance commissions of {formatCurrency(soaCommission)} fully offset initial client fees.</span> The client pays {formatCurrency(0)} upfront, but this engagement generates {formatCurrency(soaCommission)} in commission revenue against {formatCurrency(calc.soaTrueCost)} in costs — a margin of {formatCurrency(soaTrueProfit)}.</div>
+              ) : soaCommission > 0 ? (
+                <div>Initial insurance commission of {formatCurrency(soaCommission)} adds to practice revenue. Total initial margin including commission: {formatCurrency(soaTrueProfit)}.</div>
+              ) : null}
+              {ongoingCommission > 0 && (
+                <div>Ongoing insurance commission of {formatCurrency(ongoingCommission)} p.a. adds to ongoing practice revenue. Annual ongoing margin including commission: {formatCurrency(ongoingTrueProfit)}.</div>
+              )}
             </div>
           </div>
         </div>
@@ -970,26 +1044,27 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
       <div className="grid gap-4 sm:grid-cols-3">
         {/* Card 1: SOA cost → fee */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">SOA Cost → Client Fee</div>
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">SOA Cost → Revenue</div>
           <div className="flex items-baseline gap-1.5 flex-wrap">
             <span className="text-gray-500">{formatCurrency(calc.soaTrueCost)}</span>
             <span className="text-gray-300">→</span>
-            <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.soaTotalInclGst)}</span>
+            <span className="text-xl font-bold text-gray-900">{formatCurrency(calc.soaAfterCommission)}</span>
             <span className="text-xs text-gray-400">incl GST</span>
           </div>
+          {soaCommission > 0 && (
+            <div className="text-xs text-indigo-600 mt-1">+ {formatCurrency(soaCommission)} commission income</div>
+          )}
           <div className="text-sm text-gray-500 mt-1.5">
             Margin:{' '}
             <span className={soaTrueProfit > 0 ? 'font-semibold text-green-600' : soaTrueProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
               {formatCurrency(soaTrueProfit)}
             </span>
-            {' '}
-            <span className="text-gray-400">({calc.adjustedFeeRounded > 0 ? Math.round((soaTrueProfit / calc.adjustedFeeRounded) * 100) : 0}% ex GST)</span>
           </div>
         </div>
 
         {/* Card 2: Ongoing cost → fee */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Ongoing Cost → Client Fee</div>
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Ongoing Cost → Revenue</div>
           {!calc.hasOngoing ? (
             <div className="text-sm text-gray-400">No ongoing fee</div>
           ) : hasOngoingCostData ? (
@@ -1001,13 +1076,14 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
                 <span className="text-xs text-gray-400">incl GST</span>
                 <span className="text-sm text-gray-400">/yr</span>
               </div>
+              {ongoingCommission > 0 && (
+                <div className="text-xs text-indigo-600 mt-1">+ {formatCurrency(ongoingCommission)} commission income</div>
+              )}
               <div className="text-sm text-gray-500 mt-1.5">
                 Margin:{' '}
                 <span className={ongoingTrueProfit > 0 ? 'font-semibold text-green-600' : ongoingTrueProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
                   {formatCurrency(ongoingTrueProfit)}
                 </span>
-                {' '}
-                <span className="text-gray-400">({calc.totalOngoingRounded > 0 ? Math.round((ongoingTrueProfit / calc.totalOngoingRounded) * 100) : 0}% ex GST)</span>
               </div>
             </>
           ) : (
@@ -1033,7 +1109,7 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
           {(isPercentageOngoing || isSubscriptionOngoing) ? (
             <div className="text-sm text-gray-400 mt-1">SOA margin only (ex GST) — ongoing cost data not available</div>
           ) : (
-            <div className="text-sm text-gray-400 mt-1">Combined first year margin (ex GST)</div>
+            <div className="text-sm text-gray-400 mt-1">Combined first year margin (ex GST{soaCommission + ongoingCommission > 0 ? ', incl commission' : ''})</div>
           )}
         </div>
       </div>
@@ -1049,7 +1125,8 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
             { label: calc.soaExternalFee > 0 ? 'External paraplanning' : 'Paraplanning', value: calc.soaParaplannerCost + calc.soaExternalFee, color: 'bg-violet-600', textColor: 'text-violet-600' },
             { label: 'Admin', value: calc.soaAdminCost, color: 'bg-amber-600', textColor: 'text-amber-600' },
             ...(soaTrueProfit > 0 ? [{ label: 'Margin', value: soaTrueProfit, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
-            { label: 'GST', value: calc.soaTotalInclGst - calc.adjustedFeeRounded, color: 'bg-slate-200', textColor: 'text-slate-400' },
+            { label: 'GST', value: calc.soaAfterCommission - (calc.soaAfterCommission / 1.1), color: 'bg-slate-200', textColor: 'text-slate-400' },
+            ...(soaCommission > 0 ? [{ label: 'Commission income', value: soaCommission, color: 'bg-indigo-400', textColor: 'text-indigo-600' }] : []),
           ]} />
           {soaTrueProfit < 0 && (
             <p className="text-sm text-red-600 font-medium mt-1">Loss: {formatCurrency(soaTrueProfit)}</p>
@@ -1066,6 +1143,7 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
               { label: 'Admin', value: calc.ongoingAdminCost, color: 'bg-amber-600', textColor: 'text-amber-600' },
               ...(ongoingTrueProfit > 0 ? [{ label: 'Margin', value: ongoingTrueProfit, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
               { label: 'GST', value: calc.totalOngoingInclGst - calc.totalOngoingRounded, color: 'bg-slate-200', textColor: 'text-slate-400' },
+              ...(ongoingCommission > 0 ? [{ label: 'Commission income', value: ongoingCommission, color: 'bg-indigo-400', textColor: 'text-indigo-600' }] : []),
             ]} />
             {ongoingTrueProfit < 0 && (
               <p className="text-sm text-red-600 font-medium mt-1">Loss: {formatCurrency(ongoingTrueProfit)}</p>
