@@ -550,21 +550,55 @@ function ClientIncentives({ quote, set, calc }) {
             )}
           </div>
 
-          {/* Implementation fee waiver */}
-          <div className="space-y-2">
+          {/* Implementation fee discount */}
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className={`text-sm font-medium ${noImpl ? 'text-mid' : 'text-dark'}`}>Waive implementation fee</span>
+              <span className={`text-sm font-medium ${noImpl ? 'text-mid' : 'text-dark'}`}>Discount implementation fee</span>
               <Toggle
-                checked={!!quote.waiveImplementation}
-                onChange={v => set('waiveImplementation', v)}
-                label="Waive implementation fee"
+                checked={(quote.implDiscountPercent ?? 0) > 0}
+                onChange={v => set('implDiscountPercent', v ? 100 : 0)}
+                label="Discount implementation fee"
                 disabled={noImpl}
               />
             </div>
             {noImpl ? (
-              <p className="text-xs text-mid">No implementation fees to waive.</p>
-            ) : quote.waiveImplementation ? (
-              <p className="text-sm text-green-600">Implementation fee of {formatCurrency(calc.implTotal)} waived.</p>
+              <p className="text-xs text-mid">No implementation fees to discount.</p>
+            ) : (quote.implDiscountPercent ?? 0) > 0 ? (
+              <>
+                <div className="flex gap-2">
+                  {discountOptions.map(pct => (
+                    <button
+                      key={pct}
+                      type="button"
+                      onClick={() => set('implDiscountPercent', pct)}
+                      className={`px-4 py-2 rounded-input text-sm font-medium transition-colors ${
+                        quote.implDiscountPercent === pct
+                          ? 'bg-teal text-white'
+                          : 'bg-light-surface text-dark hover:bg-light-border'
+                      }`}
+                    >
+                      {pct}%
+                    </button>
+                  ))}
+                </div>
+                <div className="text-sm">
+                  {quote.implDiscountPercent === 100 ? (
+                    <>
+                      <span className="text-gray-400 line-through mr-1">{formatCurrency(calc.implTotal)}</span>
+                      <span className="text-gray-300 mr-1">→</span>
+                      <span className="font-semibold text-gray-900 mr-2">Waived</span>
+                      <span className="text-green-600">(saving {formatCurrency(calc.implTotal)})</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-gray-400 line-through mr-1">{formatCurrency(calc.implTotal)}</span>
+                      <span className="text-gray-300 mr-1">→</span>
+                      <span className="font-semibold text-gray-900 mr-2">{formatCurrency(calc.implIncentivisedFee)}</span>
+                      <span className="text-green-600">(saving {formatCurrency(calc.implDiscountAmount)})</span>
+                    </>
+                  )}
+                </div>
+              </>
             ) : null}
           </div>
 

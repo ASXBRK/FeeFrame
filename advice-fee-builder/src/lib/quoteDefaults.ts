@@ -48,7 +48,7 @@ export const defaultQuoteState = {
   ongoingModel: 'fixedOnly', // 'fixedOnly' | 'percentageBased' | 'subscription'
   reviewMeetings: 2,
   soaDiscountPercent: 0,   // 0, 25, 50, 75, or 100
-  waiveImplementation: false,
+  implDiscountPercent: 0,  // 0, 25, 50, 75, or 100
   reviewHourOverrides: {} as Record<string, number>,
   annualTaskHourOverrides: {} as Record<string, number>,
 

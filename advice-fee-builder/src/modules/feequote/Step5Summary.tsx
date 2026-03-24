@@ -181,12 +181,15 @@ function Tab1Summary({ calc, quote, dispatch }) {
               <div className="flex justify-between items-center">
                 <span className="text-mid">Implementation Fees (incl GST)</span>
                 <span className="flex items-center gap-2">
-                  {calc.waiveImplementation && (
+                  {calc.implDiscountPercent > 0 && (
                     <span className="text-gray-400 line-through">{formatCurrency(calc.implTotal)}</span>
                   )}
                   <span className="font-semibold text-gray-900">
-                    {calc.waiveImplementation ? 'Waived' : formatCurrency(calc.implTotal)}
+                    {calc.implDiscountPercent === 100 ? 'Waived' : formatCurrency(calc.implIncentivisedFee)}
                   </span>
+                  {calc.implDiscountPercent > 0 && (
+                    <span className="text-green-600 text-xs">-{calc.implDiscountPercent}%</span>
+                  )}
                 </span>
               </div>
             )}
@@ -349,7 +352,7 @@ function BillingPlanSection({ calc, quote, dispatch }) {
             </select>
           </div>
         )}
-        {calc.implTotal > 0 && !calc.waiveImplementation && (
+        {calc.implTotal > 0 && calc.implDiscountPercent < 100 && (
           <div className="flex items-center gap-3 text-sm">
             <span className="text-mid w-36 flex-shrink-0">Implementation fee</span>
             <span className="text-dark font-medium">{formatCurrency(calc.hasIncentives ? calc.implIncentivisedFee : calc.implTotal)}</span>
@@ -360,7 +363,7 @@ function BillingPlanSection({ calc, quote, dispatch }) {
             </select>
           </div>
         )}
-        {calc.implTotal > 0 && calc.waiveImplementation && (
+        {calc.implTotal > 0 && calc.implDiscountPercent === 100 && (
           <div className="flex items-center gap-3 text-sm">
             <span className="text-mid w-36 flex-shrink-0">Implementation fee</span>
             <span className="text-dark">Waived</span>
@@ -948,8 +951,8 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
               {calc.soaDiscountPercent > 0 && (
                 <div>SOA discount ({calc.soaDiscountPercent}%): -{formatCurrency(calc.soaDiscountAmount)}</div>
               )}
-              {calc.waiveImplementation && calc.implTotal > 0 && (
-                <div>Implementation waiver: -{formatCurrency(calc.implTotal)}</div>
+              {calc.implDiscountPercent > 0 && calc.implTotal > 0 && (
+                <div>Implementation discount ({calc.implDiscountPercent}%): -{formatCurrency(calc.implDiscountAmount)}</div>
               )}
               <div className="font-medium pt-1">
                 Total first-year margin impact: -{formatCurrency(calc.totalIncentiveSaving)}

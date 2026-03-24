@@ -260,11 +260,12 @@ export function calculateQuote(state: any) {
   const soaDiscountPercent = Number(state.soaDiscountPercent) || 0;
   const soaDiscountAmount = soaTotalInclGst * (soaDiscountPercent / 100);
   const soaIncentivisedFee = soaTotalInclGst - soaDiscountAmount;
-  const waiveImplementation = !!state.waiveImplementation;
-  const implIncentivisedFee = waiveImplementation ? 0 : implTotal;
+  const implDiscountPercent = Number(state.implDiscountPercent) || 0;
+  const implDiscountAmount = implTotal * (implDiscountPercent / 100);
+  const implIncentivisedFee = implTotal - implDiscountAmount;
   const totalIncentivisedInitialFees = soaIncentivisedFee + implIncentivisedFee;
-  const totalIncentiveSaving = soaDiscountAmount + (waiveImplementation ? implTotal : 0);
-  const hasIncentives = soaDiscountPercent > 0 || waiveImplementation;
+  const totalIncentiveSaving = soaDiscountAmount + implDiscountAmount;
+  const hasIncentives = soaDiscountPercent > 0 || implDiscountPercent > 0;
 
   // ── Billing plan ──────────────────────────────────────────────────────────
   const soaSplit = state.soaSplit || '50/50';
@@ -288,7 +289,7 @@ export function calculateQuote(state: any) {
   const implFeeForPlan = hasIncentives ? implIncentivisedFee : implTotal;
   if (implFeeForPlan > 0) {
     billingPlan.push({ phase: 'Implementation', description: 'Implementation fee', amount: implFeeForPlan, when: 'On implementation', method: implMethod === 'invoice' ? 'Invoice' : 'Platform' });
-  } else if (implTotal > 0 && waiveImplementation) {
+  } else if (implTotal > 0 && implDiscountPercent === 100) {
     billingPlan.push({ phase: 'Implementation', description: 'Implementation fee — waived', amount: 0, when: 'On implementation', method: '—' });
   }
 
@@ -457,7 +458,8 @@ export function calculateQuote(state: any) {
     soaDiscountPercent,
     soaDiscountAmount,
     soaIncentivisedFee,
-    waiveImplementation,
+    implDiscountPercent,
+    implDiscountAmount,
     implIncentivisedFee,
     totalIncentivisedInitialFees,
     totalIncentiveSaving,
