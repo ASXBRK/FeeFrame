@@ -381,6 +381,13 @@ export function calculateQuote(state: any) {
   if (hasOngoing && reviewMeetings > 0) serviceSummaryItems.push(`${reviewMeetings} review meeting${reviewMeetings !== 1 ? 's' : ''} per year`);
   if (hasOngoing && hasStrategies) serviceSummaryItems.push(`Ongoing monitoring and adjustment of your financial strategies`);
 
+  // ── Discount summary ──────────────────────────────────────────────────────
+  const totalInitialDiscounts = soaDiscount + soaDiscountAmount + implDiscountAmount
+    + Math.min(commissionOffset, implGross + soaTotalInclGst);
+  const totalOngoingDiscounts = ongoingDiscount + ongoingCommissionOffset;
+  const hasAnyDiscount = soaDiscount > 0 || soaDiscountPercent > 0 || implDiscountPercent > 0
+    || commissionOffset > 0 || ongoingDiscount > 0 || ongoingCommissionOffset > 0;
+
   return {
     // SOA line items
     totalEntities,
@@ -482,6 +489,11 @@ export function calculateQuote(state: any) {
     accountKeepingFee: 0,
     marginLendingFee: 0,
     strategyCount: STRATEGIES.filter(s => state.strategies?.[s.id]).length,
+
+    // Discount summary
+    totalInitialDiscounts,
+    totalOngoingDiscounts,
+    hasAnyDiscount,
 
     // Client incentives
     soaDiscountPercent,

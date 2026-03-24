@@ -603,6 +603,12 @@ function ClientIncentives({ quote, set, calc }) {
           </div>
 
           <p className="text-xs text-gray-400 italic">These discounts apply when the client proceeds with the ongoing service arrangement.</p>
+
+          {((quote.soaDiscountPercent ?? 0) > 0 || (quote.implDiscountPercent ?? 0) > 0) && (
+            <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mt-4">
+              <span className="font-medium">ⓘ</span> Additional discounts (relationship and engagement factors) can be applied in the next step. You'll see the combined impact of all discounts in Fee Summary.
+            </div>
+          )}
         </div>
       )}
     </div>

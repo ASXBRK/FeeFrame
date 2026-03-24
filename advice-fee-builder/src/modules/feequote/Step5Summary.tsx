@@ -262,7 +262,88 @@ function Tab1Summary({ calc, quote, dispatch }) {
         )}
       </div>
 
+      {/* Discount summary card */}
+      {calc.hasAnyDiscount && (
+        <DiscountSummaryCard calc={calc} quote={quote} />
+      )}
+
       <BillingPlanSection calc={calc} quote={quote} dispatch={dispatch} />
+    </div>
+  );
+}
+
+// ── Discount Summary Card ──────────────────────────────────────────────────────
+function DiscountSummaryCard({ calc, quote }) {
+  // Split engagement vs relationship discount proportionally from the combined soaDiscount dollar figure
+  const totalEngRelRate = (calc.discountRate || 0) + (calc.relationshipDiscountRate || 0);
+  const engFrac = totalEngRelRate > 0 ? calc.discountRate / totalEngRelRate : 0;
+  const relFrac = totalEngRelRate > 0 ? calc.relationshipDiscountRate / totalEngRelRate : 0;
+  const engSOA = calc.soaDiscount * engFrac;
+  const relSOA = calc.soaDiscount * relFrac;
+
+  const relPct = Number(quote.relationshipDiscountPercent) || 10;
+  const baseInitial = calc.soaTotalInclGst + calc.implGross;
+  const pctOfBase = baseInitial > 0 ? calc.totalInitialDiscounts / baseInitial : 0;
+
+  return (
+    <div className="bg-white rounded-card border border-light-border p-5">
+      <h3 className="text-xs font-semibold font-heading text-mid uppercase tracking-wide mb-4">Discounts Applied</h3>
+      <table className="w-full text-sm">
+        <tbody className="divide-y divide-light-border">
+          {calc.discountCount > 0 && (
+            <tr>
+              <td className="py-2 text-mid">Engagement factors ({calc.discountCount} × 2.5%)</td>
+              <td className="py-2 text-right font-medium text-green-600">-{formatCurrency(engSOA)}</td>
+            </tr>
+          )}
+          {quote.relationshipDiscountEnabled && relPct > 0 && (
+            <tr>
+              <td className="py-2 text-mid">Relationship discount ({relPct}%)</td>
+              <td className="py-2 text-right font-medium text-green-600">-{formatCurrency(relSOA)}</td>
+            </tr>
+          )}
+          {calc.soaDiscountPercent > 0 && (
+            <tr>
+              <td className="py-2 text-mid">SOA incentive ({calc.soaDiscountPercent}%)</td>
+              <td className="py-2 text-right font-medium text-green-600">-{formatCurrency(calc.soaDiscountAmount)}</td>
+            </tr>
+          )}
+          {calc.implDiscountPercent > 0 && (
+            <tr>
+              <td className="py-2 text-mid">Implementation incentive ({calc.implDiscountPercent}%)</td>
+              <td className="py-2 text-right font-medium text-green-600">-{formatCurrency(calc.implDiscountAmount)}</td>
+            </tr>
+          )}
+          {calc.commissionOffset > 0 && (
+            <tr>
+              <td className="py-2 text-mid">Insurance commission offset</td>
+              <td className="py-2 text-right font-medium text-green-600">-{formatCurrency(Math.min(calc.commissionOffset, calc.implGross + calc.soaTotalInclGst))}</td>
+            </tr>
+          )}
+          {calc.ongoingCommissionOffset > 0 && (
+            <tr>
+              <td className="py-2 text-mid">Ongoing insurance commission</td>
+              <td className="py-2 text-right font-medium text-green-600">-{formatCurrency(calc.ongoingCommissionOffset)} p.a.</td>
+            </tr>
+          )}
+          <tr className="border-t-2 border-gray-300">
+            <td className="py-2 font-semibold text-dark">Total discounts on initial fees</td>
+            <td className="py-2 text-right font-semibold text-green-700">-{formatCurrency(calc.totalInitialDiscounts)}</td>
+          </tr>
+          {calc.totalOngoingDiscounts > 0 && (
+            <tr>
+              <td className="py-2 font-semibold text-dark">Total discounts on ongoing fees</td>
+              <td className="py-2 text-right font-semibold text-green-700">-{formatCurrency(calc.totalOngoingDiscounts)} p.a.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+      {pctOfBase > 0.4 && (
+        <div className="mt-3 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-800">
+          <span className="flex-shrink-0 mt-0.5">⚠</span>
+          <span>Total discounts represent {Math.round(pctOfBase * 100)}% of the base fee. Ensure this is commercially viable.</span>
+        </div>
+      )}
     </div>
   );
 }
