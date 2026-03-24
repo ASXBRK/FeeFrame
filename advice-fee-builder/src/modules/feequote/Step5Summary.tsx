@@ -26,15 +26,6 @@ export default function Step5Summary({ quote, dispatch, onReset, onNavigate, onG
     <div>
       <h2 className="text-xl font-bold font-heading text-dark mb-4 print:hidden" style={{ letterSpacing: '-0.3px' }}>Fee Summary & Output</h2>
 
-      {/* Print header */}
-      <div className="hidden print:block mb-6">
-        <h1 className="text-2xl font-bold font-heading text-dark">
-          Advice Fee Summary{quote.clientName ? ` — ${quote.clientName}` : ''}
-        </h1>
-        <p className="text-sm text-mid">{quote.date}</p>
-        <div className="border-b-2 border-teal mt-3" />
-      </div>
-
       {/* Profit Margin — global input above tabs */}
       <div className="bg-white rounded-card border border-light-border px-5 py-3.5 mb-4 print:hidden">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -86,8 +77,7 @@ export default function Step5Summary({ quote, dispatch, onReset, onNavigate, onG
         ))}
       </div>
 
-      {/* Print — always render Summary content */}
-      <div className={tab !== 0 ? 'print:block hidden' : ''}>
+      <div className={tab !== 0 ? 'hidden' : ''}>
         {tab === 0 && <Tab1Summary calc={calc} quote={quote} dispatch={dispatch} />}
       </div>
       {tab === 1 && <Tab2Breakdown calc={calc} quote={quote} />}
@@ -1300,6 +1290,58 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
 
 // ── Tab 4: Client Output ───────────────────────────────────────────────────────
 function Tab4ClientOutput({ calc, quote, dispatch, copied, onCopy, editingParagraph, setEditingParagraph, onReset }) {
+  function handleDownloadPDF() {
+    const letterContent = calc.clientParagraph;
+    const clientName = quote.clientName?.trim() || 'Client';
+    const date = quote.date || new Date().toLocaleDateString('en-AU');
+
+    const escaped = letterContent
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    const escapedName = clientName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Fee Summary \u2014 ${escapedName}</title>
+  <style>
+    @page { margin: 2.5cm; size: A4; }
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11pt; line-height: 1.6; color: #111827; max-width: 100%; }
+    .header { margin-bottom: 2em; padding-bottom: 1em; border-bottom: 2px solid #0d9488; }
+    .header h1 { font-size: 16pt; font-weight: 700; color: #111827; margin: 0 0 4px 0; }
+    .header .date { font-size: 9pt; color: #6b7280; }
+    .letter-body { white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 10pt; line-height: 1.6; }
+    .footer { margin-top: 3em; padding-top: 1em; border-top: 1px solid #e2e8f0; font-size: 8pt; color: #9ca3af; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Advice Fee Summary${clientName !== 'Client' ? ` \u2014 ${escapedName}` : ''}</h1>
+    <div class="date">${date}</div>
+  </div>
+  <div class="letter-body">${escaped}</div>
+  <div class="footer">Prepared using FeeFrame</div>
+</body>
+</html>`;
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+    iframe.contentDocument!.open();
+    iframe.contentDocument!.write(html);
+    iframe.contentDocument!.close();
+    setTimeout(() => {
+      iframe.contentWindow!.print();
+      setTimeout(() => { document.body.removeChild(iframe); }, 1000);
+    }, 500);
+  }
+
   return (
     <div className="space-y-5">
       {/* Service summary */}
@@ -1345,10 +1387,10 @@ function Tab4ClientOutput({ calc, quote, dispatch, copied, onCopy, editingParagr
             value={calc.clientParagraph}
             onChange={e => dispatch({ type: 'SET_QUOTE_FIELD', field: 'clientParagraphOverride', value: e.target.value })}
             rows={20}
-            className="w-full rounded-input border border-light-border px-3 py-2.5 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 resize-y"
+            className="w-full rounded-input border border-light-border px-3 py-2.5 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 resize-y max-h-[500px] overflow-y-auto"
           />
         ) : (
-          <div className="bg-light-surface rounded-input p-4 text-sm text-dark whitespace-pre-wrap leading-relaxed border border-light-border font-mono text-[13px]">
+          <div className="bg-light-surface rounded-input p-4 text-dark whitespace-pre-wrap leading-relaxed border border-light-border font-mono text-[13px] max-h-[500px] overflow-y-auto">
             {calc.clientParagraph}
           </div>
         )}
@@ -1366,12 +1408,11 @@ function Tab4ClientOutput({ calc, quote, dispatch, copied, onCopy, editingParagr
       {/* PDF export */}
       <div className="bg-white rounded-card border border-light-border p-5">
         <h3 className="text-base font-bold font-heading text-dark mb-1">Download PDF</h3>
-        <p className="text-xs text-mid mb-3">Opens print dialog. Use your browser's "Save as PDF" option.</p>
         <button
-          onClick={() => window.print()}
+          onClick={handleDownloadPDF}
           className="bg-dark hover:bg-dark-surface text-white font-medium py-2.5 px-6 rounded-input transition-colors text-sm"
         >
-          Download PDF
+          Download as PDF
         </button>
       </div>
 
