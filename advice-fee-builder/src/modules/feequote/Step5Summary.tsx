@@ -483,10 +483,10 @@ function BillingPlanSection({ calc, quote, dispatch }) {
                       </td>
                       <td className="py-1 pr-2">
                         <div className="flex items-center gap-1">
-                          <input
-                            type="number"
-                            value={row.soaAllocation ?? ''}
-                            onChange={e => updateRow(idx, 'soaAllocation', Number(e.target.value))}
+                          <NumInput
+                            value={row.soaAllocation ?? 0}
+                            onChange={v => updateRow(idx, 'soaAllocation', v)}
+                            min={0}
                             className={`${inputCls} w-20`}
                           />
                           <span className="text-xs text-mid">{isPct ? '%' : '$'}</span>
@@ -494,10 +494,10 @@ function BillingPlanSection({ calc, quote, dispatch }) {
                       </td>
                       <td className="py-1 pr-2">
                         <div className="flex items-center gap-1">
-                          <input
-                            type="number"
-                            value={row.ongoingAllocation ?? ''}
-                            onChange={e => updateRow(idx, 'ongoingAllocation', Number(e.target.value))}
+                          <NumInput
+                            value={row.ongoingAllocation ?? 0}
+                            onChange={v => updateRow(idx, 'ongoingAllocation', v)}
+                            min={0}
                             className={`${inputCls} w-20`}
                           />
                           <span className="text-xs text-mid">{isPct ? '%' : '$'}</span>
