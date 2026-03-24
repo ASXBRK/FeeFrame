@@ -58,6 +58,20 @@ export default function Step1ClientProfile({ quote, dispatch }) {
           </div>
         </div>
 
+        {/* Client status */}
+        <div>
+          <label className="block text-sm font-medium text-dark mb-2">Client status</label>
+          <div className="flex items-center gap-3">
+            <span className={`text-sm ${(quote.clientStatus ?? 'new') === 'new' ? 'font-medium text-dark' : 'text-mid'}`}>New Client</span>
+            <Toggle
+              checked={(quote.clientStatus ?? 'new') === 'existing'}
+              onChange={v => set('clientStatus', v ? 'existing' : 'new')}
+              label="Client status toggle"
+            />
+            <span className={`text-sm ${(quote.clientStatus ?? 'new') === 'existing' ? 'font-medium text-dark' : 'text-mid'}`}>Existing Client</span>
+          </div>
+        </div>
+
         {/* Life stage */}
         <div>
           <label className="block text-sm font-medium text-dark mb-1">Life stage</label>

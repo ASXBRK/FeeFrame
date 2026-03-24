@@ -1315,30 +1315,40 @@ function Tab4ClientOutput({ calc, quote, dispatch, copied, onCopy, editingParagr
         </ul>
       </div>
 
-      {/* Client paragraph */}
+      {/* Client letter */}
       <div className="bg-white rounded-card border border-light-border p-5">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base font-bold font-heading text-dark">Client-Facing Fee Summary</h3>
-          <label className="flex items-center gap-2 text-xs text-mid cursor-pointer">
-            <input
-              type="checkbox"
-              checked={editingParagraph}
-              onChange={e => setEditingParagraph(e.target.checked)}
-              className="w-3.5 h-3.5 rounded border-light-border text-teal focus:ring-teal"
-            />
-            Edit before copying
-          </label>
+          <h3 className="text-base font-bold font-heading text-dark">Client Letter</h3>
+          <div className="flex items-center gap-3">
+            {quote.clientParagraphOverride != null && (
+              <button
+                onClick={() => dispatch({ type: 'SET_QUOTE_FIELD', field: 'clientParagraphOverride', value: null })}
+                className="text-xs text-teal hover:underline"
+              >
+                Regenerate
+              </button>
+            )}
+            <label className="flex items-center gap-2 text-xs text-mid cursor-pointer">
+              <input
+                type="checkbox"
+                checked={editingParagraph}
+                onChange={e => setEditingParagraph(e.target.checked)}
+                className="w-3.5 h-3.5 rounded border-light-border text-teal focus:ring-teal"
+              />
+              Edit before copying
+            </label>
+          </div>
         </div>
 
         {editingParagraph ? (
           <textarea
             value={calc.clientParagraph}
             onChange={e => dispatch({ type: 'SET_QUOTE_FIELD', field: 'clientParagraphOverride', value: e.target.value })}
-            rows={12}
-            className="w-full rounded-input border border-light-border px-3 py-2.5 text-[15px] font-mono focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 resize-y"
+            rows={20}
+            className="w-full rounded-input border border-light-border px-3 py-2.5 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 resize-y"
           />
         ) : (
-          <div className="bg-light-surface rounded-input p-4 text-sm text-dark whitespace-pre-wrap leading-relaxed border border-light-border">
+          <div className="bg-light-surface rounded-input p-4 text-sm text-dark whitespace-pre-wrap leading-relaxed border border-light-border font-mono text-[13px]">
             {calc.clientParagraph}
           </div>
         )}

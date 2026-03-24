@@ -329,40 +329,174 @@ export function calculateQuote(state: any) {
     });
   }
 
-  // ── Client paragraph ──────────────────────────────────────────────────────
+  // ── Client letter ─────────────────────────────────────────────────────────
   const allStrategies = [...STRATEGIES, ...ADD_ONS];
   const allEnabled = { ...(state.strategies || {}), ...(state.addOns || {}) };
   const strategyListText = formatStrategyList(allStrategies, allEnabled);
-  const clientName = state.clientName?.trim() || 'Client';
+  const clientName = state.clientName?.trim() || '';
   const hasStrategies = allStrategies.some(s => allEnabled[s.id]);
-  const totalHoursApprox = Math.round(totalBaseHours);
-  const hasImpl = implTotal > 0;
-  const hasInspecie = inSpecieHours > 0;
-  const hasInsuranceImpl = insuranceImplHours > 0;
+  const hasImpl = implGross > 0;
 
-  let clientParagraph = `Dear ${clientName},\n\n`;
-  clientParagraph += `Thank you for the opportunity to outline the fees associated with providing you with comprehensive financial advice. `;
-  clientParagraph += `Your initial advice fee of ${fmtCcy(soaTotalInclGst)} (including GST) covers a comprehensive Statement of Advice`;
-  if (hasStrategies) clientParagraph += ` addressing ${strategyListText}`;
-  if (state.isCouple) clientParagraph += `, tailored to both your individual and joint financial objectives`;
-  clientParagraph += `. `;
-  if (totalHoursApprox > 0) {
-    clientParagraph += `This includes approximately ${totalHoursApprox} hour${totalHoursApprox !== 1 ? 's' : ''} of research, analysis, and preparation`;
-    if (scenarios > 0) clientParagraph += `, including ${scenarios} scenario ${scenarios === 1 ? 'analysis' : 'analyses'} to support your decision-making,`;
-    clientParagraph += ` and a full compliance and quality review. `;
+  const isCouple = !!state.isCouple;
+  const lifeStage = state.lifeStage || 'accumulation';
+  const clientStatus = state.clientStatus || 'new';
+  const SEP = '──────────────────────────────────────────────────────';
+
+  const greeting = clientName
+    ? `Dear ${clientName},`
+    : (isCouple ? 'Dear Clients,' : 'Dear Client,');
+
+  let clientParagraph = greeting + '\n\n';
+
+  // Opening
+  clientParagraph += `Thank you for meeting with us to discuss your financial situation. We are pleased to outline our advice fees and the services we will provide.\n\n`;
+
+  // Life stage context
+  if (lifeStage === 'accumulation') {
+    clientParagraph += `As you continue to build your wealth, our advice will focus on positioning you to achieve your financial goals through strategic planning and disciplined execution.\n\n`;
+  } else if (lifeStage === 'preRetirement') {
+    clientParagraph += `As you approach retirement, our advice will focus on ensuring you are well-positioned to transition into retirement with confidence and financial security.\n\n`;
+  } else if (lifeStage === 'retirement') {
+    clientParagraph += `As you enjoy retirement, our advice will focus on ensuring your wealth continues to support your lifestyle and provide security for the years ahead.\n\n`;
   }
+
+  // Scope of advice
+  clientParagraph += `Based on our initial discussion, we will prepare a comprehensive Statement of Advice`;
+  if (hasStrategies) clientParagraph += ` covering ${strategyListText}`;
+  clientParagraph += `.`;
+  if (isCouple) clientParagraph += ` This will be tailored to both your individual and joint financial objectives.`;
+  clientParagraph += `\n\nOur advice process involves a thorough analysis of your current financial position, the development of tailored strategies designed to meet your specific goals, and clear recommendations backed by detailed research and modelling. Every recommendation we make is subject to a rigorous compliance and quality review to ensure it meets the highest professional standards and is in your best interest.`;
+  if (clientStatus === 'new') {
+    clientParagraph += `\n\nAs part of this engagement, we will take the time to understand your complete financial picture — your assets, liabilities, income, expenses, insurances, estate planning, and long-term objectives. This foundational work ensures our advice is built on a thorough understanding of where you are today and where you want to be.`;
+  } else {
+    clientParagraph += `\n\nAs an existing client of our firm, we have the benefit of an established understanding of your financial position and goals. This allows us to build efficiently on the work we have done together previously and focus on advancing your strategies.`;
+  }
+  clientParagraph += '\n\n';
+
+  // Initial fee table
+  // SOA and Impl shown at post-incentive (pre-commission) amounts; commission shown as deduction
+  const soaTableFee = soaIncentivisedFee;   // incl GST, post-incentive discount
+  const implTableFee = implIncentivisedFee; // incl GST, post-incentive discount
+  const soaFeeExGst = soaTableFee / 1.1;
+  const soaFeeGst = soaTableFee - soaFeeExGst;
+  const implFeeExGst = implTableFee / 1.1;
+  const implFeeGst = implTableFee - implFeeExGst;
+
+  clientParagraph += `INITIAL FEES\n${SEP}\n`;
+  clientParagraph += `${''.padEnd(30)}${'Excl GST'.padStart(9)}  ${'GST'.padStart(7)}  Incl GST\n`;
+  clientParagraph += `${'SOA Preparation Fee'.padEnd(30)}${fmtCcy(soaFeeExGst).padStart(9)}  ${fmtCcy(soaFeeGst).padStart(7)}  ${fmtCcy(soaTableFee)}\n`;
   if (hasImpl) {
-    clientParagraph += `\n\nA separate implementation fee of ${fmtCcy(implTotal)} (including GST) covers the execution of the recommended strategies across ${investmentAccounts} account${investmentAccounts !== 1 ? 's' : ''}`;
-    if (hasInspecie) clientParagraph += `, including the transfer of existing assets`;
-    if (hasInsuranceImpl) clientParagraph += ` and insurance application processing`;
-    clientParagraph += `. `;
+    clientParagraph += `${'Implementation Fee'.padEnd(30)}${fmtCcy(implFeeExGst).padStart(9)}  ${fmtCcy(implFeeGst).padStart(7)}  ${fmtCcy(implTableFee)}\n`;
   }
+  if (commissionOffset > 0) {
+    clientParagraph += `${'Less: Insurance Commission'.padEnd(48)}-${fmtCcy(commissionOffset)}\n`;
+  }
+  clientParagraph += `${SEP}\n`;
+  clientParagraph += `${'TOTAL INITIAL FEES'.padEnd(48)}${fmtCcy(totalInitialFees)}\n`;
+  clientParagraph += `${SEP}\n\n`;
+
+  // Client incentives
+  if (hasIncentives) {
+    if (soaDiscountPercent > 0) {
+      clientParagraph += `As you are proceeding with an ongoing service arrangement, we are pleased to offer a ${soaDiscountPercent}% reduction on the SOA preparation fee, reducing your initial fee from ${fmtCcy(soaTotalInclGst)} to ${fmtCcy(soaIncentivisedFee)} (including GST).\n\n`;
+    }
+    if (implDiscountPercent === 100) {
+      clientParagraph += `Your implementation fees will be waived as part of your ongoing service arrangement.\n\n`;
+    } else if (implDiscountPercent >= 25 && implDiscountPercent <= 75) {
+      clientParagraph += `We are also offering a ${implDiscountPercent}% reduction on implementation fees, reducing this from ${fmtCcy(implGross)} to ${fmtCcy(implIncentivisedFee)}.\n\n`;
+    }
+  }
+
+  // Relationship discount
+  if (state.relationshipDiscountEnabled) {
+    const relPct = Number(state.relationshipDiscountPercent) || 10;
+    clientParagraph += `Given your relationship with our firm, we are pleased to offer a ${relPct}% discount on our standard fees. This is reflected in the amounts above.\n\n`;
+  }
+
+  // Ongoing service
   if (hasOngoing && totalOngoingInclGst > 0) {
-    clientParagraph += `\n\nYour ongoing service fee of ${fmtCcy(totalOngoingInclGst)} (including GST) per year provides ${reviewMeetings} review meeting${reviewMeetings !== 1 ? 's' : ''} annually`;
-    if (hasStrategies) clientParagraph += `, ongoing monitoring of your ${strategyListText}`;
-    clientParagraph += `. This equates to approximately ${fmtCcy(Math.round(monthlyOngoing))} per month. `;
+    clientParagraph += `In addition to the initial advice, we will provide ongoing support to ensure your financial strategies remain aligned with your goals as your life evolves. Financial planning is not a one-off event — your circumstances, the markets, legislation, and your personal goals will all change over time. Our ongoing service ensures you always have a professional in your corner, proactively managing these changes on your behalf.\n\n`;
+
+    const freqLabelsLetter: Record<string, string> = { monthly: 'Monthly', quarterly: 'Quarterly', halfYearly: 'Half-yearly', annually: 'Annually' };
+    const freqDivisorsLetter: Record<string, number> = { monthly: 12, quarterly: 4, halfYearly: 2, annually: 1 };
+    const freqLabelLetter = freqLabelsLetter[ongoingFrequency] || 'Monthly';
+    const freqDivisorLetter = freqDivisorsLetter[ongoingFrequency] || 12;
+    const freqAmountLetter = totalOngoingInclGst / freqDivisorLetter;
+
+    clientParagraph += `ONGOING FEES\n${SEP}\n`;
+    clientParagraph += `${'Annual Service Fee (incl GST)'.padEnd(42)}${fmtCcy(totalOngoingInclGst)}\n`;
+    if (ongoingFrequency !== 'annually') {
+      clientParagraph += `${(freqLabelLetter + ' equivalent').padEnd(42)}${fmtCcy(freqAmountLetter)}\n`;
+    }
+    if (ongoingCommissionOffset > 0) {
+      clientParagraph += `${'Less: Ongoing Insurance Commission'.padEnd(42)}-${fmtCcy(ongoingCommissionOffset)}\n`;
+      clientParagraph += `${'Net Annual Fee'.padEnd(42)}${fmtCcy(totalOngoingInclGst - ongoingCommissionOffset)}\n`;
+    }
+    clientParagraph += `${SEP}\n\n`;
+
+    const freqWordMap: Record<string, string> = { monthly: 'monthly', quarterly: 'each quarter', halfYearly: 'every six months', annually: 'annually' };
+    const freqWord = freqWordMap[ongoingFrequency] || 'monthly';
+
+    clientParagraph += `Your ongoing service includes:\n\n`;
+    clientParagraph += `  • ${reviewMeetings} scheduled review meeting${reviewMeetings !== 1 ? 's' : ''} per year — we will meet with you ${freqWord} to review your progress, assess any changes in your circumstances, and adjust your strategies accordingly\n`;
+    clientParagraph += `  • Proactive strategy monitoring — between meetings, we actively monitor your ${hasStrategies ? strategyListText : 'financial strategies'} to ensure everything remains on track and identify opportunities or risks as they arise\n`;
+    clientParagraph += `  • Access to your adviser — you are not limited to scheduled meetings. Whenever a life event occurs — a career change, property purchase, inheritance, health event, or any financial decision — we are a phone call away to provide guidance\n`;
+    clientParagraph += `  • Legislative and market updates — tax laws, superannuation rules, and financial markets are constantly changing. We keep across these developments and proactively notify you when changes affect your situation\n`;
+    clientParagraph += `  • Annual compliance and documentation review — we ensure all your structures, insurances, nominations, and estate planning documents remain current and compliant\n`;
+    clientParagraph += `  • Coordination with your other professionals — where relevant, we work alongside your accountant, solicitor, and other advisers to ensure your financial affairs are well-coordinated\n`;
+    if (isCouple) {
+      clientParagraph += `\nAs a couple, we understand that your financial goals may evolve both individually and jointly. Our ongoing service is designed to support both of you, ensuring your shared objectives stay on track while also addressing your individual needs.\n`;
+    }
+    clientParagraph += '\n';
+  } else {
+    clientParagraph += `This engagement covers the preparation and implementation of your initial advice. We encourage you to consider an ongoing advisory relationship — financial planning delivers the greatest value when your strategies are actively monitored and adjusted over time. Should you wish to discuss ongoing services in the future, we would welcome the conversation.\n\n`;
   }
-  clientParagraph += `\n\nWe believe this fee reflects the scope and complexity of the advice being provided and the value of a continuing professional relationship focused on helping you achieve your financial goals.`;
+
+  // Billing schedule
+  clientParagraph += `BILLING SCHEDULE\n${SEP}\n`;
+  clientParagraph += `${'Phase'.padEnd(26)}${'Amount'.padEnd(14)}${'When'.padEnd(32)}Method\n`;
+  for (const item of billingPlan) {
+    const phaseStr = (item.phase as string).padEnd(26);
+    const amtStr = (item.amount > 0 ? fmtCcy(item.amount) : 'Nil').padEnd(14);
+    const whenStr = (item.when as string).padEnd(32);
+    clientParagraph += `${phaseStr}${amtStr}${whenStr}${item.method}\n`;
+  }
+  clientParagraph += `${SEP}\n\n`;
+
+  // Entity allocation
+  if (state.entityAllocationEnabled && ((state.entityAllocations as any[]) || []).filter((r: any) => r.name || r.type).length > 0) {
+    const entityAllocRows = ((state.entityAllocations as any[]) || []).filter((r: any) => r.name || r.type);
+    const isPctAlloc = (state.entityAllocationType || 'percentage') === 'percentage';
+    const ENTITY_TYPE_LABELS: Record<string, string> = {
+      individual: 'Individual', joint: 'Joint', superannuation: 'Superannuation',
+      smsf: 'SMSF', familyTrust: 'Family Trust', company: 'Company',
+      investmentBond: 'Investment Bond', other: 'Other',
+    };
+    clientParagraph += `FEE ALLOCATION\n${SEP}\n`;
+    clientParagraph += `${'Entity'.padEnd(26)}${'Type'.padEnd(22)}${'Initial'.padEnd(18)}Ongoing\n`;
+    for (const ea of entityAllocRows) {
+      const nameStr = ((ea.name || 'Unknown') as string).padEnd(26);
+      const typeStr = (ENTITY_TYPE_LABELS[ea.type] || ea.type || '—').padEnd(22);
+      let initStr: string;
+      let ongStr: string;
+      if (isPctAlloc) {
+        const initAmt = totalInitialFees * ((Number(ea.soaAllocation) || 0) / 100);
+        const ongAmt = totalOngoingInclGst * ((Number(ea.ongoingAllocation) || 0) / 100);
+        initStr = `${ea.soaAllocation}% (${fmtCcy(initAmt)})`;
+        ongStr = `${ea.ongoingAllocation}% (${fmtCcy(ongAmt)})`;
+      } else {
+        initStr = fmtCcy(Number(ea.soaAllocation) || 0);
+        ongStr = fmtCcy(Number(ea.ongoingAllocation) || 0);
+      }
+      clientParagraph += `${nameStr}${typeStr}${initStr.padEnd(18)}${ongStr}\n`;
+    }
+    clientParagraph += `${SEP}\n\n`;
+  }
+
+  // Closing
+  clientParagraph += `We are committed to providing you with advice that is clear, considered, and genuinely in your best interest. Our goal is not just to deliver a document, but to build a lasting professional relationship that supports you and your family through every stage of your financial life.\n\n`;
+  clientParagraph += `If you have any questions about these fees, the services outlined, or anything else, please do not hesitate to reach out. We are here to help.\n\n`;
+  clientParagraph += `We look forward to working with you.\n\nKind regards`;
 
   // ── Service summary bullets ────────────────────────────────────────────────
   const serviceSummaryItems: string[] = [];
@@ -374,8 +508,6 @@ export function calculateQuote(state: any) {
   } else {
     serviceSummaryItems.push(`Comprehensive Statement of Advice`);
   }
-  if (scenarios > 0) serviceSummaryItems.push(`Financial modelling with ${scenarios} scenario ${scenarios === 1 ? 'analysis' : 'analyses'}`);
-  if (totalHoursApprox > 0) serviceSummaryItems.push(`${totalHoursApprox} hours of research, analysis, and preparation`);
   serviceSummaryItems.push(`Full compliance and quality review`);
   if (investmentAccounts > 0) serviceSummaryItems.push(`Implementation across ${investmentAccounts} investment and superannuation account${investmentAccounts !== 1 ? 's' : ''}`);
   if (hasOngoing && reviewMeetings > 0) serviceSummaryItems.push(`${reviewMeetings} review meeting${reviewMeetings !== 1 ? 's' : ''} per year`);
