@@ -936,6 +936,10 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
 
   const firstYearMargin = soaTrueProfit + (hasOngoingCostData ? ongoingTrueProfit : 0);
 
+  // Bar-only margin: client fee contribution without commission (commission shown as separate segment)
+  const soaClientOnlyMargin = soaClientFeeExGst - calc.soaTrueCost;
+  const ongoingClientOnlyMargin = calc.totalOngoingRounded - calc.ongoingTrueCost;
+
   // Smart callouts
   const callouts: string[] = [];
 
@@ -1124,12 +1128,12 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
             { label: 'Adviser time', value: calc.soaAdviserCost, color: 'bg-slate-700', textColor: 'text-slate-700' },
             { label: calc.soaExternalFee > 0 ? 'External paraplanning' : 'Paraplanning', value: calc.soaParaplannerCost + calc.soaExternalFee, color: 'bg-violet-600', textColor: 'text-violet-600' },
             { label: 'Admin', value: calc.soaAdminCost, color: 'bg-amber-600', textColor: 'text-amber-600' },
-            ...(soaTrueProfit > 0 ? [{ label: 'Margin', value: soaTrueProfit, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
+            ...(soaClientOnlyMargin > 0 ? [{ label: 'Margin from fees', value: soaClientOnlyMargin, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
             { label: 'GST', value: calc.soaAfterCommission - (calc.soaAfterCommission / 1.1), color: 'bg-slate-200', textColor: 'text-slate-400' },
             ...(soaCommission > 0 ? [{ label: 'Commission income', value: soaCommission, color: 'bg-indigo-400', textColor: 'text-indigo-600' }] : []),
           ]} />
           {soaTrueProfit < 0 && (
-            <p className="text-sm text-red-600 font-medium mt-1">Loss: {formatCurrency(soaTrueProfit)}</p>
+            <p className="text-sm text-red-600 font-medium mt-1">Loss (incl commission): {formatCurrency(soaTrueProfit)}</p>
           )}
         </div>
 
@@ -1141,12 +1145,12 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
               { label: 'Adviser time', value: calc.ongoingAdviserCost, color: 'bg-slate-700', textColor: 'text-slate-700' },
               { label: 'Paraplanning', value: calc.ongoingParaplannerCost, color: 'bg-violet-600', textColor: 'text-violet-600' },
               { label: 'Admin', value: calc.ongoingAdminCost, color: 'bg-amber-600', textColor: 'text-amber-600' },
-              ...(ongoingTrueProfit > 0 ? [{ label: 'Margin', value: ongoingTrueProfit, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
+              ...(ongoingClientOnlyMargin > 0 ? [{ label: 'Margin from fees', value: ongoingClientOnlyMargin, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
               { label: 'GST', value: calc.totalOngoingInclGst - calc.totalOngoingRounded, color: 'bg-slate-200', textColor: 'text-slate-400' },
               ...(ongoingCommission > 0 ? [{ label: 'Commission income', value: ongoingCommission, color: 'bg-indigo-400', textColor: 'text-indigo-600' }] : []),
             ]} />
             {ongoingTrueProfit < 0 && (
-              <p className="text-sm text-red-600 font-medium mt-1">Loss: {formatCurrency(ongoingTrueProfit)}</p>
+              <p className="text-sm text-red-600 font-medium mt-1">Loss (incl commission): {formatCurrency(ongoingTrueProfit)}</p>
             )}
           </div>
         )}
