@@ -49,6 +49,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
 
           <div className="space-y-2">
             <AdjustmentRow
+              rowId="premium-soa"
               label="SOA premium"
               sign="+"
               autoValue={calc.soaPremiumAuto}
@@ -59,6 +60,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
             />
             {hasOngoing && (
               <AdjustmentRow
+                rowId="premium-ongoing"
                 label="Ongoing premium"
                 sign="+"
                 autoValue={calc.ongoingPremiumAuto}
@@ -73,7 +75,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
         </div>
 
         {/* ── Discounts ── */}
-        <div className="bg-white rounded-card border border-light-border p-5">
+        <div className="bg-white rounded-card border border-light-border p-5 mb-8">
           <h3 className="text-base font-bold font-heading text-dark mb-1">Discounts</h3>
 
           <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mb-4">
@@ -139,6 +141,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
 
           <div className="space-y-2">
             <AdjustmentRow
+              rowId="discount-soa"
               label="SOA discount"
               sign="-"
               autoValue={calc.soaDiscountAuto}
@@ -149,6 +152,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
             />
             {hasOngoing && (
               <AdjustmentRow
+                rowId="discount-ongoing"
                 label="Ongoing discount"
                 sign="-"
                 autoValue={calc.ongoingDiscountAuto}
@@ -169,8 +173,8 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
 }
 
 // ── AdjustmentRow ──────────────────────────────────────────────────────────────
-function AdjustmentRow({ label, sign, autoValue, overrideValue, onOverride, onClear, suffix = '', colorClass }: {
-  label: string; sign: string; autoValue: number; overrideValue: number | null;
+function AdjustmentRow({ rowId, label, sign, autoValue, overrideValue, onOverride, onClear, suffix = '', colorClass }: {
+  rowId: string; label: string; sign: string; autoValue: number; overrideValue: number | null;
   onOverride: (v: number) => void; onClear: () => void; suffix?: string; colorClass: string;
 }) {
   const [editing, setEditing] = useState(false);
@@ -181,6 +185,10 @@ function AdjustmentRow({ label, sign, autoValue, overrideValue, onOverride, onCl
   function startEdit() {
     setDraft(String(Math.round(displayValue)));
     setEditing(true);
+    setTimeout(() => {
+      const el = document.getElementById(`edit-${rowId}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 50);
   }
 
   function commit() {
@@ -195,7 +203,7 @@ function AdjustmentRow({ label, sign, autoValue, overrideValue, onOverride, onCl
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 py-2 px-3 bg-light-surface rounded-input border border-light-border">
+    <div id={`edit-${rowId}`} className="flex items-center justify-between gap-3 py-2 px-3 bg-light-surface rounded-input border border-light-border">
       <span className="text-sm text-dark">{label}</span>
       <div className="flex items-center gap-2">
         {editing ? (

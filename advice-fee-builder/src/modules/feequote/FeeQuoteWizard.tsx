@@ -84,8 +84,8 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
           </button>
         </div>
 
-        {/* Step content — pb-12 clears floating nav; footer below provides additional bottom space */}
-        <main className="flex-1 px-4 sm:px-6 py-6 pb-12 max-w-4xl w-full mx-auto">
+        {/* Step content — pb-40 clears floating nav (≈48px buttons + spacing) */}
+        <main className="flex-1 px-4 sm:px-6 py-6 pb-40 max-w-4xl w-full mx-auto">
           {quoteStep === 1 && <Step1ClientProfile {...sharedProps} />}
           {quoteStep === 2 && <Step2ScopeOfAdvice {...sharedProps} />}
           {quoteStep === 3 && <Step3OngoingService {...sharedProps} />}
@@ -101,7 +101,7 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
         </main>
 
         {/* Footer — full width (outside max-w-4xl), pushed to bottom on short pages */}
-        <div ref={footerRef} className="mt-auto print:hidden">
+        <div ref={footerRef} className="mt-16 print:hidden">
           <FooterBar currentPage="feequote" onNavigate={handleNavigate} />
         </div>
       </div>
@@ -130,8 +130,8 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
 
       {/* Desktop: floating buttons, slide up when footer becomes visible */}
       <div
-        className="hidden md:flex fixed right-8 items-center gap-3 z-30 print:hidden transition-all duration-150"
-        style={{ bottom: `${Math.max(32, footerOffset + 24)}px` }}
+        className="hidden md:flex fixed right-6 md:right-8 items-center gap-3 z-30 print:hidden transition-all duration-150"
+        style={{ bottom: `${Math.max(32, footerOffset + 32)}px` }}
       >
         {quoteStep > 1 && (
           <button

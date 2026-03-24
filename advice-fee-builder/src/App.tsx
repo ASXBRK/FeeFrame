@@ -12,7 +12,7 @@ type NavPage = 'landing' | 'about' | 'contact';
 type Page = NavPage | 'quote' | 'analysis';
 
 // ── State ──────────────────────────────────────────────────────────────────────
-const STATE_VERSION = 5; // bumped: premium/discount overhaul + relationship discount
+const STATE_VERSION = 6; // bumped: waiveImplementation → implDiscountPercent
 
 const initialState = {
   view: 'landing', // 'landing' | 'quote' | 'analysis'
@@ -51,10 +51,13 @@ function reducer(state, action) {
 
     case 'SET_QUOTE_FIELD': {
       if (action.field === 'hasOngoing' && !action.value) {
-        return { ...state, quote: { ...state.quote, hasOngoing: false, soaDiscountPercent: 0, waiveImplementation: false } };
+        return { ...state, quote: { ...state.quote, hasOngoing: false, soaDiscountPercent: 0, implDiscountPercent: 0 } };
       }
       if (action.field === 'paraplanner') {
-        const coreTaskIds = ['discovery', 'engagementLetter', 'dataCollection', 'scenarioModelling'];
+        // Bug fix: 'soaReviewPresentation' was missing from this list; it was added as a 5th core task
+        // after this reducer was written, so its hour overrides were never cleared on paraplanner switch,
+        // leaving internal-mode hour overrides active when external defaults should apply (and vice versa).
+        const coreTaskIds = ['discovery', 'engagementLetter', 'dataCollection', 'scenarioModelling', 'soaReviewPresentation'];
         const cleanedOverrides = { ...state.quote.hourOverrides };
         for (const id of coreTaskIds) {
           delete cleanedOverrides[`${id}.adviser`];

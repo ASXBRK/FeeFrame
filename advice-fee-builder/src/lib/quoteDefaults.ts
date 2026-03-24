@@ -48,7 +48,7 @@ export const defaultQuoteState = {
   ongoingModel: 'fixedOnly', // 'fixedOnly' | 'percentageBased' | 'subscription'
   reviewMeetings: 2,
   soaDiscountPercent: 0,   // 0, 25, 50, 75, or 100
-  waiveImplementation: false,
+  implDiscountPercent: 0,  // 0, 25, 50, 75, or 100
   reviewHourOverrides: {} as Record<string, number>,
   annualTaskHourOverrides: {} as Record<string, number>,
 
@@ -76,6 +76,10 @@ export const defaultQuoteState = {
   premiumOngoingOverride: null as number | null,
   discountSoaOverride: null as number | null,
   discountOngoingOverride: null as number | null,
+  // Bug fix: these were missing, so deepMerge in App.tsx never restored them from localStorage
+  // (deepMerge skips any key not present in defaults — saved relationship discount was silently lost).
+  relationshipDiscountEnabled: false,
+  relationshipDiscountPercent: 10,
 
   // Entity fee split
   entities: [] as { name: string; balance: number; onPlatform: boolean }[],
