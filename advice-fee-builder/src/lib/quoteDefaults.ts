@@ -8,6 +8,7 @@ export const defaultQuoteState = {
   clientName: '',
   date: new Date().toISOString().split('T')[0],
   isCouple: false,
+  clientStatus: 'new',   // 'new' | 'existing'
   lifeStage: 'accumulation',
   ageBracket: 'under40',
   entityCount: 0,
