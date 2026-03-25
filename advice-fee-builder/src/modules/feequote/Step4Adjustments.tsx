@@ -82,17 +82,6 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
             💡 Discounts reflect factors that reduce the cost of serving this client. Select all that apply. You can override the calculated amount using the pencil icon.
           </div>
 
-          {((quote.soaDiscountPercent ?? 0) > 0 || (quote.implDiscountPercent ?? 0) > 0) && (() => {
-            const parts: string[] = [];
-            if ((quote.soaDiscountPercent ?? 0) > 0) parts.push(`SOA ${quote.soaDiscountPercent}% discount`);
-            if ((quote.implDiscountPercent ?? 0) > 0) parts.push(`implementation ${quote.implDiscountPercent}% discount`);
-            return (
-              <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mb-4">
-                <span className="font-medium">ⓘ</span> Client incentives are also applied from the previous step ({parts.join(', ')}). These stack with the discounts below. You'll see the combined impact in Fee Summary.
-              </div>
-            );
-          })()}
-
           {/* Relationship discount */}
           <div className="bg-light-surface border border-light-border rounded-card px-4 py-3 mb-4">
             <div className="flex items-center justify-between gap-3">
@@ -175,6 +164,12 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
               />
             )}
           </div>
+
+          {((quote.soaDiscountPercent ?? 0) > 0 || (quote.implDiscountPercent ?? 0) > 0) && (
+            <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mt-4">
+              <span className="font-medium">ⓘ</span> Client incentives are also applied from the previous step (SOA and implementation discounts). These stack with the discounts above. You'll see the combined impact in Fee Summary.
+            </div>
+          )}
         </div>
 
       </div>

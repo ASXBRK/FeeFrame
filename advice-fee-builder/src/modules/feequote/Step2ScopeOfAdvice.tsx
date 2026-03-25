@@ -14,6 +14,7 @@ const RATE_TOOLTIPS = {
 
 export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [overheadOpen, setOverheadOpen] = useState(false);
   const calc = calculateQuote(quote);
 
   const set = (field, value) => dispatch({ type: 'SET_QUOTE_FIELD', field, value });
@@ -123,6 +124,74 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Section B2: Practice Overheads */}
+        <div className="bg-white rounded-card border border-light-border">
+          <button
+            type="button"
+            onClick={() => setOverheadOpen(o => !o)}
+            className="w-full flex items-center justify-between px-5 py-4 text-left"
+          >
+            <div>
+              <h3 className="text-base font-bold font-heading text-dark">Practice Overheads</h3>
+              <p className="text-xs text-mid mt-0.5">
+                {overheadOpen
+                  ? 'Allocates a per-client share of your practice fixed costs to this engagement.'
+                  : calc.overheadPerClient > 0
+                    ? `${formatCurrency(calc.overheadPerClient)} allocated per client — affects cost side only`
+                    : 'Optional — allocate fixed costs across your client book'}
+              </p>
+            </div>
+            <svg
+              className={`w-5 h-5 text-mid transition-transform ${overheadOpen ? 'rotate-180' : ''}`}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {overheadOpen && (
+            <div className="px-5 pb-5 border-t border-light-border pt-4 space-y-4">
+              <p className="text-sm text-mid">
+                Enter your total annual practice overhead (rent, software, licensing, PI insurance, etc.) and client book size.
+                FeeFrame will allocate a per-client share to each engagement's cost calculation.
+                This affects profitability only — it does not change the fee quoted to your client.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-dark mb-1">Annual practice overheads (excl GST)</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-mid">$</span>
+                    <NumInput
+                      value={quote.annualOverhead ?? 0}
+                      onChange={v => dispatch({ type: 'SET_QUOTE_FIELD', field: 'annualOverhead', value: v })}
+                      min={0}
+                      max={5000000}
+                      className="w-40 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
+                    />
+                    <span className="text-xs text-mid">/year</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-dark mb-1">Active clients in book</label>
+                  <NumInput
+                    value={quote.clientBookSize ?? 100}
+                    onChange={v => dispatch({ type: 'SET_QUOTE_FIELD', field: 'clientBookSize', value: Math.max(1, v) })}
+                    min={1}
+                    max={5000}
+                    className="w-28 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
+                  />
+                </div>
+              </div>
+              {calc.overheadPerClient > 0 && (
+                <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800">
+                  <span className="font-medium">{formatCurrency(calc.overheadPerClient)}</span> per client added to cost base.
+                  Visit <span className="font-medium">FeeAnalysis</span> to see how this affects overall practice profitability.
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Section C: Strategies in Scope */}

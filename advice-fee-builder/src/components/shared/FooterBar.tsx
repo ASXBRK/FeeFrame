@@ -1,5 +1,3 @@
-import feeframeLogo from '../../assets/logos/feeframe-primary-light.svg';
-
 type FooterPage = 'home' | 'about' | 'feequote' | 'feeanalysis' | 'contact';
 
 const NAV_LINKS: { id: FooterPage; label: string }[] = [
@@ -10,6 +8,16 @@ const NAV_LINKS: { id: FooterPage; label: string }[] = [
   { id: 'contact',     label: 'Contact' },
 ];
 
+function FeeFrameLogo({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" className={className} aria-label="FeeFrame">
+      <path d="M22 14 L8 14 L8 66 L22 66" fill="none" stroke="#0d9488" strokeWidth="3" strokeLinecap="square" strokeLinejoin="miter"/>
+      <path d="M298 14 L312 14 L312 66 L298 66" fill="none" stroke="#0d9488" strokeWidth="3" strokeLinecap="square" strokeLinejoin="miter"/>
+      <text style={{ fontFamily: "'DM Sans', Georgia, serif", fontSize: 36, fontWeight: 600, letterSpacing: '-0.8px', fill: '#0d9488' }} x="34" y="57">FeeFrame</text>
+    </svg>
+  );
+}
+
 export default function FooterBar({ currentPage, onNavigate }: { currentPage: FooterPage; onNavigate: (page: FooterPage) => void }) {
   const links = NAV_LINKS.filter(link => link.id !== currentPage);
 
@@ -19,7 +27,7 @@ export default function FooterBar({ currentPage, onNavigate }: { currentPage: Fo
 
         {/* Left: FeeFrame logo */}
         <div className="flex-shrink-0">
-          <img src={feeframeLogo} alt="FeeFrame" className="h-6" />
+          <FeeFrameLogo className="h-6" />
         </div>
 
         {/* Center: Trust signals (hidden on mobile) */}
