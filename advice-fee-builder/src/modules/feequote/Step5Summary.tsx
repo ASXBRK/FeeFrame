@@ -3,7 +3,6 @@ import { calculateQuote } from '../../lib/calculateQuote';
 import { formatCurrency, formatHours } from '../../lib/formatters';
 import NumInput from '../../components/shared/NumInput';
 import ConfirmModal from '../../components/shared/ConfirmModal';
-import Tooltip from '../../components/shared/Tooltip';
 import feeanalysisLogo from '../../assets/logos/feeanalysis-light.svg';
 
 const TABS = ['Summary', 'Detailed Breakdown', 'Profitability', 'Client Output'];
@@ -30,9 +29,8 @@ export default function Step5Summary({ quote, dispatch, onReset, onNavigate, onG
       <div className="bg-white rounded-card border border-light-border px-5 py-3.5 mb-4 print:hidden">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-dark whitespace-nowrap flex items-center gap-1.5">
+            <label className="text-sm font-medium text-dark whitespace-nowrap">
               Profit Margin
-              <Tooltip text="The average Australian advice practice operates at a 21% profit margin (Adviser Ratings 2024). Top-performing practices achieve 47% (Iress Advisely Index 2024)." />
             </label>
             <div className="flex items-center gap-1">
               <NumInput
@@ -56,7 +54,7 @@ export default function Step5Summary({ quote, dispatch, onReset, onNavigate, onG
           </label>
         </div>
         <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mt-3">
-          💡 Your firm's target profit margin applied to all fees.
+          Your firm's target profit margin. The average Australian advice practice operates at 21% (Adviser Ratings 2024). Top-performing practices achieve 47% (Iress Advisely Index 2024).
         </div>
       </div>
 
@@ -1012,14 +1010,15 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
   // Smart callouts
   const callouts: string[] = [];
 
+  // Cost structure callouts
   if (soaDirectCost > 0 && calc.soaParaplannerCost / soaDirectCost > 0.45) {
     const pct = Math.round((calc.soaParaplannerCost / soaDirectCost) * 100);
-    callouts.push(`Paraplanning represents ${pct}% of your SOA cost (${formatCurrency(calc.soaParaplannerCost)} of ${formatCurrency(soaDirectCost)}). If paraplanning hours or rates feel high, consider whether some tasks could shift to admin or be streamlined with templates and technology.`);
+    callouts.push(`Paraplanning represents ${pct}% of your SOA cost (${formatCurrency(calc.soaParaplannerCost)} of ${formatCurrency(soaDirectCost)}). Consider whether any paraplanning tasks could be delegated to admin, or streamlined with better templates and processes.`);
   }
 
   if (soaTotalCost > 0 && calc.soaAdviserCost / soaTotalCost > 0.55) {
     const pct = Math.round((calc.soaAdviserCost / soaTotalCost) * 100);
-    callouts.push(`Adviser time represents ${pct}% of your SOA cost (${formatCurrency(calc.soaAdviserCost)} of ${formatCurrency(soaTotalCost)}). If adviser hours feel high, consider whether some preparation or research tasks could be delegated to paraplanning or admin staff.`);
+    callouts.push(`Adviser time represents ${pct}% of your SOA cost (${formatCurrency(calc.soaAdviserCost)} of ${formatCurrency(soaTotalCost)}). Consider whether some preparation or research tasks could be delegated to your paraplanner or admin staff.`);
   }
 
   if (soaTotalCost > 0 && calc.soaAdminCost / soaTotalCost > 0.30) {
@@ -1027,22 +1026,96 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
     callouts.push(`Administration represents ${pct}% of your SOA cost (${formatCurrency(calc.soaAdminCost)} of ${formatCurrency(soaTotalCost)}). High admin costs may indicate manual processes that could benefit from automation or systemisation.`);
   }
 
+  if (soaTotalCost > 0 && calc.soaExternalFee / soaTotalCost > 0.50) {
+    const pct = Math.round((calc.soaExternalFee / soaTotalCost) * 100);
+    callouts.push(`Your external paraplanner fee represents ${pct}% of the total SOA cost. If this seems disproportionate, consider negotiating the scope or comparing with alternative paraplanning providers.`);
+  }
+
+  if (calc.soaExternalFee > 0 && calc.soaExternalFee > calc.soaAdviserCost) {
+    callouts.push(`Your external paraplanner fee (${formatCurrency(calc.soaExternalFee)}) exceeds your total adviser cost (${formatCurrency(calc.soaAdviserCost)}). This is common for complex engagements, but worth reviewing if the scope is straightforward.`);
+  }
+
+  // Fee benchmarking
   if (calc.adjustedFeeRounded > 0 && calc.adjustedFeeRounded < 2000) {
-    callouts.push(`This engagement quotes below $2,000. The average initial advice fee in Australia is $2,500–$4,400 (Investment Trends 2024). Consider whether the scope fully reflects the work required.`);
+    callouts.push(`This engagement quotes below $2,000 (excl GST). The average initial advice fee in Australia is $2,500–$4,400 (Investment Trends 2024). Consider whether the scope fully reflects the work involved.`);
+  }
+
+  if (calc.adjustedFeeRounded >= 2500 && calc.adjustedFeeRounded <= 4400) {
+    callouts.push(`Your SOA fee of ${formatCurrency(calc.adjustedFeeRounded)} (excl GST) falls within the industry average range of $2,500–$4,400 for initial advice (Investment Trends 2024).`);
+  }
+
+  if (calc.adjustedFeeRounded > 4400 && calc.adjustedFeeRounded <= 10000) {
+    callouts.push(`Your SOA fee of ${formatCurrency(calc.adjustedFeeRounded)} (excl GST) is above the industry average of $2,500–$4,400 (Investment Trends 2024). This is typical for comprehensive or complex engagements.`);
   }
 
   if (calc.adjustedFeeRounded > 10000) {
-    callouts.push(`This engagement quotes above $10,000. While complex engagements can justify this fee, ensure the client understands the value being delivered. Only 6–7% of advisers price above this level (Adviser Ratings 2025).`);
+    callouts.push(`This engagement quotes above $10,000 (excl GST). Complex engagements can justify higher fees, but ensure the client understands the scope and value. Only 6–7% of advisers regularly quote above this level (Adviser Ratings 2025).`);
   }
 
-  if (soaTotalCost > 0 && calc.soaExternalFee / soaTotalCost > 0.50) {
-    const pct = Math.round((calc.soaExternalFee / soaTotalCost) * 100);
-    callouts.push(`Your external paraplanner fee represents ${pct}% of the total SOA cost. Consider whether an internal paraplanner or AI-assisted paraplanning could reduce this.`);
+  // Scope callouts
+  const adviserRate = Number(quote.adviserRate);
+  if (adviserRate > 150) {
+    callouts.push(`Your adviser hourly cost of $${adviserRate}/hr is above the industry average of $106/hr. If this reflects a senior adviser's employment cost, that's appropriate — but ensure it's the true employment cost, not a charge-out rate.`);
   }
 
+  if (calc.strategyItems.length > 0 && (Number(quote.scenarios) || 0) === 0) {
+    callouts.push(`No scenario modelling has been included. Most comprehensive SOAs benefit from at least one scenario comparison to support the client's decision-making.`);
+  }
+
+  // Ongoing callouts
+  if (calc.hasOngoing && calc.totalOngoingRounded > calc.adjustedFeeRounded * 1.5) {
+    callouts.push(`Your annual ongoing fee (${formatCurrency(calc.totalOngoingRounded)} excl GST) exceeds 150% of the initial SOA fee (${formatCurrency(calc.adjustedFeeRounded)} excl GST). This may be appropriate for high-touch service models, but ensure the client understands the ongoing value.`);
+  }
+
+  if (calc.reviewMeetings > 4) {
+    callouts.push(`You've included ${calc.reviewMeetings} review meetings per year. The industry average is 2 meetings annually (Adviser Ratings 2025). More meetings increase costs — ensure this frequency is necessary and valued by the client.`);
+  }
+
+  if (calc.hasOngoing && calc.totalOngoingRounded > 0) {
+    const medianOngoing = 4668;
+    if (calc.totalOngoingRounded < medianOngoing * 0.6) {
+      callouts.push(`Your ongoing fee of ${formatCurrency(calc.totalOngoingRounded)} (excl GST) is well below the national median of $4,668 (Adviser Ratings 2025). If the scope of ongoing service is comprehensive, consider whether the fee adequately reflects the work involved.`);
+    } else if (calc.totalOngoingRounded >= medianOngoing * 0.8 && calc.totalOngoingRounded <= medianOngoing * 1.2) {
+      callouts.push(`Your ongoing fee of ${formatCurrency(calc.totalOngoingRounded)} (excl GST) is in line with the national median of $4,668 (Adviser Ratings 2025).`);
+    } else if (calc.totalOngoingRounded > medianOngoing * 1.5) {
+      callouts.push(`Your ongoing fee of ${formatCurrency(calc.totalOngoingRounded)} (excl GST) is above the national median of $4,668 (Adviser Ratings 2025). This is common for high-touch service models or clients with complex needs. The average ongoing fee reported by Investment Trends (2025) is $5,500.`);
+    }
+  }
+
+  // Commission callout
+  const totalCommission = Number(quote.insuranceCommissionOffset) || 0;
+  if (totalCommission > 0 && totalCommission >= calc.totalInitialFees) {
+    callouts.push(`Insurance commissions of ${formatCurrency(totalCommission)} fully offset client fees. The client pays $0 upfront but this engagement generates ${formatCurrency(totalCommission)} in commission revenue against ${formatCurrency(calc.soaTrueCost)} in costs — a margin of ${formatCurrency(totalCommission - calc.soaTrueCost)}.`);
+  }
+
+  // Margin callouts
   if (calc.soaMarginPercent > 0 && calc.soaMarginPercent < 15) {
-    callouts.push(`Your margin of ${calc.soaMarginPercent}% is below the industry average of 21%. While this may be appropriate for some engagements, sustained low margins can impact business viability.`);
+    callouts.push(`Your profit margin of ${calc.soaMarginPercent}% is below the industry average of 21% (Adviser Ratings 2024). This may be appropriate for specific engagements, but sustained low margins can affect business sustainability.`);
   }
+
+  if (firstYearMargin < 0) {
+    callouts.push(`This engagement shows a negative first-year margin of ${formatCurrency(firstYearMargin)}. This may be acceptable as a loss-leader for a valuable ongoing relationship, but ensure it's a deliberate commercial decision.`);
+  }
+
+  if (calc.soaMarginPercent > 0) {
+    const effectiveMarginPct = calc.adjustedFeeRounded > 0
+      ? Math.round(((calc.adjustedFeeRounded - calc.soaTrueCost) / calc.adjustedFeeRounded) * 100)
+      : 0;
+    if (effectiveMarginPct >= 40) {
+      callouts.push(`Your effective SOA margin of ${effectiveMarginPct}% is approaching top-10% territory. The highest-performing practices operate at 47% margin (Iress Advisely Index 2024).`);
+    } else if (effectiveMarginPct >= 21 && effectiveMarginPct < 40) {
+      callouts.push(`Your effective SOA margin of ${effectiveMarginPct}% is above the industry average of 21% (Adviser Ratings 2024). This is a healthy position.`);
+    }
+  }
+
+  // First-year revenue context
+  const totalFirstYearRevenue = calc.soaTotalInclGst + calc.implTotal + (calc.hasOngoing ? calc.totalOngoingInclGst : 0);
+  if (totalFirstYearRevenue > 15000) {
+    callouts.push(`Total first-year client revenue of ${formatCurrency(totalFirstYearRevenue)} (incl GST) places this as a premium engagement. The average annual revenue per client is $4,744 (Adviser Ratings 2025) — though this figure excludes initial SOA fees.`);
+  }
+
+  // Industry benchmark reference — always shown at bottom
+  callouts.push(`Industry reference: Average initial SOA fee $2,500–$4,400 (Investment Trends 2024). Median ongoing fee $4,668, average $5,500 (Adviser Ratings / Investment Trends 2025). Average practice margin 21%, top 10% achieve 47% (Adviser Ratings / Iress Advisely 2024).`);
 
   const showCtaCard = isPercentageOngoing || isSubscriptionOngoing;
 

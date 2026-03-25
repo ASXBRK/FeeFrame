@@ -7,9 +7,9 @@ import { calculateQuote } from '../../lib/calculateQuote';
 import { formatCurrency } from '../../lib/formatters';
 
 const RATE_TOOLTIPS = {
-  adviser: 'Industry average ~$106/hr based on $175k salary (Advisely 2025). Enter your actual employment cost per hour — not what you charge clients.',
-  paraplanner: 'Industry average ~$62/hr based on $102k salary (Advisely 2025). Enter your actual employment cost per hour.',
-  admin: 'Industry average ~$40/hr based on $67k salary (Advisely 2025). Enter your actual employment cost per hour.',
+  adviser: 'Based on an average adviser salary of $175k (Advisely 2025). Enter your actual employment cost per hour — not your charge-out rate.',
+  paraplanner: 'Based on an average paraplanner salary of $102k (Advisely 2025). Enter your actual employment cost per hour — not your charge-out rate.',
+  admin: 'Based on an average CSA salary of $67k (Advisely 2025). Enter your actual employment cost per hour — not your charge-out rate.',
 };
 
 export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) {
@@ -142,6 +142,12 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
           quantityMap={quote.strategyQuantities || {}}
           onQuantityChange={(id, qty) => dispatch({ type: 'SET_STRATEGY_QUANTITY', id, quantity: qty })}
         />
+
+        {Object.values(quote.strategies || {}).filter(Boolean).length === 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 mt-3">
+            <span className="font-medium">⚠</span> No strategies selected. Select at least one advice area to generate a meaningful fee.
+          </div>
+        )}
 
         {/* Section D: Add-ons */}
         <ScopeSection
@@ -281,7 +287,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
             <div className="flex items-center gap-4 pt-2 border-t border-light-border">
               <div className="flex items-center gap-1.5 flex-1 min-w-0">
                 <span className="text-sm font-medium text-dark">Less: Insurance commission offset</span>
-                <Tooltip text="Apply any upfront insurance commission received to offset a portion of the implementation fee payable by the client. This covers the initial commission only — ongoing commissions can be offset against the ongoing service fee in the next step." />
+                <Tooltip text="Enter any upfront insurance commission you expect to receive. This offsets the client's initial fees — first against implementation, then against the SOA fee if commission exceeds implementation. Ongoing commissions are handled separately in the next step." />
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span className="text-xs text-mid">-$</span>
@@ -323,7 +329,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
           <span className="text-sm font-bold text-dark">{formatCurrency(calc.implTotal)}</span>
           <span className="text-xs text-mid">incl GST</span>
         </div>
-        <div className="ml-auto text-xs text-mid">Adjustments applied in Step 4</div>
+        <div className="ml-auto text-xs text-mid">Premiums, discounts, and profit margin are applied in later steps.</div>
       </div>
 
     </div>

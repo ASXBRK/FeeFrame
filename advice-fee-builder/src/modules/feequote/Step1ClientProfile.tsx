@@ -108,6 +108,11 @@ export default function Step1ClientProfile({ quote, dispatch }) {
               className="w-8 h-8 rounded-input border border-light-border flex items-center justify-center text-dark hover:bg-light-surface disabled:opacity-30 text-lg font-medium leading-none"
             >+</button>
           </div>
+          {quote.entityCount > 3 && (
+            <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mt-3">
+              <span className="font-medium">ⓘ</span> {quote.entityCount + (quote.isCouple ? 2 : 1)} total entities will increase data collection time in your SOA fee. Each entity requires separate analysis and documentation.
+            </div>
+          )}
         </div>
       </div>
 

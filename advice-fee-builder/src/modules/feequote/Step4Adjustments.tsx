@@ -27,7 +27,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
           <h3 className="text-base font-bold font-heading text-dark mb-1">Premiums</h3>
 
           <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mb-4">
-            💡 Premiums reflect additional time and complexity involved in serving this client. Selecting more factors increases the premium. You can adjust the amount manually.
+            💡 Premiums reflect additional time and complexity. Select all that apply — the premium increases with each factor. You can override the calculated amount using the pencil icon.
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5">
@@ -79,7 +79,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
           <h3 className="text-base font-bold font-heading text-dark mb-1">Discounts</h3>
 
           <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mb-4">
-            💡 Discounts reflect factors that reduce the cost and effort of this engagement. You can adjust the amount manually.
+            💡 Discounts reflect factors that reduce the cost of serving this client. Select all that apply. You can override the calculated amount using the pencil icon.
           </div>
 
           {((quote.soaDiscountPercent ?? 0) > 0 || (quote.implDiscountPercent ?? 0) > 0) && (() => {
@@ -119,7 +119,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
                       className="w-20 rounded-input border border-light-border px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal"
                     />
                     <span className="text-sm text-dark">%</span>
-                    <Tooltip text="For referrals from existing clients, professional networks, staff, friends or family, or existing client family groups. Set the discount percentage that applies to your firm." />
+                    <Tooltip text="A discretionary discount for referred clients, existing client family groups, or other relationships. Set the percentage that applies to your firm's policy." />
                   </div>
                 </div>
               </div>
@@ -146,7 +146,7 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
 
           {calc.discountCapApplied && (
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-input px-3 py-2 mb-3">
-              Total discount capped at 50%.
+              Total discount has been capped at 50% of the base fee. The combined relationship and engagement discounts exceeded this threshold.
             </p>
           )}
 
