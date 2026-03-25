@@ -750,6 +750,12 @@ function Tab2Breakdown({ calc, quote }) {
                   <td className="py-2 text-right font-medium text-dark">{formatCurrency(calc.soaExternalFee)}</td>
                 </tr>
               )}
+              {calc.overheadPerClient > 0 && (
+                <tr>
+                  <td className="py-2 text-mid" colSpan={5}>Practice overhead allocation ({formatCurrency(calc.annualOverhead)} ÷ {calc.clientBookSize} clients)</td>
+                  <td className="py-2 text-right font-medium text-mid">{formatCurrency(calc.overheadPerClient)}</td>
+                </tr>
+              )}
               <tr className="border-t-2 border-light-border">
                 <td className="py-2 font-semibold text-dark" colSpan={5}>Subtotal: Base Fee</td>
                 <td className="py-2 text-right font-bold text-dark">{formatCurrency(calc.baseFee)}</td>
@@ -1114,6 +1120,21 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
     callouts.push(`Total first-year client revenue of ${formatCurrency(totalFirstYearRevenue)} (incl GST) places this as a premium engagement. The average annual revenue per client is $4,744 (Adviser Ratings 2025) — though this figure excludes initial SOA fees.`);
   }
 
+  // Overhead callouts
+  if (calc.overheadPerClient > 0) {
+    const effectiveMarginAfterOverhead = calc.adjustedFeeRounded > 0
+      ? Math.round(((calc.adjustedFeeRounded - calc.soaTrueCost) / calc.adjustedFeeRounded) * 100)
+      : 0;
+    if (effectiveMarginAfterOverhead < 0) {
+      callouts.push(`Once practice overheads of ${formatCurrency(calc.overheadPerClient)} per client are included, this engagement operates at a loss. Review your pricing or consider whether the overhead allocation is accurate.`);
+    }
+    if (calc.overheadPerClient > 2000) {
+      callouts.push(`Your overhead allocation of ${formatCurrency(calc.overheadPerClient)} per client is high. If your practice has a large client book or lower fixed costs, you may want to revisit your overhead inputs in Step 2.`);
+    } else if (calc.overheadPerClient < 200) {
+      callouts.push(`Your overhead allocation of ${formatCurrency(calc.overheadPerClient)} per client is low. Most advice practices allocate $400–$1,200 per client once rent, software, PI insurance, and licensing costs are factored in.`);
+    }
+  }
+
   // Industry benchmark reference — always shown at bottom
   callouts.push(`Industry reference: Average initial SOA fee $2,500–$4,400 (Investment Trends 2024). Median ongoing fee $4,668, average $5,500 (Adviser Ratings / Investment Trends 2025). Average practice margin 21%, top 10% achieve 47% (Adviser Ratings / Iress Advisely 2024).`);
 
@@ -1270,6 +1291,7 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
             { label: 'Adviser time', value: calc.soaAdviserCost, color: 'bg-slate-700', textColor: 'text-slate-700' },
             { label: calc.soaExternalFee > 0 ? 'External paraplanning' : 'Paraplanning', value: calc.soaParaplannerCost + calc.soaExternalFee, color: 'bg-violet-600', textColor: 'text-violet-600' },
             { label: 'Admin', value: calc.soaAdminCost, color: 'bg-amber-600', textColor: 'text-amber-600' },
+            ...(calc.overheadPerClient > 0 ? [{ label: 'Overheads', value: calc.overheadPerClient, color: 'bg-gray-400', textColor: 'text-gray-500' }] : []),
             ...(soaBarMargin > 0 ? [{ label: 'Margin from fees', value: soaBarMargin, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
             { label: 'GST', value: calc.soaTotalInclGst - calc.soaTotalInclGst / 1.1, color: 'bg-slate-200', textColor: 'text-slate-400' },
           ]} />
@@ -1286,6 +1308,7 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
               { label: 'Adviser time', value: calc.ongoingAdviserCost, color: 'bg-slate-700', textColor: 'text-slate-700' },
               { label: 'Paraplanning', value: calc.ongoingParaplannerCost, color: 'bg-violet-600', textColor: 'text-violet-600' },
               { label: 'Admin', value: calc.ongoingAdminCost, color: 'bg-amber-600', textColor: 'text-amber-600' },
+              ...(calc.overheadPerClient > 0 ? [{ label: 'Overheads', value: calc.overheadPerClient, color: 'bg-gray-400', textColor: 'text-gray-500' }] : []),
               ...(ongoingBarMargin > 0 ? [{ label: 'Margin from fees', value: ongoingBarMargin, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
               { label: 'GST', value: calc.totalOngoingInclGst - calc.totalOngoingRounded, color: 'bg-slate-200', textColor: 'text-slate-400' },
             ]} />

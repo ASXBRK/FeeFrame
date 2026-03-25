@@ -91,4 +91,8 @@ export const defaultQuoteState = {
 
   // Step 5: client paragraph override (null = auto-generated)
   clientParagraphOverride: null as string | null,
+
+  // Practice overheads
+  annualOverhead: 0,
+  clientBookSize: 100,
 };
