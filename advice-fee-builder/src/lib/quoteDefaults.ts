@@ -17,8 +17,11 @@ export const defaultQuoteState = {
   paraplanner: 'internal',
   paraplannerFee: 0,
   paraplannerBuffer: false,
+  externalParaplannerMode: 'flat' as 'flat' | 'hourly', // Change 1
+  externalParaplannerRate: 0,                           // Change 1 — $/hr for hourly mode
 
   // Step 2: Role rates
+  rateType: 'employment' as 'employment' | 'chargeOut', // Change 5
   adviserRate: 106,
   paraplannerRate: 62,
   adminRate: 40,
@@ -39,6 +42,7 @@ export const defaultQuoteState = {
   inSpecieHours: 0,
   insuranceImplHours: 0,
   insuranceCommissionOffset: 0,
+  referralFee: 0, // Change 6 — cost only, not added to client fee
   ongoingInsuranceCommissionOffset: 0,
   implInvestmentOverride: null as number | null,
   implInSpecieOverride: null as number | null,
@@ -55,6 +59,7 @@ export const defaultQuoteState = {
 
   // Percentage-based model
   fum: 0,
+  platformFeeRate: 0, // Change 4 — % of FUM for platform admin fee, display only
   tiers: [
     { from: 0, to: 500000, rate: 1.1 },
     { from: 500001, to: 1000000, rate: 0.88 },
@@ -85,9 +90,9 @@ export const defaultQuoteState = {
   // Entity fee split
   entities: [] as { name: string; balance: number; onPlatform: boolean }[],
 
-  // Step 5: profit margin
+  // Step 5: profit margins (Change 8 — separate SOA and ongoing)
   profitMarginPercent: 20,
-  applyMarginToOngoing: true,
+  ongoingMarginPercent: 20, // only applies to Fixed Fee ongoing
 
   // Step 5: client paragraph override (null = auto-generated)
   clientParagraphOverride: null as string | null,

@@ -50,18 +50,20 @@ export const ANNUAL_TASKS = [
 ];
 
 // ── Premium factors (replaces COMPLEXITY_FACTORS) ─────────────────────────────
+// weight: fixed % added to premium for each selected factor (0.03 = 3%)
+// Array order is preserved for state index integrity; UI sorts by weight
 export const PREMIUM_FACTORS = [
-  { label: 'Conflicting goals', description: 'When partners or family members disagree on financial goals, significant adviser time is spent mediating, reconciling priorities, and finding common ground before advice can progress.' },
-  { label: 'Detail-oriented client', description: 'Financially sophisticated clients who demand detailed justifications, multiple options, and extensive reporting require considerably more preparation and communication.' },
-  { label: 'Slow to respond', description: 'Clients who are slow to provide documents or return calls extend the engagement timeline, requiring repeated follow-ups and rework as circumstances change.' },
-  { label: 'Family complexity', description: 'Divorce, blended families, or inheritance disputes add legal complexity, emotional sensitivity, and often require coordination with multiple external parties.' },
-  { label: 'Legacy mess', description: 'Unwinding previous poor advice — incorrect structures, unsuitable products, or missing documentation — adds significant remediation work before new advice can begin.' },
-  { label: 'Health considerations', description: 'Serious health conditions may require urgent timelines, liaison with medical professionals, and careful consideration of insurance and estate planning implications.' },
-  { label: 'Expectation reset needed', description: 'Clients expecting returns or outcomes that are not achievable require careful education and multiple conversations to reset expectations before advice can proceed.' },
-  { label: 'Business intertwined', description: 'Intertwined business and personal finances — multiple entities, related-party transactions, or business succession — add layers of analysis and compliance requirements.' },
-  { label: 'New to advice', description: 'Clients who have never received financial advice require more education, hand-holding, and explanation of the process, which adds to the initial engagement time.' },
-  { label: 'Over-structured', description: 'More structures than necessary — multiple trusts, companies, SMSFs — each require separate analysis, documentation, and compliance consideration.' },
-  { label: 'Hands-on client', description: 'Clients who want involvement in every detail, frequent updates, and extensive meeting time consume significantly more adviser capacity than standard engagements.' },
+  { label: 'Conflicting goals',      weight: 0.03, description: 'When partners or family members disagree on financial goals, significant adviser time is spent mediating, reconciling priorities, and finding common ground before advice can progress.' },
+  { label: 'Detail-oriented client', weight: 0.02, description: 'Financially sophisticated clients who demand detailed justifications, multiple options, and extensive reporting require considerably more preparation and communication.' },
+  { label: 'Slow to respond',        weight: 0.02, description: 'Clients who are slow to provide documents or return calls extend the engagement timeline, requiring repeated follow-ups and rework as circumstances change.' },
+  { label: 'Family complexity',      weight: 0.03, description: 'Divorce, blended families, or inheritance disputes add legal complexity, emotional sensitivity, and often require coordination with multiple external parties.' },
+  { label: 'Legacy mess',            weight: 0.03, description: 'Unwinding previous poor advice — incorrect structures, unsuitable products, or missing documentation — adds significant remediation work before new advice can begin.' },
+  { label: 'Health considerations',  weight: 0.02, description: 'Serious health conditions may require urgent timelines, liaison with medical professionals, and careful consideration of insurance and estate planning implications.' },
+  { label: 'Expectation reset needed', weight: 0.01, description: 'Clients expecting returns or outcomes that are not achievable require careful education and multiple conversations to reset expectations before advice can proceed.' },
+  { label: 'Business intertwined',   weight: 0.02, description: 'Intertwined business and personal finances — multiple entities, related-party transactions, or business succession — add layers of analysis and compliance requirements.' },
+  { label: 'New to advice',          weight: 0.01, description: 'Clients who have never received financial advice require more education, hand-holding, and explanation of the process, which adds to the initial engagement time.' },
+  { label: 'Over-structured',        weight: 0.01, description: 'More structures than necessary — multiple trusts, companies, SMSFs — each require separate analysis, documentation, and compliance consideration.' },
+  { label: 'Hands-on client',        weight: 0.01, description: 'Clients who want involvement in every detail, frequent updates, and extensive meeting time consume significantly more adviser capacity than standard engagements.' },
 ];
 
 // ── Discount factors (replaces EASE_FACTORS) ──────────────────────────────────
@@ -76,7 +78,13 @@ export const DISCOUNT_FACTORS = [
   { label: 'Well-organised records', description: 'Clients who arrive with complete, accurate, and well-organised financial records significantly reduce data collection and verification time.' },
 ];
 
-// ── Banding functions ──────────────────────────────────────────────────────────
+// ── Premium rate from selected factor weights ──────────────────────────────────
+// Returns sum of weights for selected factor indices (replaces banding system)
+export function getPremiumRateFromFactors(selectedMap: Record<number, boolean>): number {
+  return PREMIUM_FACTORS.reduce((sum, factor, i) => sum + (selectedMap?.[i] ? factor.weight : 0), 0);
+}
+
+// Legacy stub — kept for backward compat; no longer used in calculateQuote
 export function getPremiumRate(count: number): number {
   if (count === 0) return 0;
   if (count <= 2) return 0.05;

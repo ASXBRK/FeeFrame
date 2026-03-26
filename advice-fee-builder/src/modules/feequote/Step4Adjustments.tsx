@@ -31,12 +31,15 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5">
-            {PREMIUM_FACTORS.map((factor, i) => (
-              <label key={i} className="flex items-start gap-3 cursor-pointer group">
+            {PREMIUM_FACTORS
+              .map((factor, i) => ({ ...factor, originalIndex: i }))
+              .sort((a, b) => b.weight - a.weight)
+              .map(factor => (
+              <label key={factor.originalIndex} className="flex items-start gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
-                  checked={!!quote.premiumFactors?.[i]}
-                  onChange={e => setPremium(i, e.target.checked)}
+                  checked={!!quote.premiumFactors?.[factor.originalIndex]}
+                  onChange={e => setPremium(factor.originalIndex, e.target.checked)}
                   className="mt-0.5 w-4 h-4 rounded border-light-border text-teal focus:ring-teal flex-shrink-0"
                 />
                 <span className="text-sm text-dark leading-snug flex items-center gap-1">
