@@ -2,23 +2,60 @@ import { useState } from 'react';
 import Toggle from '../../components/shared/Toggle';
 import Tooltip from '../../components/shared/Tooltip';
 import NumInput from '../../components/shared/NumInput';
+import ConfirmModal from '../../components/shared/ConfirmModal';
 import { STRATEGIES, ADD_ONS, CORE_TASKS } from '../../lib/serviceLines';
 import { calculateQuote } from '../../lib/calculateQuote';
 import { formatCurrency } from '../../lib/formatters';
 
-const RATE_TOOLTIPS = {
-  adviser: 'Based on an average adviser salary of $175k (Advisely 2025). Enter your actual employment cost per hour — not your charge-out rate.',
-  paraplanner: 'Based on an average paraplanner salary of $102k (Advisely 2025). Enter your actual employment cost per hour — not your charge-out rate.',
-  admin: 'Based on an average CSA salary of $67k (Advisely 2025). Enter your actual employment cost per hour — not your charge-out rate.',
+const EMPLOYMENT_RATE_TOOLTIPS = {
+  adviser: 'Based on an average adviser salary of $175k (Advisely 2025). Enter your actual employment cost per hour — not your charge-out rate. The tool adds your profit margin in Step 5.',
+  paraplanner: 'Based on an average paraplanner salary of $102k (Advisely 2025). Enter your actual employment cost per hour — not your charge-out rate. The tool adds your profit margin in Step 5.',
+  admin: 'Based on an average CSA salary of $67k (Advisely 2025). Enter your actual employment cost per hour — not your charge-out rate. The tool adds your profit margin in Step 5.',
+};
+
+const CHARGEOUT_RATE_TOOLTIPS = {
+  adviser: 'Enter your standard adviser charge-out rate. Since profit is already built into this rate, the profit margin in Step 5 will default to 0%.',
+  paraplanner: 'Enter your standard paraplanner charge-out rate. Since profit is already built into this rate, the profit margin in Step 5 will default to 0%.',
+  admin: 'Enter your standard admin charge-out rate. Since profit is already built into this rate, the profit margin in Step 5 will default to 0%.',
 };
 
 export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [overheadOpen, setOverheadOpen] = useState(false);
+  const [rateTypeConfirm, setRateTypeConfirm] = useState<string | null>(null);
   const calc = calculateQuote(quote);
 
   const set = (field, value) => dispatch({ type: 'SET_QUOTE_FIELD', field, value });
   const isExternal = quote.paraplanner === 'external';
+  const rateType = quote.rateType || 'employment';
+  const RATE_TOOLTIPS = rateType === 'chargeOut' ? CHARGEOUT_RATE_TOOLTIPS : EMPLOYMENT_RATE_TOOLTIPS;
+
+  function handleRateTypeChange(newType: string) {
+    if (newType === rateType) return;
+    const currentMargin = Number(quote.profitMarginPercent) || 0;
+    const currentOverhead = Number(quote.annualOverhead) || 0;
+    const hasCustomValues = newType === 'chargeOut'
+      ? (currentMargin !== 20 && currentMargin !== 0) || currentOverhead > 0
+      : currentMargin !== 0;
+    if (hasCustomValues) {
+      setRateTypeConfirm(newType);
+    } else {
+      applyRateTypeSwitch(newType);
+    }
+  }
+
+  function applyRateTypeSwitch(newType: string) {
+    set('rateType', newType);
+    if (newType === 'chargeOut') {
+      set('profitMarginPercent', 0);
+      set('ongoingMarginPercent', 0);
+      set('annualOverhead', 0);
+    } else {
+      set('profitMarginPercent', 20);
+      set('ongoingMarginPercent', 20);
+    }
+    setRateTypeConfirm(null);
+  }
 
   function toggleExpand(id: string) {
     setExpandedIds(prev => {
@@ -64,26 +101,68 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
 
           {isExternal && (
             <div className="mt-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">External paraplanning fee (excl GST)</label>
-                <p className="text-xs text-mid mb-3">Enter the fee quoted by your external paraplanner.</p>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-mid">$</span>
-                  <NumInput
-                    value={quote.paraplannerFee}
-                    onChange={v => set('paraplannerFee', v)}
-                    min={0}
-                    max={50000}
-                    className="w-36 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
-                  />
-                  <span className="text-sm text-mid">ex GST</span>
-                </div>
+              {/* Change 1: Flat fee / Hourly rate toggle */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-mid">Billing type</span>
+                {(['flat', 'hourly'] as const).map(mode => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => set('externalParaplannerMode', mode)}
+                    className={`px-3 py-1.5 rounded-input text-sm font-medium transition-colors ${
+                      (quote.externalParaplannerMode || 'flat') === mode
+                        ? 'bg-teal text-white'
+                        : 'bg-light-surface text-dark hover:bg-light-border'
+                    }`}
+                  >
+                    {mode === 'flat' ? 'Flat fee' : 'Hourly rate'}
+                  </button>
+                ))}
               </div>
+
+              {(quote.externalParaplannerMode || 'flat') === 'flat' ? (
+                <div>
+                  <label className="block text-sm font-medium text-dark mb-1">External paraplanning fee (excl GST)</label>
+                  <p className="text-xs text-mid mb-3">Enter the fee quoted by your external paraplanner.</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-mid">$</span>
+                    <NumInput
+                      value={quote.paraplannerFee}
+                      onChange={v => set('paraplannerFee', v)}
+                      min={0}
+                      max={50000}
+                      className="w-36 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
+                    />
+                    <span className="text-sm text-mid">ex GST</span>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-dark mb-1">External paraplanner hourly rate (excl GST)</label>
+                  <p className="text-xs text-mid mb-3">Their rate per hour. Paraplanner hours from each service line will be costed at this rate.</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-mid">$</span>
+                    <NumInput
+                      value={quote.externalParaplannerRate ?? 0}
+                      onChange={v => set('externalParaplannerRate', v)}
+                      min={0}
+                      max={500}
+                      className="w-28 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
+                    />
+                    <span className="text-sm text-mid">/hr</span>
+                  </div>
+                </div>
+              )}
+
               <div className="border-t border-light-border pt-4 flex items-start gap-3">
                 <Toggle checked={!!quote.paraplannerBuffer} onChange={v => set('paraplannerBuffer', v)} label="Add 10% buffer" />
                 <div>
                   <p className="text-sm font-medium text-dark">Add a 10% buffer</p>
-                  <p className="text-xs text-mid mt-0.5">Protects your margin if the paraplanning fee increases before completion.</p>
+                  <p className="text-xs text-mid mt-0.5">
+                    {(quote.externalParaplannerMode || 'flat') === 'flat'
+                      ? 'Protects your margin if the paraplanning fee increases before completion.'
+                      : 'Adds 10% to the paraplanner hourly rate to protect against scope creep.'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -92,13 +171,37 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
 
         {/* Section B: Hourly cost rates */}
         <div className="bg-white rounded-card border border-light-border p-5">
-          <h3 className="text-base font-bold font-heading text-dark mb-1">Hourly Cost Rates</h3>
-          <p className="text-xs text-mid mb-4">Your internal employment cost per hour — not what you charge clients.</p>
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+            <div>
+              <h3 className="text-base font-bold font-heading text-dark mb-0.5">Hourly Cost Rates</h3>
+              <p className="text-xs text-mid">
+                {rateType === 'chargeOut'
+                  ? 'Your standard charge-out rate — profit is already built in, so margin defaults to 0%.'
+                  : 'Your internal employment cost per hour — not what you charge clients.'}
+              </p>
+            </div>
+            {/* Change 5: Rate type toggle */}
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <span className="text-xs text-mid">Rate type</span>
+              {(['employment', 'chargeOut'] as const).map(rt => (
+                <button
+                  key={rt}
+                  type="button"
+                  onClick={() => handleRateTypeChange(rt)}
+                  className={`px-2.5 py-1 rounded-input text-xs font-medium transition-colors ${
+                    rateType === rt ? 'bg-teal text-white' : 'bg-light-surface text-dark hover:bg-light-border'
+                  }`}
+                >
+                  {rt === 'employment' ? 'Employment cost' : 'Charge-out rate'}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {([
-              { field: 'adviserRate', label: 'Adviser hourly cost', role: 'adviser', default: 106 },
-              { field: 'paraplannerRate', label: 'Paraplanner hourly cost', role: 'paraplanner', default: 62, disabled: isExternal },
-              { field: 'adminRate', label: 'Admin / CSA hourly cost', role: 'admin', default: 40 },
+              { field: 'adviserRate', label: rateType === 'chargeOut' ? 'Adviser charge-out rate' : 'Adviser hourly cost', role: 'adviser', default: 106 },
+              { field: 'paraplannerRate', label: rateType === 'chargeOut' ? 'Paraplanner charge-out rate' : 'Paraplanner hourly cost', role: 'paraplanner', default: 62, disabled: isExternal && (quote.externalParaplannerMode || 'flat') === 'flat' },
+              { field: 'adminRate', label: rateType === 'chargeOut' ? 'Admin charge-out rate' : 'Admin / CSA hourly cost', role: 'admin', default: 40 },
             ] as const).map(({ field, label, role, default: def, disabled }: any) => (
               <div key={field}>
                 <div className="flex items-center gap-1.5 mb-1">
@@ -153,14 +256,23 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
 
           {overheadOpen && (
             <div className="px-5 pb-5 border-t border-light-border pt-4 space-y-4">
-              <p className="text-sm text-mid">
-                Enter your total annual practice overhead (rent, software, licensing, PI insurance, etc.) and client book size.
-                FeeFrame will allocate a per-client share to each engagement's cost calculation.
-                This affects profitability only — it does not change the fee quoted to your client.
-              </p>
+              {rateType === 'chargeOut' ? (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+                  Overhead is typically already factored into charge-out rates. Set to $0 unless you want to add overhead on top of your charge-out rate.
+                </div>
+              ) : (
+                <p className="text-sm text-mid">
+                  FeeFrame will allocate a per-client share to each engagement's cost calculation.
+                  This affects profitability only — it does not change the fee quoted to your client.
+                </p>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-dark mb-1">Annual practice overheads (excl GST)</label>
+                  {/* Change 2: tooltip with what to include */}
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <label className="text-sm font-medium text-dark">Annual practice overheads (excl GST)</label>
+                    <Tooltip text="Include: rent, technology and software licences (Xplan, platforms), PI insurance, CSLR levy, ASIC fees, compliance and audit costs, CPD, marketing, general office costs. Exclude: adviser and staff salaries (already captured in hourly rates above)." />
+                  </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-mid">$</span>
                     <NumInput
@@ -183,6 +295,11 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                     className="w-28 rounded-input border border-light-border px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
                   />
                 </div>
+              </div>
+              {/* Change 2: always show per-client line */}
+              <div className="bg-light-surface border border-light-border rounded-input px-4 py-3 flex items-center justify-between">
+                <span className="text-sm text-mid">Per-client overhead allocation</span>
+                <span className="text-sm font-semibold text-dark">{formatCurrency(calc.overheadPerClient)}</span>
               </div>
               {calc.overheadPerClient > 0 && (
                 <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800">
@@ -376,6 +493,24 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
                 <div className="w-6" />
               </div>
             </div>
+            {/* Change 6: Referral fee — cost only */}
+            <div className="flex items-center gap-4 pt-2 border-t border-light-border">
+              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                <span className="text-sm font-medium text-dark">Referral fee / revenue share</span>
+                <Tooltip text="If you pay a referral fee to a third party (e.g., referring accountant, business partner, or lead source), enter the amount here. This is included as a cost in your profitability analysis but is NOT added to the client-facing fee." />
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className="text-xs text-mid">$</span>
+                <NumInput
+                  value={quote.referralFee ?? 0}
+                  onChange={v => set('referralFee', v)}
+                  min={0}
+                  max={50000}
+                  className="w-20 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
+                />
+              </div>
+              <div className="w-28 text-right text-xs text-mid">Cost only — not added to client fee</div>
+            </div>
             <div className="bg-light-surface rounded-card px-4 py-3 flex items-center justify-between border border-light-border">
               <span className="text-sm font-semibold text-dark">Total Implementation Fees (Incl GST)</span>
               <span className="text-base font-bold text-dark">{formatCurrency(calc.implTotal)}</span>
@@ -401,6 +536,16 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
         <div className="ml-auto text-xs text-mid">Premiums, discounts, and profit margin are applied in later steps.</div>
       </div>
 
+      {/* Change 5: Rate type switch confirmation */}
+      {rateTypeConfirm && (
+        <ConfirmModal
+          title="Switch rate type?"
+          message={`Switching to ${rateTypeConfirm === 'chargeOut' ? 'charge-out rate' : 'employment cost'} will reset your profit margin${rateTypeConfirm === 'chargeOut' ? ' to 0% and practice overhead to $0' : ' to 20%'}.`}
+          confirmLabel="Switch"
+          onConfirm={() => applyRateTypeSwitch(rateTypeConfirm)}
+          onCancel={() => setRateTypeConfirm(null)}
+        />
+      )}
     </div>
   );
 }

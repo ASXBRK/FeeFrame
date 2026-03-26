@@ -1,4 +1,4 @@
-import { STRATEGIES, ADD_ONS, CORE_TASKS, REVIEW_TASKS, ANNUAL_TASKS, PREMIUM_FACTORS, DISCOUNT_FACTORS, getPremiumRate, getDiscountRate, formatStrategyList } from './serviceLines.js';
+import { STRATEGIES, ADD_ONS, CORE_TASKS, REVIEW_TASKS, ANNUAL_TASKS, PREMIUM_FACTORS, DISCOUNT_FACTORS, getPremiumRateFromFactors, getDiscountRate, formatStrategyList } from './serviceLines.js';
 import { roundToNearest100 } from './formatters.js';
 
 // Full repo audit 2026-03-23 — 3 bugs found and fixed. See audit report.
@@ -28,23 +28,35 @@ export function calculateQuote(state: any) {
   const paraplannerRate = Number(state.paraplannerRate ?? 62);
   const adminRate = Number(state.adminRate ?? 40);
   const isExternal = state.paraplanner === 'external';
+  // Change 1: External paraplanner hourly rate mode
+  const isExternalHourly = isExternal && state.externalParaplannerMode === 'hourly';
+  const rawExternalParaRate = Number(state.externalParaplannerRate) || 0;
+  // Apply 10% buffer to external hourly rate (same toggle as flat fee)
+  const externalParaRate = isExternalHourly
+    ? rawExternalParaRate * (state.paraplannerBuffer ? 1.1 : 1)
+    : 0;
   const entityCount = Number(state.entityCount) || 0;
   const totalEntities = (state.isCouple ? 2 : 1) + entityCount;
   const scenarios = Number(state.scenarios) || 0;
   const marginPercent = Number(state.profitMarginPercent) || 0;
-  const applyMarginToOngoing = state.applyMarginToOngoing !== false;
+  // Change 8: Separate ongoing margin
+  const ongoingMgnInput = Number(state.ongoingMarginPercent) ?? 20;
   const annualOverhead = Number(state.annualOverhead) || 0;
   const clientBookSize = Math.max(1, Number(state.clientBookSize) || 100);
   const overheadPerClient = annualOverhead / clientBookSize;
+  // Change 6: Referral fee — cost only, not added to client fee
+  const referralFee = Number(state.referralFee) || 0;
 
   // ── Helper: calc fee for one line item ────────────────────────────────────
   // quantity multiplies the total fee/hours (hours per unit stay the same for editing)
   function calcLineItemFee(item: any, multiplier = 1, quantity = 1) {
     const overrides = state.hourOverrides || {};
     const advHrs = (overrides[`${item.id}.adviser`] ?? item.adviserHours) * multiplier;
-    const paraHrs = isExternal ? 0 : (overrides[`${item.id}.paraplanner`] ?? item.paraplannerHours) * multiplier;
+    // External flat: zero para hours (flat fee used instead). External hourly or internal: use para hours.
+    const paraHrs = (isExternal && !isExternalHourly) ? 0 : (overrides[`${item.id}.paraplanner`] ?? item.paraplannerHours) * multiplier;
     const admHrs = (overrides[`${item.id}.admin`] ?? item.adminHours) * multiplier;
-    const feePerUnit = advHrs * adviserRate + paraHrs * paraplannerRate + admHrs * adminRate;
+    const ppRate = isExternalHourly ? externalParaRate : paraplannerRate;
+    const feePerUnit = advHrs * adviserRate + paraHrs * ppRate + admHrs * adminRate;
     const fee = feePerUnit * quantity;
     const totalHours = (advHrs + paraHrs + admHrs) * quantity;
     return {
@@ -77,13 +89,15 @@ export function calculateQuote(state: any) {
 
   function calcCoreTaskFee(task: any, multiplier = 1) {
     const overrides = state.hourOverrides || {};
+    // External flat: use externalXxxHours (para = 0). External hourly: use normal hours. Internal: use normal hours.
     const defaultAdv = isExternal ? task.externalAdviserHours : task.adviserHours;
-    const defaultPara = isExternal ? task.externalParaplannerHours : task.paraplannerHours;
+    const defaultPara = (isExternal && !isExternalHourly) ? task.externalParaplannerHours : task.paraplannerHours;
     const defaultAdm = isExternal ? task.externalAdminHours : task.adminHours;
     const advHrs = (overrides[`${task.id}.adviser`] ?? defaultAdv) * multiplier;
     const paraHrs = (overrides[`${task.id}.paraplanner`] ?? defaultPara) * multiplier;
     const admHrs = (overrides[`${task.id}.admin`] ?? defaultAdm) * multiplier;
-    const fee = advHrs * adviserRate + paraHrs * paraplannerRate + admHrs * adminRate;
+    const ppRate = isExternalHourly ? externalParaRate : paraplannerRate;
+    const fee = advHrs * adviserRate + paraHrs * ppRate + admHrs * adminRate;
     const totalHours = advHrs + paraHrs + admHrs;
     return { ...task, adviserHoursUsed: advHrs, paraplannerHoursUsed: paraHrs, adminHoursUsed: admHrs, fee, totalHours, hours: totalHours };
   }
@@ -105,23 +119,31 @@ export function calculateQuote(state: any) {
   const lineItems = [...strategyItems, ...addOnItems, ...coreTaskItems];
 
   const rawParaplannerFee = Number(state.paraplannerFee) || 0;
-  const effectiveParaplannerFee = state.paraplannerBuffer ? rawParaplannerFee * 1.1 : rawParaplannerFee;
+  // Flat fee: apply buffer as multiplier. Hourly: buffer already baked into externalParaRate.
+  const effectiveParaplannerFee = (isExternal && !isExternalHourly)
+    ? (state.paraplannerBuffer ? rawParaplannerFee * 1.1 : rawParaplannerFee)
+    : 0;
 
   const soaLineTotal = lineItems.reduce((s, l) => s + l.fee, 0);
-  const baseFee = isExternal ? effectiveParaplannerFee + soaLineTotal : soaLineTotal;
+  // External flat: add flat fee to base. External hourly / internal: line items already include para cost.
+  const baseFee = (isExternal && !isExternalHourly) ? effectiveParaplannerFee + soaLineTotal : soaLineTotal;
   const totalBaseHours = lineItems.reduce((s, l) => s + l.totalHours, 0);
 
   // SOA cost components (for profitability)
   const soaAdviserCost = lineItems.reduce((s, l) => s + l.adviserHoursUsed * adviserRate, 0);
-  const soaParaplannerCost = isExternal ? 0 : lineItems.reduce((s, l) => s + l.paraplannerHoursUsed * paraplannerRate, 0);
+  const soaParaplannerCost = isExternalHourly
+    ? lineItems.reduce((s, l) => s + l.paraplannerHoursUsed * externalParaRate, 0)
+    : isExternal ? 0
+    : lineItems.reduce((s, l) => s + l.paraplannerHoursUsed * paraplannerRate, 0);
   const soaAdminCost = lineItems.reduce((s, l) => s + l.adminHoursUsed * adminRate, 0);
-  const soaExternalFee = isExternal ? effectiveParaplannerFee : 0;
-  const soaTrueCost = soaAdviserCost + soaParaplannerCost + soaAdminCost + soaExternalFee + overheadPerClient;
+  const soaExternalFee = (isExternal && !isExternalHourly) ? effectiveParaplannerFee : 0;
+  const soaTrueCost = soaAdviserCost + soaParaplannerCost + soaAdminCost + soaExternalFee + overheadPerClient + referralFee;
 
   // ── Step 4: Adjustments ────────────────────────────────────────────────────
   const premiumCount = PREMIUM_FACTORS.filter((_, i) => state.premiumFactors?.[i]).length;
   const discountCount = DISCOUNT_FACTORS.filter((_, i) => state.discountFactors?.[i]).length;
-  const premiumRate = getPremiumRate(premiumCount);
+  // Change 10: sum of selected factor weights (replaces banding)
+  const premiumRate = getPremiumRateFromFactors(state.premiumFactors || {});
   const discountRate = getDiscountRate(discountCount);
 
   // Relationship discount adds to the factor-based discount rate.
@@ -198,6 +220,7 @@ export function calculateQuote(state: any) {
 
   // Variable / percentage-based FUM
   let variableFee = 0;
+  let variableFeeRaw = 0; // before minimum fee — for Change 3 display
   let effectiveFumRate = 0;
   if (state.ongoingModel === 'percentageBased') {
     const fum = Number(state.fum) || 0;
@@ -207,17 +230,22 @@ export function calculateQuote(state: any) {
       if (remaining <= 0) break;
       const tierCap = tier.to !== null ? tier.to - tier.from + 1 : Infinity;
       const applyTo = Math.min(remaining, tierCap);
-      variableFee += applyTo * (tier.rate / 100);
+      variableFeeRaw += applyTo * (tier.rate / 100);
       remaining -= applyTo;
     }
     const minFee = Number(state.minimumAnnualFee) || 0;
-    variableFee = Math.max(variableFee, minFee);
+    variableFee = Math.max(variableFeeRaw, minFee);
     if (state.hasAdditionalPlatformFee) {
       const platformCount = Number(state.platformAccounts) || 1;
       variableFee += Math.max(0, platformCount - 1) * (Number(state.additionalPlatformFee) || 500);
     }
-    effectiveFumRate = (Number(state.fum) || 0) > 0 ? variableFee / (Number(state.fum) || 1) : 0;
+    effectiveFumRate = fum > 0 ? variableFee / fum : 0;
   }
+  // Change 4: platform admin fee (% of FUM) — display only, not in profitability
+  const platformFeeRate = Number(state.platformFeeRate) || 0;
+  const platformFeeAmount = state.ongoingModel === 'percentageBased' && platformFeeRate > 0
+    ? (Number(state.fum) || 0) * (platformFeeRate / 100)
+    : 0;
 
   const subscriptionAnnual = state.ongoingModel === 'subscription'
     ? (Number(state.monthlySubscription) || 0) * 12
@@ -244,8 +272,8 @@ export function calculateQuote(state: any) {
 
   // Gross ongoing (before commission) — used for display only
   const ongoingGrossCost = Math.max(0, totalOngoingExGst + ongoingPremium - ongoingDiscount);
-  const ongoingGrossMargin = hasOngoing && applyMarginToOngoing && state.ongoingModel === 'fixedOnly'
-    ? ongoingGrossCost * (marginPercent / 100)
+  const ongoingGrossMargin = hasOngoing && state.ongoingModel === 'fixedOnly'
+    ? ongoingGrossCost * (ongoingMgnInput / 100)
     : 0;
   const ongoingRoundedBeforeCommission = hasOngoing
     ? roundToNearest100(ongoingGrossCost + ongoingGrossMargin)
@@ -253,10 +281,10 @@ export function calculateQuote(state: any) {
 
   // Apply margin to ongoing AFTER adjustments, BEFORE rounding/GST
   const ongoingCostBeforeMargin = Math.max(0, totalOngoingExGst + ongoingPremium - ongoingDiscount - ongoingCommissionOffset);
-  const ongoingMarginAmount = hasOngoing && applyMarginToOngoing && state.ongoingModel === 'fixedOnly'
-    ? ongoingCostBeforeMargin * (marginPercent / 100)
+  const ongoingMarginAmount = hasOngoing && state.ongoingModel === 'fixedOnly'
+    ? ongoingCostBeforeMargin * (ongoingMgnInput / 100)
     : 0;
-  const ongoingMarginPercent = hasOngoing && applyMarginToOngoing && state.ongoingModel === 'fixedOnly' ? marginPercent : 0;
+  const ongoingMgnOutput = hasOngoing && state.ongoingModel === 'fixedOnly' ? ongoingMgnInput : 0;
 
   const totalOngoingRounded = hasOngoing
     ? roundToNearest100(ongoingCostBeforeMargin + ongoingMarginAmount)
@@ -385,18 +413,37 @@ export function calculateQuote(state: any) {
   const implFeeExGst = implTableFee / 1.1;
   const implFeeGst = implTableFee - implFeeExGst;
 
-  clientParagraph += `INITIAL FEES\n${SEP}\n`;
-  clientParagraph += `${''.padEnd(30)}${'Excl GST'.padStart(9)}  ${'GST'.padStart(7)}  Incl GST\n`;
-  clientParagraph += `${'SOA Preparation Fee'.padEnd(30)}${fmtCcy(soaFeeExGst).padStart(9)}  ${fmtCcy(soaFeeGst).padStart(7)}  ${fmtCcy(soaTableFee)}\n`;
-  if (hasImpl) {
-    clientParagraph += `${'Implementation Fee'.padEnd(30)}${fmtCcy(implFeeExGst).padStart(9)}  ${fmtCcy(implFeeGst).padStart(7)}  ${fmtCcy(implTableFee)}\n`;
+  // Change 9: handle $0 fee when commission fully offsets
+  if (totalInitialFees === 0 && commissionOffset > 0) {
+    clientParagraph += `INITIAL FEES\n${SEP}\n`;
+    clientParagraph += `There is no direct fee payable for this advice. The cost of preparing your financial plan is offset by commissions received from the insurance provider(s) in connection with the policies recommended. These commissions are capped by law at 60% of your first-year premium and 20% in subsequent years. Full details of all commissions received are disclosed in your Statement of Advice.\n`;
+    clientParagraph += `${SEP}\n\n`;
+  } else {
+    clientParagraph += `INITIAL FEES\n${SEP}\n`;
+    clientParagraph += `${''.padEnd(30)}${'Excl GST'.padStart(9)}  ${'GST'.padStart(7)}  Incl GST\n`;
+    if (soaAfterCommission > 0) {
+      clientParagraph += `${'SOA Preparation Fee'.padEnd(30)}${fmtCcy(soaFeeExGst).padStart(9)}  ${fmtCcy(soaFeeGst).padStart(7)}  ${fmtCcy(soaTableFee)}\n`;
+    } else if (commissionOffset > 0) {
+      clientParagraph += `SOA Preparation Fee: Offset by insurance commission\n`;
+    } else {
+      clientParagraph += `${'SOA Preparation Fee'.padEnd(30)}${fmtCcy(soaFeeExGst).padStart(9)}  ${fmtCcy(soaFeeGst).padStart(7)}  ${fmtCcy(soaTableFee)}\n`;
+    }
+    if (hasImpl) {
+      if (implAfterCommission > 0) {
+        clientParagraph += `${'Implementation Fee'.padEnd(30)}${fmtCcy(implFeeExGst).padStart(9)}  ${fmtCcy(implFeeGst).padStart(7)}  ${fmtCcy(implTableFee)}\n`;
+      } else if (commissionOffset > 0) {
+        clientParagraph += `Implementation Fee: Offset by insurance commission\n`;
+      } else {
+        clientParagraph += `${'Implementation Fee'.padEnd(30)}${fmtCcy(implFeeExGst).padStart(9)}  ${fmtCcy(implFeeGst).padStart(7)}  ${fmtCcy(implTableFee)}\n`;
+      }
+    }
+    if (commissionOffset > 0) {
+      clientParagraph += `${'Less: Insurance Commission'.padEnd(48)}-${fmtCcy(commissionOffset)}\n`;
+    }
+    clientParagraph += `${SEP}\n`;
+    clientParagraph += `${'TOTAL INITIAL FEES'.padEnd(48)}${fmtCcy(totalInitialFees)}\n`;
+    clientParagraph += `${SEP}\n\n`;
   }
-  if (commissionOffset > 0) {
-    clientParagraph += `${'Less: Insurance Commission'.padEnd(48)}-${fmtCcy(commissionOffset)}\n`;
-  }
-  clientParagraph += `${SEP}\n`;
-  clientParagraph += `${'TOTAL INITIAL FEES'.padEnd(48)}${fmtCcy(totalInitialFees)}\n`;
-  clientParagraph += `${SEP}\n\n`;
 
   // Client incentives
   if (hasIncentives) {
@@ -540,6 +587,13 @@ export function calculateQuote(state: any) {
     clientBookSize,
     overheadPerClient,
 
+    // Change 1: External paraplanner mode
+    isExternalHourly,
+    externalParaRate: rawExternalParaRate, // un-buffered rate for display
+
+    // Change 6: Referral fee (cost only)
+    referralFee,
+
     // SOA cost components
     soaAdviserCost,
     soaParaplannerCost,
@@ -577,7 +631,7 @@ export function calculateQuote(state: any) {
     soaMarginPercent: marginPercent,
     ongoingCostBeforeMargin,
     ongoingMarginAmount,
-    ongoingMarginPercent,
+    ongoingMarginPercent: ongoingMgnOutput,
 
     // SOA final
     adjustedFeeRounded,
@@ -608,7 +662,10 @@ export function calculateQuote(state: any) {
     fixedOngoingFee,
     totalAnnualTaskFee,
     variableFee,
+    variableFeeRaw, // Change 3: before minimum fee applied
     effectiveFumRate,
+    platformFeeRate,    // Change 4
+    platformFeeAmount,  // Change 4
     subscriptionAnnual,
     totalOngoingRounded,
     ongoingGst,

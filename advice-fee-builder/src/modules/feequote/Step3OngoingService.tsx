@@ -319,6 +319,10 @@ function FixedFeeModel({ quote, dispatch, calc }) {
 
 // ── Percentage Based model ─────────────────────────────────────────────────────
 function PercentageModel({ quote, dispatch, calc, set }) {
+  const fum = Number(quote.fum) || 0;
+  const minimumFeeApplied = (Number(quote.minimumAnnualFee) || 0) > 0 && calc.variableFeeRaw < (Number(quote.minimumAnnualFee) || 0);
+  const hasPlatformFee = (Number(quote.platformFeeRate) || 0) > 0;
+
   return (
     <div className="bg-white rounded-card border border-light-border p-5 space-y-5">
       <h3 className="text-base font-bold font-heading text-dark">Percentage Based (FUM)</h3>
@@ -342,13 +346,6 @@ function PercentageModel({ quote, dispatch, calc, set }) {
       <div>
         <label className="block text-sm font-medium text-dark mb-2">Fee tiers</label>
         <TierEditor tiers={quote.tiers} dispatch={dispatch} />
-        <div className="mt-3 bg-light-surface rounded-input px-4 py-3 border border-light-border flex items-center justify-between">
-          <div>
-            <span className="text-sm font-semibold text-dark">FUM-based fee</span>
-            <div className="text-xs text-mid mt-0.5">Effective rate: {((calc.effectiveFumRate || 0) * 100).toFixed(2)}%</div>
-          </div>
-          <span className="text-sm font-bold text-dark">{formatCurrency(calc.variableFee)}</span>
-        </div>
       </div>
 
       {/* Minimum annual fee */}
@@ -370,7 +367,67 @@ function PercentageModel({ quote, dispatch, calc, set }) {
         </div>
       </div>
 
-      {/* Additional platform fee */}
+      {/* Change 3: Prominent annual fee summary */}
+      {fum > 0 && (
+        <div className="bg-dark rounded-card px-5 py-4 space-y-1">
+          <div className="flex items-baseline justify-between">
+            <span className="text-sm text-gray-400">Annual ongoing fee</span>
+            <div className="text-right">
+              <span className="text-2xl font-bold text-white">{formatCurrency(calc.variableFee)}</span>
+              {minimumFeeApplied && (
+                <div className="text-xs text-amber-400 mt-0.5">Minimum fee applied</div>
+              )}
+            </div>
+          </div>
+          <div className="flex items-baseline justify-between">
+            <span className="text-xs text-gray-500">Effective rate</span>
+            <span className="text-sm font-medium text-gray-300">{((calc.effectiveFumRate || 0) * 100).toFixed(2)}% of FUM</span>
+          </div>
+          {hasPlatformFee && (
+            <>
+              <div className="border-t border-gray-700 pt-2 mt-1 space-y-1">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xs text-gray-500">Advice fee</span>
+                  <span className="text-sm text-gray-300">{formatCurrency(calc.variableFee)} ({((calc.effectiveFumRate || 0) * 100).toFixed(2)}%)</span>
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xs text-gray-500">Platform fee</span>
+                  <span className="text-sm text-gray-300">{formatCurrency(calc.platformFeeAmount)} ({(Number(quote.platformFeeRate) || 0).toFixed(2)}%)</span>
+                </div>
+                <div className="flex items-baseline justify-between border-t border-gray-700 pt-1">
+                  <span className="text-xs text-gray-400 font-medium">Total annual cost</span>
+                  <span className="text-sm font-semibold text-white">{formatCurrency(calc.variableFee + calc.platformFeeAmount)} ({(((calc.effectiveFumRate || 0) + (Number(quote.platformFeeRate) || 0) / 100) * 100).toFixed(2)}%)</span>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Change 4: Platform administration fee */}
+      <div className="border-t border-light-border pt-4">
+        <div className="flex items-center gap-1.5 mb-1">
+          <label className="text-sm font-medium text-dark">Platform administration fee</label>
+          <Tooltip text="The platform fee (e.g., Netwealth, HUB24, Macquarie Wrap) is charged separately by the platform provider, not by your practice. Including it here shows the client their total cost of advice and administration." />
+        </div>
+        <div className="flex items-center gap-2">
+          <NumInput
+            value={quote.platformFeeRate ?? 0}
+            onChange={v => set('platformFeeRate', Math.max(0, Math.min(5, v)))}
+            min={0}
+            max={5}
+            step={0.01}
+            className="w-20 rounded-input border border-light-border px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0"
+          />
+          <span className="text-sm text-mid">% of FUM</span>
+          {hasPlatformFee && fum > 0 && (
+            <span className="text-sm text-mid ml-2">= {formatCurrency(calc.platformFeeAmount)}</span>
+          )}
+        </div>
+        <p className="text-xs text-mid mt-1">Optional — leave at 0% to exclude. Display only, does not affect your fee or profitability.</p>
+      </div>
+
+      {/* Additional platform / account fee */}
       <div className="border-t border-light-border pt-4 space-y-3">
         <label className="flex items-center gap-3 cursor-pointer">
           <input

@@ -25,13 +25,11 @@ export default function Step5Summary({ quote, dispatch, onReset, onNavigate, onG
     <div>
       <h2 className="text-xl font-bold font-heading text-dark mb-4 print:hidden" style={{ letterSpacing: '-0.3px' }}>Fee Summary & Output</h2>
 
-      {/* Profit Margin — global input above tabs */}
+      {/* Profit Margins — two inputs above tabs (Change 8) */}
       <div className="bg-white rounded-card border border-light-border px-5 py-3.5 mb-4 print:hidden">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-dark whitespace-nowrap">
-              Profit Margin
-            </label>
+            <label className="text-sm font-medium text-dark whitespace-nowrap">SOA profit margin</label>
             <div className="flex items-center gap-1">
               <NumInput
                 value={quote.profitMarginPercent ?? 0}
@@ -43,15 +41,21 @@ export default function Step5Summary({ quote, dispatch, onReset, onNavigate, onG
               <span className="text-sm text-mid">%</span>
             </div>
           </div>
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={quote.applyMarginToOngoing !== false}
-              onChange={e => dispatch({ type: 'SET_QUOTE_FIELD', field: 'applyMarginToOngoing', value: e.target.checked })}
-              className="w-4 h-4 rounded border-light-border text-teal focus:ring-teal"
-            />
-            <span className="text-sm text-dark">Apply to ongoing fee</span>
-          </label>
+          {calc.hasOngoing && quote.ongoingModel === 'fixedOnly' && (
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-dark whitespace-nowrap">Ongoing profit margin</label>
+              <div className="flex items-center gap-1">
+                <NumInput
+                  value={quote.ongoingMarginPercent ?? 20}
+                  onChange={v => dispatch({ type: 'SET_QUOTE_FIELD', field: 'ongoingMarginPercent', value: Math.min(100, Math.max(0, v)) })}
+                  integer
+                  emptyDefault={0}
+                  className="w-14 rounded-input border border-light-border px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0"
+                />
+                <span className="text-sm text-mid">%</span>
+              </div>
+            </div>
+          )}
         </div>
         <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mt-3">
           Your firm's target profit margin. The average Australian advice practice operates at 21% (Adviser Ratings 2024). Top-performing practices achieve 47% (Iress Advisely Index 2024).
@@ -714,8 +718,65 @@ function Tab2Breakdown({ calc, quote }) {
     ...calc.coreTaskItems,
   ].filter(l => l.fee > 0 || l.totalHours > 0);
 
+  // Change 7: hourly rate metrics
+  const soaHours = calc.totalBaseHours || 0;
+  const soaEffectiveRate = soaHours > 0 ? Math.round(calc.adjustedFeeRounded / soaHours) : 0;
+  const soaCostPerHour = soaHours > 0 ? Math.round(calc.soaTrueCost / soaHours) : 0;
+  const soaProfitPerHour = soaHours > 0 ? Math.round((calc.adjustedFeeRounded - calc.soaTrueCost) / soaHours) : 0;
+  const isFixedOngoing = calc.hasOngoing && quote.ongoingModel === 'fixedOnly';
+  const ongoingHours = calc.totalOngoingHours || 0;
+  const ongoingEffectiveRate = isFixedOngoing && ongoingHours > 0 ? Math.round(calc.totalOngoingRounded / ongoingHours) : 0;
+  const ongoingCostPerHour = isFixedOngoing && ongoingHours > 0 ? Math.round(calc.ongoingTrueCost / ongoingHours) : 0;
+  const ongoingProfitPerHour = isFixedOngoing && ongoingHours > 0 ? Math.round((calc.totalOngoingRounded - calc.ongoingTrueCost) / ongoingHours) : 0;
+
   return (
     <div className="space-y-5">
+      {/* Change 7: Hourly rate metric boxes */}
+      {soaHours > 0 && (
+        <div className="bg-white rounded-card border border-light-border p-5">
+          <h3 className="text-sm font-bold font-heading text-dark mb-3 uppercase tracking-wide text-xs text-mid">SOA — Hourly Rate Analysis</h3>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-light-surface rounded-input px-3 py-3 text-center">
+              <div className="text-xl font-bold text-dark">${soaEffectiveRate.toLocaleString()}</div>
+              <div className="text-xs font-medium text-mid mt-0.5">Effective rate</div>
+              <div className="text-xs text-gray-400 mt-1">Industry: $200–$550/hr</div>
+            </div>
+            <div className="bg-light-surface rounded-input px-3 py-3 text-center">
+              <div className="text-xl font-bold text-dark">${soaCostPerHour.toLocaleString()}</div>
+              <div className="text-xs font-medium text-mid mt-0.5">Cost per hour</div>
+              <div className="text-xs text-gray-400 mt-1">What it costs to deliver</div>
+            </div>
+            <div className={`rounded-input px-3 py-3 text-center ${soaProfitPerHour >= 0 ? 'bg-light-surface' : 'bg-red-50'}`}>
+              <div className={`text-xl font-bold ${soaProfitPerHour >= 0 ? 'text-dark' : 'text-red-600'}`}>${soaProfitPerHour.toLocaleString()}</div>
+              <div className="text-xs font-medium text-mid mt-0.5">Profit per hour</div>
+              <div className="text-xs text-gray-400 mt-1">{soaHours} total hours</div>
+            </div>
+          </div>
+        </div>
+      )}
+      {isFixedOngoing && ongoingHours > 0 && (
+        <div className="bg-white rounded-card border border-light-border p-5">
+          <h3 className="text-xs font-bold font-heading uppercase tracking-wide text-mid mb-3">Ongoing Service — Hourly Rate Analysis</h3>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-light-surface rounded-input px-3 py-3 text-center">
+              <div className="text-xl font-bold text-dark">${ongoingEffectiveRate.toLocaleString()}</div>
+              <div className="text-xs font-medium text-mid mt-0.5">Effective rate</div>
+              <div className="text-xs text-gray-400 mt-1">p.a.</div>
+            </div>
+            <div className="bg-light-surface rounded-input px-3 py-3 text-center">
+              <div className="text-xl font-bold text-dark">${ongoingCostPerHour.toLocaleString()}</div>
+              <div className="text-xs font-medium text-mid mt-0.5">Cost per hour</div>
+              <div className="text-xs text-gray-400 mt-1">What it costs to deliver</div>
+            </div>
+            <div className={`rounded-input px-3 py-3 text-center ${ongoingProfitPerHour >= 0 ? 'bg-light-surface' : 'bg-red-50'}`}>
+              <div className={`text-xl font-bold ${ongoingProfitPerHour >= 0 ? 'text-dark' : 'text-red-600'}`}>${ongoingProfitPerHour.toLocaleString()}</div>
+              <div className="text-xs font-medium text-mid mt-0.5">Profit per hour</div>
+              <div className="text-xs text-gray-400 mt-1">{ongoingHours} hours p.a.</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* SOA Breakdown */}
       <div className="bg-white rounded-card border border-light-border p-5">
         <h3 className="text-base font-bold font-heading text-dark mb-4">SOA Preparation Breakdown</h3>
