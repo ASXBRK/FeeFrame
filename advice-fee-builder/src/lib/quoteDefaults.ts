@@ -90,9 +90,9 @@ export const defaultQuoteState = {
   // Entity fee split
   entities: [] as { name: string; balance: number; onPlatform: boolean }[],
 
-  // Step 5: profit margins (Change 8 — separate SOA and ongoing)
+  // Step 5: profit margin
   profitMarginPercent: 20,
-  ongoingMarginPercent: 20, // only applies to Fixed Fee ongoing
+  applyMarginToOngoing: true,
 
   // Step 5: client paragraph override (null = auto-generated)
   clientParagraphOverride: null as string | null,

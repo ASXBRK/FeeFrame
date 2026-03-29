@@ -39,8 +39,7 @@ export function calculateQuote(state: any) {
   const totalEntities = (state.isCouple ? 2 : 1) + entityCount;
   const scenarios = Number(state.scenarios) || 0;
   const marginPercent = Number(state.profitMarginPercent) || 0;
-  // Change 8: Separate ongoing margin
-  const ongoingMgnInput = Number(state.ongoingMarginPercent) ?? 20;
+  const applyMarginToOngoing = state.applyMarginToOngoing !== false;
   const annualOverhead = Number(state.annualOverhead) || 0;
   const clientBookSize = Math.max(1, Number(state.clientBookSize) || 100);
   const overheadPerClient = annualOverhead / clientBookSize;
@@ -272,8 +271,8 @@ export function calculateQuote(state: any) {
 
   // Gross ongoing (before commission) — used for display only
   const ongoingGrossCost = Math.max(0, totalOngoingExGst + ongoingPremium - ongoingDiscount);
-  const ongoingGrossMargin = hasOngoing && state.ongoingModel === 'fixedOnly'
-    ? ongoingGrossCost * (ongoingMgnInput / 100)
+  const ongoingGrossMargin = hasOngoing && applyMarginToOngoing && state.ongoingModel === 'fixedOnly'
+    ? ongoingGrossCost * (marginPercent / 100)
     : 0;
   const ongoingRoundedBeforeCommission = hasOngoing
     ? roundToNearest100(ongoingGrossCost + ongoingGrossMargin)
@@ -281,10 +280,10 @@ export function calculateQuote(state: any) {
 
   // Apply margin to ongoing AFTER adjustments, BEFORE rounding/GST
   const ongoingCostBeforeMargin = Math.max(0, totalOngoingExGst + ongoingPremium - ongoingDiscount - ongoingCommissionOffset);
-  const ongoingMarginAmount = hasOngoing && state.ongoingModel === 'fixedOnly'
-    ? ongoingCostBeforeMargin * (ongoingMgnInput / 100)
+  const ongoingMarginAmount = hasOngoing && applyMarginToOngoing && state.ongoingModel === 'fixedOnly'
+    ? ongoingCostBeforeMargin * (marginPercent / 100)
     : 0;
-  const ongoingMgnOutput = hasOngoing && state.ongoingModel === 'fixedOnly' ? ongoingMgnInput : 0;
+  const ongoingMgnOutput = hasOngoing && applyMarginToOngoing && state.ongoingModel === 'fixedOnly' ? marginPercent : 0;
 
   const totalOngoingRounded = hasOngoing
     ? roundToNearest100(ongoingCostBeforeMargin + ongoingMarginAmount)

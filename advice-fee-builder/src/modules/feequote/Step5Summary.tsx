@@ -26,37 +26,33 @@ export default function Step5Summary({ quote, dispatch, onReset, onNavigate, onG
     <div>
       <h2 className="text-xl font-bold font-heading text-dark mb-4 print:hidden" style={{ letterSpacing: '-0.3px' }}>Fee Summary & Output</h2>
 
-      {/* Profit Margins — two inputs above tabs (Change 8) */}
+      {/* Profit Margin */}
       <div className="bg-white rounded-card border border-light-border px-5 py-3.5 mb-4 print:hidden">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-dark whitespace-nowrap">SOA profit margin</label>
+            <label className="text-sm font-medium text-dark whitespace-nowrap">Profit Margin</label>
             <div className="flex items-center gap-1">
               <NumInput
-                value={quote.profitMarginPercent ?? 0}
+                value={quote.profitMarginPercent ?? 20}
                 onChange={v => dispatch({ type: 'SET_QUOTE_FIELD', field: 'profitMarginPercent', value: Math.min(100, Math.max(0, v)) })}
                 integer
                 emptyDefault={0}
+                min={0}
+                max={100}
                 className="w-14 rounded-input border border-light-border px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0"
               />
               <span className="text-sm text-mid">%</span>
             </div>
           </div>
-          {calc.hasOngoing && quote.ongoingModel === 'fixedOnly' && (
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-dark whitespace-nowrap">Ongoing profit margin</label>
-              <div className="flex items-center gap-1">
-                <NumInput
-                  value={quote.ongoingMarginPercent ?? 20}
-                  onChange={v => dispatch({ type: 'SET_QUOTE_FIELD', field: 'ongoingMarginPercent', value: Math.min(100, Math.max(0, v)) })}
-                  integer
-                  emptyDefault={0}
-                  className="w-14 rounded-input border border-light-border px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0"
-                />
-                <span className="text-sm text-mid">%</span>
-              </div>
-            </div>
-          )}
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={quote.applyMarginToOngoing !== false}
+              onChange={e => dispatch({ type: 'SET_QUOTE_FIELD', field: 'applyMarginToOngoing', value: e.target.checked })}
+              className="w-4 h-4 rounded border-light-border text-teal focus:ring-teal"
+            />
+            <span className="text-sm text-dark">Apply to ongoing fee</span>
+          </label>
         </div>
         <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mt-3">
           Your firm's target profit margin. The average Australian advice practice operates at 21% (Adviser Ratings 2024). Top-performing practices achieve 47% (Iress Advisely Index 2024).
