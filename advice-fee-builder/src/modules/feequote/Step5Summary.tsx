@@ -1545,13 +1545,6 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
         </div>
       )}
 
-      {/* Industry reference — static, always visible */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-xs text-gray-500 mt-6">
-        <span className="font-medium text-gray-600">Industry reference:</span>
-        {' '}SOA avg $2,500–$4,400 · Ongoing median $4,668, avg $5,500 · Practice margin avg 21%, top 10% 47%
-        {' '}<span className="text-gray-400">— Investment Trends 2024, Adviser Ratings / Iress Advisely 2025</span>
-      </div>
-
       {/* Attribution */}
       <div className="flex items-center justify-center gap-2 mt-8 mb-4">
         <span className="text-sm text-gray-400">Powered by</span>
