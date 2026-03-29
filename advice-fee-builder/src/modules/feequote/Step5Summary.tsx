@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { calculateQuote } from '../../lib/calculateQuote';
 import { formatCurrency, formatHours } from '../../lib/formatters';
 import NumInput from '../../components/shared/NumInput';
@@ -1018,7 +1019,11 @@ function Tab2Breakdown({ calc, quote }) {
 }
 
 // ── Tab 3: Profitability ───────────────────────────────────────────────────────
-function StackedBar({ segments }: { segments: { label: string; value: number; color: string; textColor?: string }[] }) {
+function StackedBar({ segments, segmentInsights }: {
+  segments: { label: string; value: number; color: string; textColor?: string }[];
+  segmentInsights?: Record<string, string | null>;
+}) {
+  const [hovered, setHovered] = useState<{ label: string; value: number; pct: number; x: number; y: number } | null>(null);
   const total = segments.reduce((s, seg) => s + Math.max(0, seg.value), 0);
   if (total === 0) return <div className="h-6 bg-gray-100 rounded" />;
   return (
@@ -1027,13 +1032,22 @@ function StackedBar({ segments }: { segments: { label: string; value: number; co
         {segments.map(seg => {
           const pct = (Math.max(0, seg.value) / total) * 100;
           if (pct < 0.5) return null;
+          const hasInsight = !!segmentInsights?.[seg.label];
           return (
             <div
               key={seg.label}
-              className={`${seg.color} min-w-[2px]`}
+              className={`${seg.color} min-w-[2px] relative`}
               style={{ width: `${pct}%` }}
-              title={`${seg.label}: ${formatCurrency(seg.value)}`}
-            />
+              onMouseEnter={e => {
+                const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                setHovered({ label: seg.label, value: seg.value, pct: Math.round(pct), x: r.left + r.width / 2, y: r.top });
+              }}
+              onMouseLeave={() => setHovered(null)}
+            >
+              {hasInsight && pct > 5 && (
+                <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-amber-400 border border-white pointer-events-none" />
+              )}
+            </div>
           );
         })}
       </div>
@@ -1042,9 +1056,28 @@ function StackedBar({ segments }: { segments: { label: string; value: number; co
           <div key={seg.label} className={`flex items-center gap-1.5 text-xs ${seg.textColor || 'text-mid'}`}>
             <span className={`inline-block w-2.5 h-2.5 rounded-sm ${seg.color}`} />
             {seg.label}: {formatCurrency(seg.value)}
+            {segmentInsights?.[seg.label] && (
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
+            )}
           </div>
         ))}
       </div>
+      {hovered && createPortal(
+        <div
+          className="fixed z-[9999] w-64 rounded-input bg-dark text-white text-xs px-3 py-2.5 leading-relaxed pointer-events-none shadow-lg"
+          style={{ top: hovered.y, left: hovered.x, transform: 'translate(-50%, calc(-100% - 8px))' }}
+        >
+          <div className="font-semibold mb-0.5">
+            {hovered.label}: {formatCurrency(hovered.value)}{' '}
+            <span className="text-gray-400 font-normal">({hovered.pct}%)</span>
+          </div>
+          {segmentInsights?.[hovered.label] && (
+            <div className="text-gray-300 leading-snug mt-1">{segmentInsights[hovered.label]}</div>
+          )}
+          <span className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-dark" />
+        </div>,
+        document.body,
+      )}
     </div>
   );
 }
@@ -1054,6 +1087,7 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
   const isPercentageOngoing = calc.hasOngoing && quote.ongoingModel === 'percentageBased';
   const isSubscriptionOngoing = calc.hasOngoing && quote.ongoingModel === 'subscription';
   const hasOngoingCostData = isFixedOngoing;
+  const [insightsOpen, setInsightsOpen] = useState(false);
 
   const soaDirectCost = calc.soaAdviserCost + calc.soaParaplannerCost + calc.soaAdminCost;
   const soaTotalCost = soaDirectCost + calc.soaExternalFee;
@@ -1074,130 +1108,155 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
   const soaBarMargin = calc.soaTotalInclGst / 1.1 - calc.soaTrueCost;
   const ongoingBarMargin = calc.totalOngoingRounded - calc.ongoingTrueCost;
 
-  // Smart callouts
-  const callouts: string[] = [];
+  // ── Effective margin (used for both headline and insights) ────────────────────
+  const effectiveMarginPct = calc.adjustedFeeRounded > 0
+    ? Math.round(((calc.adjustedFeeRounded - calc.soaTrueCost) / calc.adjustedFeeRounded) * 100)
+    : 0;
 
-  // Cost structure callouts
-  if (soaDirectCost > 0 && calc.soaParaplannerCost / soaDirectCost > 0.45) {
-    const pct = Math.round((calc.soaParaplannerCost / soaDirectCost) * 100);
-    callouts.push(`Paraplanning represents ${pct}% of your SOA cost (${formatCurrency(calc.soaParaplannerCost)} of ${formatCurrency(soaDirectCost)}). Consider whether any paraplanning tasks could be delegated to admin, or streamlined with better templates and processes.`);
+  // ── Segment insights for hover tooltips ───────────────────────────────────────
+  const adviserPct = calc.soaTrueCost > 0 ? Math.round((calc.soaAdviserCost / calc.soaTrueCost) * 100) : 0;
+  const paraCost = calc.soaParaplannerCost + calc.soaExternalFee;
+  const paraPct = calc.soaTrueCost > 0 ? Math.round((paraCost / calc.soaTrueCost) * 100) : 0;
+  const adminPct = calc.soaTrueCost > 0 ? Math.round((calc.soaAdminCost / calc.soaTrueCost) * 100) : 0;
+  const paraLabel = calc.soaExternalFee > 0 ? 'External paraplanning' : 'Paraplanning';
+
+  const soaSegmentInsights: Record<string, string | null> = {};
+  if (adviserPct > 55) {
+    soaSegmentInsights['Adviser time'] = `Adviser time represents ${adviserPct}% of your SOA cost. Consider whether some preparation or research tasks could be delegated to your paraplanner or admin staff.`;
+  }
+  if (paraPct > 45) {
+    soaSegmentInsights[paraLabel] = `Paraplanning represents ${paraPct}% of your SOA cost. Consider whether any tasks could be delegated to admin, or streamlined with better templates and processes.`;
+  } else if (calc.soaExternalFee > 0 && calc.soaExternalFee > calc.soaAdviserCost) {
+    soaSegmentInsights['External paraplanning'] = `Your external paraplanner fee exceeds your adviser cost. This is common for complex engagements, but worth reviewing if the scope is straightforward.`;
+  }
+  if (adminPct > 30) {
+    soaSegmentInsights['Admin'] = `Administration represents ${adminPct}% of your SOA cost. High admin costs may indicate manual processes that could benefit from systemisation.`;
+  }
+  if (calc.overheadPerClient > 2000) {
+    soaSegmentInsights['Overheads'] = `Your per-client overhead allocation is ${formatCurrency(calc.overheadPerClient)}. Mandatory adviser costs typically range $38,877–$83,877 annually (Adviser Ratings 2025).`;
+  }
+  if (soaTrueProfit > 0) {
+    if (effectiveMarginPct >= 40) {
+      soaSegmentInsights['Margin from fees'] = `Your effective margin of ${effectiveMarginPct}% approaches top-10% territory. The highest-performing practices operate at 47% (Iress Advisely 2024).`;
+    } else if (effectiveMarginPct >= 21) {
+      soaSegmentInsights['Margin from fees'] = `Your effective margin of ${effectiveMarginPct}% is above the industry average of 21% (Adviser Ratings 2024).`;
+    }
   }
 
-  if (soaTotalCost > 0 && calc.soaAdviserCost / soaTotalCost > 0.55) {
-    const pct = Math.round((calc.soaAdviserCost / soaTotalCost) * 100);
-    callouts.push(`Adviser time represents ${pct}% of your SOA cost (${formatCurrency(calc.soaAdviserCost)} of ${formatCurrency(soaTotalCost)}). Consider whether some preparation or research tasks could be delegated to your paraplanner or admin staff.`);
+  const ongoingSegmentInsights: Record<string, string | null> = {};
+  if (hasOngoingCostData && calc.ongoingTrueCost > 0) {
+    const oAdviserPct = Math.round((calc.ongoingAdviserCost / calc.ongoingTrueCost) * 100);
+    const oParaPct = Math.round((calc.ongoingParaplannerCost / calc.ongoingTrueCost) * 100);
+    const oAdminPct = Math.round((calc.ongoingAdminCost / calc.ongoingTrueCost) * 100);
+    if (oAdviserPct > 55) {
+      ongoingSegmentInsights['Adviser time'] = `Adviser time represents ${oAdviserPct}% of your ongoing cost. Consider whether tasks could be delegated.`;
+    }
+    if (oParaPct > 45) {
+      ongoingSegmentInsights['Paraplanning'] = `Paraplanning represents ${oParaPct}% of your ongoing cost. Consider whether tasks could be streamlined.`;
+    }
+    if (oAdminPct > 30) {
+      ongoingSegmentInsights['Admin'] = `Administration represents ${oAdminPct}% of your ongoing cost. High admin costs may indicate manual processes.`;
+    }
+    if (ongoingTrueProfit > 0) {
+      const oMarginPct = Math.round((ongoingTrueProfit / calc.totalOngoingRounded) * 100);
+      if (oMarginPct >= 40) {
+        ongoingSegmentInsights['Margin from fees'] = `Your effective ongoing margin of ${oMarginPct}% approaches top-10% territory.`;
+      } else if (oMarginPct >= 21) {
+        ongoingSegmentInsights['Margin from fees'] = `Your effective ongoing margin of ${oMarginPct}% is above the industry average of 21%.`;
+      }
+    }
   }
 
-  if (soaTotalCost > 0 && calc.soaAdminCost / soaTotalCost > 0.30) {
-    const pct = Math.round((calc.soaAdminCost / soaTotalCost) * 100);
-    callouts.push(`Administration represents ${pct}% of your SOA cost (${formatCurrency(calc.soaAdminCost)} of ${formatCurrency(soaTotalCost)}). High admin costs may indicate manual processes that could benefit from automation or systemisation.`);
+  // ── Headline callout determination ────────────────────────────────────────────
+  type HeadlineType = 'negativeMargin' | 'overheadLoss' | 'lowMargin' | 'zeroMargin' | 'healthy';
+  let headlineType: HeadlineType = 'healthy';
+  if (firstYearMargin < 0) {
+    headlineType = 'negativeMargin';
+  } else if (calc.overheadPerClient > 0 && soaTrueProfit < calc.overheadPerClient) {
+    headlineType = 'overheadLoss';
+  } else if (effectiveMarginPct > 0 && effectiveMarginPct < 15) {
+    headlineType = 'lowMargin';
+  } else if (calc.soaMarginPercent === 0) {
+    headlineType = 'zeroMargin';
   }
 
-  if (soaTotalCost > 0 && calc.soaExternalFee / soaTotalCost > 0.50) {
-    const pct = Math.round((calc.soaExternalFee / soaTotalCost) * 100);
-    callouts.push(`Your external paraplanner fee represents ${pct}% of the total SOA cost. If this seems disproportionate, consider negotiating the scope or comparing with alternative paraplanning providers.`);
+  // ── Insights array (expandable list) ─────────────────────────────────────────
+  type InsightSeverity = 'red' | 'amber' | 'green';
+  type Insight = { message: string; severity: InsightSeverity };
+  const insights: Insight[] = [];
+
+  // Red
+  if (headlineType !== 'negativeMargin' && firstYearMargin < 0) {
+    insights.push({ severity: 'red', message: `This engagement shows a negative first-year margin of ${formatCurrency(firstYearMargin)}.` });
+  }
+  if (headlineType !== 'overheadLoss' && calc.overheadPerClient > 0 && soaTrueProfit < calc.overheadPerClient) {
+    insights.push({ severity: 'red', message: `After practice overheads of ${formatCurrency(calc.overheadPerClient)}/client, your margin of ${formatCurrency(soaTrueProfit)} does not cover the overhead allocation.` });
   }
 
-  if (calc.soaExternalFee > 0 && calc.soaExternalFee > calc.soaAdviserCost) {
-    callouts.push(`Your external paraplanner fee (${formatCurrency(calc.soaExternalFee)}) exceeds your total adviser cost (${formatCurrency(calc.soaAdviserCost)}). This is common for complex engagements, but worth reviewing if the scope is straightforward.`);
+  // Amber
+  if (headlineType !== 'lowMargin' && effectiveMarginPct > 0 && effectiveMarginPct < 21) {
+    insights.push({ severity: 'amber', message: `Your effective profit margin is ${effectiveMarginPct}% after all costs. The industry average is 21% (Adviser Ratings 2024). Consider whether this is sustainable.` });
   }
-
-  // Fee benchmarking
-  if (calc.adjustedFeeRounded > 0 && calc.adjustedFeeRounded < 2000) {
-    callouts.push(`This engagement quotes below $2,000 (excl GST). The average initial advice fee in Australia is $2,500–$4,400 (Investment Trends 2024). Consider whether the scope fully reflects the work involved.`);
+  if (headlineType !== 'zeroMargin' && calc.soaMarginPercent === 0) {
+    insights.push({ severity: 'amber', message: `No profit margin applied. Your quoted fees reflect cost only. Use the margin input above to add your target profitability.` });
   }
-
-  if (calc.adjustedFeeRounded >= 2500 && calc.adjustedFeeRounded <= 4400) {
-    callouts.push(`Your SOA fee of ${formatCurrency(calc.adjustedFeeRounded)} (excl GST) falls within the industry average range of $2,500–$4,400 for initial advice (Investment Trends 2024).`);
-  }
-
-  if (calc.adjustedFeeRounded > 4400 && calc.adjustedFeeRounded <= 10000) {
-    callouts.push(`Your SOA fee of ${formatCurrency(calc.adjustedFeeRounded)} (excl GST) is above the industry average of $2,500–$4,400 (Investment Trends 2024). This is typical for comprehensive or complex engagements.`);
-  }
-
-  if (calc.adjustedFeeRounded > 10000) {
-    callouts.push(`This engagement quotes above $10,000 (excl GST). Complex engagements can justify higher fees, but ensure the client understands the scope and value. Only 6–7% of advisers regularly quote above this level (Adviser Ratings 2025).`);
-  }
-
-  // Scope callouts
-  const adviserRate = Number(quote.adviserRate);
-  if (adviserRate > 150) {
-    callouts.push(`Your adviser hourly cost of $${adviserRate}/hr is above the industry average of $106/hr. If this reflects a senior adviser's employment cost, that's appropriate — but ensure it's the true employment cost, not a charge-out rate.`);
-  }
-
   if (calc.strategyItems.length > 0 && (Number(quote.scenarios) || 0) === 0) {
-    callouts.push(`No scenario modelling has been included. Most comprehensive SOAs benefit from at least one scenario comparison to support the client's decision-making.`);
+    insights.push({ severity: 'amber', message: `No scenario modelling has been included. Most comprehensive SOAs benefit from at least one scenario comparison.` });
   }
-
-  // Ongoing callouts
-  if (calc.hasOngoing && calc.totalOngoingRounded > calc.adjustedFeeRounded * 1.5) {
-    callouts.push(`Your annual ongoing fee (${formatCurrency(calc.totalOngoingRounded)} excl GST) exceeds 150% of the initial SOA fee (${formatCurrency(calc.adjustedFeeRounded)} excl GST). This may be appropriate for high-touch service models, but ensure the client understands the ongoing value.`);
+  if (calc.overheadPerClient > 2000) {
+    insights.push({ severity: 'amber', message: `Your overhead allocation of ${formatCurrency(calc.overheadPerClient)}/client is high. You may want to revisit your overhead inputs in Step 2.` });
+  } else if (calc.overheadPerClient > 0 && calc.overheadPerClient < 200) {
+    insights.push({ severity: 'amber', message: `Your overhead allocation of ${formatCurrency(calc.overheadPerClient)}/client is low. Most practices allocate $400–$1,200 once rent, software, PI insurance, and licensing are factored in.` });
   }
-
-  if (calc.reviewMeetings > 4) {
-    callouts.push(`You've included ${calc.reviewMeetings} review meetings per year. The industry average is 2 meetings annually (Adviser Ratings 2025). More meetings increase costs — ensure this frequency is necessary and valued by the client.`);
+  if (calc.adjustedFeeRounded > 0 && calc.adjustedFeeRounded < 2000) {
+    insights.push({ severity: 'amber', message: `This engagement quotes below $2,000 (excl GST). The average initial advice fee is $2,500–$4,400 (Investment Trends 2024). Consider whether the scope reflects the work involved.` });
   }
-
+  if (calc.adjustedFeeRounded > 10000) {
+    insights.push({ severity: 'amber', message: `This engagement quotes above $10,000 (excl GST). Only 6–7% of advisers regularly quote above this level (Adviser Ratings 2025). Ensure the client understands the scope and value.` });
+  }
   if (calc.hasOngoing && calc.totalOngoingRounded > 0) {
     const medianOngoing = 4668;
     if (calc.totalOngoingRounded < medianOngoing * 0.6) {
-      callouts.push(`Your ongoing fee of ${formatCurrency(calc.totalOngoingRounded)} (excl GST) is well below the national median of $4,668 (Adviser Ratings 2025). If the scope of ongoing service is comprehensive, consider whether the fee adequately reflects the work involved.`);
-    } else if (calc.totalOngoingRounded >= medianOngoing * 0.8 && calc.totalOngoingRounded <= medianOngoing * 1.2) {
-      callouts.push(`Your ongoing fee of ${formatCurrency(calc.totalOngoingRounded)} (excl GST) is in line with the national median of $4,668 (Adviser Ratings 2025).`);
+      insights.push({ severity: 'amber', message: `Your ongoing fee of ${formatCurrency(calc.totalOngoingRounded)} (excl GST) is well below the national median of $4,668 (Adviser Ratings 2025). Consider whether the fee reflects the work involved.` });
     } else if (calc.totalOngoingRounded > medianOngoing * 1.5) {
-      callouts.push(`Your ongoing fee of ${formatCurrency(calc.totalOngoingRounded)} (excl GST) is above the national median of $4,668 (Adviser Ratings 2025). This is common for high-touch service models or clients with complex needs. The average ongoing fee reported by Investment Trends (2025) is $5,500.`);
+      insights.push({ severity: 'amber', message: `Your ongoing fee of ${formatCurrency(calc.totalOngoingRounded)} (excl GST) exceeds 150% of the national median of $4,668 (Adviser Ratings 2025). Ensure the client understands the ongoing value.` });
     }
   }
-
-  // Commission callout
-  const totalCommission = Number(quote.insuranceCommissionOffset) || 0;
-  if (totalCommission > 0 && totalCommission >= calc.totalInitialFees) {
-    callouts.push(`Insurance commissions of ${formatCurrency(totalCommission)} fully offset client fees. The client pays $0 upfront but this engagement generates ${formatCurrency(totalCommission)} in commission revenue against ${formatCurrency(calc.soaTrueCost)} in costs — a margin of ${formatCurrency(totalCommission - calc.soaTrueCost)}.`);
+  const adviserRate = Number(quote.adviserRate);
+  if (adviserRate > 150) {
+    insights.push({ severity: 'amber', message: `Your adviser hourly cost of $${adviserRate}/hr is above the industry average of $106/hr. Ensure this is the true employment cost, not a charge-out rate.` });
+  }
+  if (calc.soaExternalFee > 0 && calc.soaExternalFee > calc.soaAdviserCost) {
+    insights.push({ severity: 'amber', message: `Your external paraplanner fee (${formatCurrency(calc.soaExternalFee)}) exceeds your adviser cost (${formatCurrency(calc.soaAdviserCost)}). Worth reviewing if the scope is straightforward.` });
+  }
+  if (calc.reviewMeetings > 4) {
+    insights.push({ severity: 'amber', message: `You've included ${calc.reviewMeetings} review meetings per year. The industry average is 2 meetings annually (Adviser Ratings 2025). Ensure this frequency is valued by the client.` });
   }
 
-  // Margin callouts
-  if (calc.soaMarginPercent > 0 && calc.soaMarginPercent < 15) {
-    callouts.push(`Your profit margin of ${calc.soaMarginPercent}% is below the industry average of 21% (Adviser Ratings 2024). This may be appropriate for specific engagements, but sustained low margins can affect business sustainability.`);
+  // Green
+  if (calc.adjustedFeeRounded >= 2500 && calc.adjustedFeeRounded <= 4400) {
+    insights.push({ severity: 'green', message: `Your SOA fee of ${formatCurrency(calc.adjustedFeeRounded)} (excl GST) falls within the industry average range of $2,500–$4,400 for initial advice (Investment Trends 2024).` });
   }
-
-  if (firstYearMargin < 0) {
-    callouts.push(`This engagement shows a negative first-year margin of ${formatCurrency(firstYearMargin)}. This may be acceptable as a loss-leader for a valuable ongoing relationship, but ensure it's a deliberate commercial decision.`);
-  }
-
-  if (calc.soaMarginPercent > 0) {
-    const effectiveMarginPct = calc.adjustedFeeRounded > 0
-      ? Math.round(((calc.adjustedFeeRounded - calc.soaTrueCost) / calc.adjustedFeeRounded) * 100)
-      : 0;
-    if (effectiveMarginPct >= 40) {
-      callouts.push(`Your effective SOA margin of ${effectiveMarginPct}% is approaching top-10% territory. The highest-performing practices operate at 47% margin (Iress Advisely Index 2024).`);
-    } else if (effectiveMarginPct >= 21 && effectiveMarginPct < 40) {
-      callouts.push(`Your effective SOA margin of ${effectiveMarginPct}% is above the industry average of 21% (Adviser Ratings 2024). This is a healthy position.`);
+  if (calc.hasOngoing && calc.totalOngoingRounded > 0) {
+    const medianOngoing = 4668;
+    if (calc.totalOngoingRounded >= medianOngoing * 0.8 && calc.totalOngoingRounded <= medianOngoing * 1.2) {
+      insights.push({ severity: 'green', message: `Your ongoing fee of ${formatCurrency(calc.totalOngoingRounded)} (excl GST) is in line with the national median of $4,668 (Adviser Ratings 2025).` });
     }
   }
-
-  // First-year revenue context
-  const totalFirstYearRevenue = calc.soaTotalInclGst + calc.implTotal + (calc.hasOngoing ? calc.totalOngoingInclGst : 0);
-  if (totalFirstYearRevenue > 15000) {
-    callouts.push(`Total first-year client revenue of ${formatCurrency(totalFirstYearRevenue)} (incl GST) places this as a premium engagement. The average annual revenue per client is $4,744 (Adviser Ratings 2025) — though this figure excludes initial SOA fees.`);
+  if (effectiveMarginPct >= 40) {
+    insights.push({ severity: 'green', message: `Your effective SOA margin of ${effectiveMarginPct}% is approaching top-10% territory. The highest-performing practices operate at 47% (Iress Advisely Index 2024).` });
+  } else if (effectiveMarginPct >= 21) {
+    insights.push({ severity: 'green', message: `Your effective SOA margin of ${effectiveMarginPct}% is above the industry average of 21% (Adviser Ratings 2024). This is a healthy position.` });
+  }
+  if (calc.overheadPerClient > 0 && soaTrueProfit > calc.overheadPerClient * 1.5) {
+    insights.push({ severity: 'green', message: `Your margin covers the practice overhead allocation with room to spare (${formatCurrency(soaTrueProfit)} margin vs ${formatCurrency(calc.overheadPerClient)} overhead/client).` });
   }
 
-  // Overhead callouts
-  if (calc.overheadPerClient > 0) {
-    const effectiveMarginAfterOverhead = calc.adjustedFeeRounded > 0
-      ? Math.round(((calc.adjustedFeeRounded - calc.soaTrueCost) / calc.adjustedFeeRounded) * 100)
-      : 0;
-    if (effectiveMarginAfterOverhead < 0) {
-      callouts.push(`Once practice overheads of ${formatCurrency(calc.overheadPerClient)} per client are included, this engagement operates at a loss. Review your pricing or consider whether the overhead allocation is accurate.`);
-    }
-    if (calc.overheadPerClient > 2000) {
-      callouts.push(`Your overhead allocation of ${formatCurrency(calc.overheadPerClient)} per client is high. If your practice has a large client book or lower fixed costs, you may want to revisit your overhead inputs in Step 2.`);
-    } else if (calc.overheadPerClient < 200) {
-      callouts.push(`Your overhead allocation of ${formatCurrency(calc.overheadPerClient)} per client is low. Most advice practices allocate $400–$1,200 per client once rent, software, PI insurance, and licensing costs are factored in.`);
-    }
-  }
-
-  // Industry benchmark reference — always shown at bottom
-  callouts.push(`Industry reference: Average initial SOA fee $2,500–$4,400 (Investment Trends 2024). Median ongoing fee $4,668, average $5,500 (Adviser Ratings / Investment Trends 2025). Average practice margin 21%, top 10% achieve 47% (Adviser Ratings / Iress Advisely 2024).`);
+  // Sort: red → amber → green
+  insights.sort((a, b) => ({ red: 0, amber: 1, green: 2 }[a.severity] - ({ red: 0, amber: 1, green: 2 }[b.severity])));
+  const redCount = insights.filter(i => i.severity === 'red').length;
+  const amberCount = insights.filter(i => i.severity === 'amber').length;
+  const greenCount = insights.filter(i => i.severity === 'green').length;
 
   const showCtaCard = isPercentageOngoing || isSubscriptionOngoing;
 
@@ -1215,18 +1274,6 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
 
   return (
     <div className="space-y-5">
-      {/* Zero margin info */}
-      {calc.soaMarginPercent === 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
-          <div className="flex gap-3">
-            <span className="text-amber-500 flex-shrink-0 mt-0.5">⚠</span>
-            <div className="text-sm text-amber-800">
-              <span className="font-semibold">No profit margin applied.</span> Your quoted fees currently reflect cost only. Use the margin input above to add your target profitability.
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Incentives impact callout */}
       {calc.hasIncentives && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
@@ -1348,14 +1395,17 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
 
         <div>
           <div className="text-sm font-medium text-dark mb-2">Initial SOA</div>
-          <StackedBar segments={[
-            { label: 'Adviser time', value: calc.soaAdviserCost, color: 'bg-slate-700', textColor: 'text-slate-700' },
-            { label: calc.soaExternalFee > 0 ? 'External paraplanning' : 'Paraplanning', value: calc.soaParaplannerCost + calc.soaExternalFee, color: 'bg-violet-600', textColor: 'text-violet-600' },
-            { label: 'Admin', value: calc.soaAdminCost, color: 'bg-amber-600', textColor: 'text-amber-600' },
-            ...(calc.overheadPerClient > 0 ? [{ label: 'Overheads', value: calc.overheadPerClient, color: 'bg-gray-400', textColor: 'text-gray-500' }] : []),
-            ...(soaBarMargin > 0 ? [{ label: 'Margin from fees', value: soaBarMargin, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
-            { label: 'GST', value: calc.soaTotalInclGst - calc.soaTotalInclGst / 1.1, color: 'bg-slate-200', textColor: 'text-slate-400' },
-          ]} />
+          <StackedBar
+            segments={[
+              { label: 'Adviser time', value: calc.soaAdviserCost, color: 'bg-slate-700', textColor: 'text-slate-700' },
+              { label: calc.soaExternalFee > 0 ? 'External paraplanning' : 'Paraplanning', value: calc.soaParaplannerCost + calc.soaExternalFee, color: 'bg-violet-600', textColor: 'text-violet-600' },
+              { label: 'Admin', value: calc.soaAdminCost, color: 'bg-amber-600', textColor: 'text-amber-600' },
+              ...(calc.overheadPerClient > 0 ? [{ label: 'Overheads', value: calc.overheadPerClient, color: 'bg-gray-400', textColor: 'text-gray-500' }] : []),
+              ...(soaBarMargin > 0 ? [{ label: 'Margin from fees', value: soaBarMargin, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
+              { label: 'GST', value: calc.soaTotalInclGst - calc.soaTotalInclGst / 1.1, color: 'bg-slate-200', textColor: 'text-slate-400' },
+            ]}
+            segmentInsights={soaSegmentInsights}
+          />
           {soaBarMargin < 0 && (
             <p className="text-sm text-red-600 font-medium mt-1">Loss: {formatCurrency(soaBarMargin)}</p>
           )}
@@ -1365,14 +1415,17 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
         {isFixedOngoing && calc.totalOngoingHours > 0 && (
           <div>
             <div className="text-sm font-medium text-dark mb-2">Ongoing (annual)</div>
-            <StackedBar segments={[
-              { label: 'Adviser time', value: calc.ongoingAdviserCost, color: 'bg-slate-700', textColor: 'text-slate-700' },
-              { label: 'Paraplanning', value: calc.ongoingParaplannerCost, color: 'bg-violet-600', textColor: 'text-violet-600' },
-              { label: 'Admin', value: calc.ongoingAdminCost, color: 'bg-amber-600', textColor: 'text-amber-600' },
-              ...(calc.overheadPerClient > 0 ? [{ label: 'Overheads', value: calc.overheadPerClient, color: 'bg-gray-400', textColor: 'text-gray-500' }] : []),
-              ...(ongoingBarMargin > 0 ? [{ label: 'Margin from fees', value: ongoingBarMargin, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
-              { label: 'GST', value: calc.totalOngoingInclGst - calc.totalOngoingRounded, color: 'bg-slate-200', textColor: 'text-slate-400' },
-            ]} />
+            <StackedBar
+              segments={[
+                { label: 'Adviser time', value: calc.ongoingAdviserCost, color: 'bg-slate-700', textColor: 'text-slate-700' },
+                { label: 'Paraplanning', value: calc.ongoingParaplannerCost, color: 'bg-violet-600', textColor: 'text-violet-600' },
+                { label: 'Admin', value: calc.ongoingAdminCost, color: 'bg-amber-600', textColor: 'text-amber-600' },
+                ...(calc.overheadPerClient > 0 ? [{ label: 'Overheads', value: calc.overheadPerClient, color: 'bg-gray-400', textColor: 'text-gray-500' }] : []),
+                ...(ongoingBarMargin > 0 ? [{ label: 'Margin from fees', value: ongoingBarMargin, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
+                { label: 'GST', value: calc.totalOngoingInclGst - calc.totalOngoingRounded, color: 'bg-slate-200', textColor: 'text-slate-400' },
+              ]}
+              segmentInsights={ongoingSegmentInsights}
+            />
             {ongoingBarMargin < 0 && (
               <p className="text-sm text-red-600 font-medium mt-1">Loss: {formatCurrency(ongoingBarMargin)}</p>
             )}
@@ -1403,17 +1456,77 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
         )}
       </div>
 
-      {/* Smart callouts */}
-      {callouts.length > 0 && (
-        <div className="space-y-3">
-          {callouts.map((msg, i) => (
-            <div key={i} className="bg-teal-50 border border-teal-200 rounded-xl px-5 py-4">
-              <div className="flex gap-3">
-                <span className="flex-shrink-0 mt-0.5">💡</span>
-                <p className="text-sm text-teal-800">{msg}</p>
-              </div>
+      {/* Headline callout — single most important insight */}
+      {headlineType === 'negativeMargin' && (
+        <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-4">
+          <div className="flex gap-3">
+            <span className="text-red-500 flex-shrink-0 mt-0.5 text-lg">⚠</span>
+            <p className="text-sm text-red-800 font-medium">This engagement shows a negative first-year margin of {formatCurrency(firstYearMargin)}. Review your pricing, scope, or margin to ensure this is a deliberate commercial decision.</p>
+          </div>
+        </div>
+      )}
+      {headlineType === 'overheadLoss' && (
+        <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-4">
+          <div className="flex gap-3">
+            <span className="text-red-500 flex-shrink-0 mt-0.5 text-lg">⚠</span>
+            <p className="text-sm text-red-800 font-medium">After practice overheads of {formatCurrency(calc.overheadPerClient)}/client, this engagement operates at a loss. Your margin of {formatCurrency(soaTrueProfit)} does not cover the {formatCurrency(calc.overheadPerClient)} overhead allocation.</p>
+          </div>
+        </div>
+      )}
+      {headlineType === 'lowMargin' && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
+          <div className="flex gap-3">
+            <span className="text-amber-500 flex-shrink-0 mt-0.5 text-lg">⚠</span>
+            <p className="text-sm text-amber-800 font-medium">Your effective profit margin is {effectiveMarginPct}% after all costs. The industry average is 21% (Adviser Ratings 2024). Consider whether this is sustainable.</p>
+          </div>
+        </div>
+      )}
+      {headlineType === 'zeroMargin' && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
+          <div className="flex gap-3">
+            <span className="text-amber-500 flex-shrink-0 mt-0.5 text-lg">⚠</span>
+            <p className="text-sm text-amber-800 font-medium">No profit margin applied. Your quoted fees reflect cost only. Use the margin input above to add your target profitability.</p>
+          </div>
+        </div>
+      )}
+      {headlineType === 'healthy' && (
+        <div className="bg-teal-50 border border-teal-200 rounded-xl px-5 py-4">
+          <div className="flex gap-3">
+            <span className="text-teal-600 flex-shrink-0 mt-0.5 text-lg">✓</span>
+            <p className="text-sm text-teal-800 font-medium">This engagement is well-priced. Your margin covers overhead and generates {formatCurrency(firstYearMargin > 0 ? firstYearMargin : soaTrueProfit)} in first-year profit.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Expandable insights list */}
+      {insights.length > 0 && (
+        <div>
+          <button
+            onClick={() => setInsightsOpen(o => !o)}
+            className="flex items-center gap-2 text-sm text-mid hover:text-dark transition-colors py-2"
+          >
+            <span className="text-xs">{insightsOpen ? '▲' : '▼'}</span>
+            <span>{insights.length} insight{insights.length !== 1 ? 's' : ''}</span>
+            <span className="flex gap-1 ml-1 items-center">
+              {redCount > 0 && <span className="w-2 h-2 rounded-full bg-red-500" />}
+              {amberCount > 0 && <span className="w-2 h-2 rounded-full bg-amber-400" />}
+              {greenCount > 0 && <span className="w-2 h-2 rounded-full bg-emerald-500" />}
+            </span>
+          </button>
+          {insightsOpen && (
+            <div className="space-y-1.5 mt-2">
+              {insights.map((insight, i) => (
+                <div key={i} className="flex items-start gap-2.5 text-sm py-1">
+                  <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${
+                    insight.severity === 'red' ? 'bg-red-500' :
+                    insight.severity === 'amber' ? 'bg-amber-400' :
+                    'bg-emerald-500'
+                  }`} />
+                  <span className="text-gray-700">{insight.message}</span>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       )}
 
@@ -1435,6 +1548,13 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
           </button>
         </div>
       )}
+
+      {/* Industry reference — static, always visible */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-xs text-gray-500 mt-6">
+        <span className="font-medium text-gray-600">Industry reference:</span>
+        {' '}SOA avg $2,500–$4,400 · Ongoing median $4,668, avg $5,500 · Practice margin avg 21%, top 10% 47%
+        {' '}<span className="text-gray-400">— Investment Trends 2024, Adviser Ratings / Iress Advisely 2025</span>
+      </div>
 
       {/* Attribution */}
       <div className="flex items-center justify-center gap-2 mt-8 mb-4">
