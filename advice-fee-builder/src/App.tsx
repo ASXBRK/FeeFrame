@@ -5,17 +5,36 @@ import About from './components/About';
 import Contact from './components/Contact';
 import FeeQuoteWizard from './modules/feequote/FeeQuoteWizard';
 import FeeAnalysis from './modules/feeanalysis/FeeAnalysis';
+import FeeAnalysisComingSoon from './modules/feeanalysis/FeeAnalysisComingSoon';
 import { defaultQuoteState } from './lib/quoteDefaults';
 import { defaultAnalysisState } from './lib/analysisDefaults';
 // ── Types ──────────────────────────────────────────────────────────────────────
 type NavPage = 'landing' | 'about' | 'contact';
 type Page = NavPage | 'quote' | 'analysis';
 
+// ── URL routing helpers ────────────────────────────────────────────────────────
+function getViewFromPath(pathname: string): { view: string; page: Page } {
+  const p = pathname.replace(/\/$/, '') || '/';
+  if (p === '/feequote') return { view: 'quote', page: 'quote' };
+  if (p === '/feeanalysis') return { view: 'analysis', page: 'analysis' };
+  if (p === '/about') return { view: 'landing', page: 'about' };
+  if (p === '/contact') return { view: 'landing', page: 'contact' };
+  return { view: 'landing', page: 'landing' };
+}
+
+function pathForView(p: string): string {
+  if (p === 'feequote') return '/feequote';
+  if (p === 'feeanalysis') return '/feeanalysis';
+  if (p === 'about') return '/about';
+  if (p === 'contact') return '/contact';
+  return '/';
+}
+
 // ── State ──────────────────────────────────────────────────────────────────────
 const STATE_VERSION = 6; // bumped: waiveImplementation → implDiscountPercent
 
 const initialState = {
-  view: 'landing', // 'landing' | 'quote' | 'analysis'
+  view: getViewFromPath(window.location.pathname).view,
   quoteStep: 1,
   maxQuoteStep: 1,
   quote: defaultQuoteState,
@@ -236,14 +255,17 @@ function reducer(state, action) {
 // ── App ────────────────────────────────────────────────────────────────────────
 export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState, (init) => {
+    let merged = init;
     try {
       const saved = localStorage.getItem('feeframe-state');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed._v === STATE_VERSION) return deepMerge(init, parsed);
+        if (parsed._v === STATE_VERSION) merged = deepMerge(init, parsed);
       }
     } catch (_) { /* ignore */ }
-    return init;
+    // URL always wins over saved view on page load
+    const { view } = getViewFromPath(window.location.pathname);
+    return { ...merged, view };
   });
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -255,14 +277,28 @@ export default function App() {
     return () => clearTimeout(saveTimer.current);
   }, [state]);
 
-  const [page, setPage] = useState<Page>('landing');
+  const [page, setPage] = useState<Page>(() => getViewFromPath(window.location.pathname).page);
 
   const goTo = useCallback((view) => dispatch({ type: 'SET_VIEW', view }), []);
 
+  // Browser back/forward support
+  useEffect(() => {
+    const onPopState = () => {
+      const { view, page: p } = getViewFromPath(window.location.pathname);
+      dispatch({ type: 'SET_VIEW', view });
+      setPage(p);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
   const handleNavigate = useCallback((p: string) => {
+    history.pushState(null, '', pathForView(p));
     if (p === 'feequote') { goTo('quote'); setPage('quote'); }
     else if (p === 'feeanalysis') { goTo('analysis'); setPage('analysis'); }
-    else { goTo('landing'); setPage(p as NavPage); }
+    else if (p === 'about') { goTo('landing'); setPage('about'); }
+    else if (p === 'contact') { goTo('landing'); setPage('contact'); }
+    else { goTo('landing'); setPage('landing'); }
   }, [goTo]);
 
   if (state.view === 'quote') {
@@ -270,20 +306,35 @@ export default function App() {
       <FeeQuoteWizard
         state={state}
         dispatch={dispatch}
-        onGoHome={() => { goTo('landing'); setPage('landing'); }}
-        onGoAnalysis={(fees) => dispatch({ type: 'HANDOFF_TO_ANALYSIS', ...fees })}
+        onGoHome={() => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); }}
+        onGoAnalysis={(fees) => {
+          history.pushState(null, '', '/feeanalysis');
+          setPage('analysis');
+          dispatch({ type: 'HANDOFF_TO_ANALYSIS', ...fees });
+        }}
         onNavigate={handleNavigate}
       />
     );
   }
 
   if (state.view === 'analysis') {
+    const goHome = () => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); };
+    // Set ANALYSIS_ENABLED = true when FeeAnalysis is ready for public access
+    const ANALYSIS_ENABLED = false;
+    if (ANALYSIS_ENABLED) {
+      return (
+        <FeeAnalysis
+          state={state}
+          dispatch={dispatch}
+          onGoHome={goHome}
+          onGoQuote={() => { history.pushState(null, '', '/feequote'); goTo('quote'); setPage('quote'); }}
+          onNavigate={handleNavigate}
+        />
+      );
+    }
     return (
-      <FeeAnalysis
-        state={state}
-        dispatch={dispatch}
-        onGoHome={() => { goTo('landing'); setPage('landing'); }}
-        onGoQuote={() => goTo('quote')}
+      <FeeAnalysisComingSoon
+        onGoHome={goHome}
         onNavigate={handleNavigate}
       />
     );
@@ -298,8 +349,8 @@ export default function App() {
       {page === 'contact' && <Contact />}
       {navPage === 'landing' && (
         <Landing
-          onStartQuote={() => { goTo('quote'); setPage('quote'); }}
-          onStartAnalysis={() => { goTo('analysis'); setPage('analysis'); }}
+          onStartQuote={() => { history.pushState(null, '', '/feequote'); goTo('quote'); setPage('quote'); }}
+          onStartAnalysis={() => { history.pushState(null, '', '/feeanalysis'); goTo('analysis'); setPage('analysis'); }}
           onNavigate={handleNavigate}
         />
       )}
