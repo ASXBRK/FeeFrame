@@ -177,6 +177,26 @@ export default function Step4Adjustments({ quote, dispatch, onNext, onBack }) {
 
       </div>
 
+      {/* Running total bar */}
+      <div className="mt-5 bg-white rounded-card border border-light-border px-5 py-3.5 flex items-center gap-6 flex-wrap">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-mid">SOA fee</span>
+          <span className="text-sm font-bold text-dark">{formatCurrency(calc.soaTotalInclGst)}</span>
+          <span className="text-xs text-mid">incl GST</span>
+        </div>
+        {hasOngoing && (
+          <>
+            <div className="text-light-border text-xs">|</div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-mid">Ongoing fee</span>
+              <span className="text-sm font-bold text-dark">{formatCurrency(calc.totalOngoingInclGst)}</span>
+              <span className="text-xs text-mid">incl GST /yr</span>
+            </div>
+          </>
+        )}
+        <div className="ml-auto text-xs text-mid">Client incentives and commission offsets shown in Fee Summary.</div>
+      </div>
+
     </div>
   );
 }
