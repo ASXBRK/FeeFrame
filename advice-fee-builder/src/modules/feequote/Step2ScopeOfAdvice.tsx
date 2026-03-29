@@ -524,14 +524,14 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
       <div className="mt-5 bg-white rounded-card border border-light-border px-5 py-3.5 flex items-center gap-6 flex-wrap">
         <div className="flex items-center gap-2">
           <span className="text-xs text-mid">SOA Prep Fee</span>
-          <span className="text-sm font-bold text-dark">{formatCurrency(calc.soaTotalInclGst)}</span>
-          <span className="text-xs text-mid">incl GST</span>
+          <span className="text-sm font-bold text-dark">{formatCurrency(calc.baseFee)}</span>
+          <span className="text-xs text-mid">ex GST</span>
         </div>
         <div className="text-light-border text-xs">|</div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-mid">Implementation</span>
           <span className="text-sm font-bold text-dark">{formatCurrency(calc.implTotal)}</span>
-          <span className="text-xs text-mid">incl GST</span>
+          <span className="text-xs text-mid">ex GST</span>
         </div>
         <div className="ml-auto text-xs text-mid">Premiums, discounts, and profit margin are applied in later steps.</div>
       </div>
