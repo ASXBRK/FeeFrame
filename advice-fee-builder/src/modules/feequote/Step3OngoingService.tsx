@@ -313,6 +313,28 @@ function FixedFeeModel({ quote, dispatch, calc }) {
           </table>
         </div>
       </div>
+
+      {/* Running total bar */}
+      <div className="mt-5 bg-white rounded-card border border-light-border px-5 py-3.5 flex items-center gap-6 flex-wrap">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-mid">Review meetings</span>
+          <span className="text-sm font-bold text-dark">{formatCurrency(calc.costPerReview * calc.reviewMeetings)}</span>
+          <span className="text-xs text-mid">ex GST</span>
+        </div>
+        <div className="text-light-border text-xs">|</div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-mid">Annual tasks</span>
+          <span className="text-sm font-bold text-dark">{formatCurrency(calc.totalAnnualTaskFee)}</span>
+          <span className="text-xs text-mid">ex GST</span>
+        </div>
+        <div className="text-light-border text-xs">|</div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-mid">Total at cost</span>
+          <span className="text-sm font-bold text-dark">{formatCurrency(calc.fixedOngoingFee)}</span>
+          <span className="text-xs text-mid">ex GST</span>
+        </div>
+        <div className="ml-auto text-xs text-mid">Profit margin and GST applied in Step 5.</div>
+      </div>
     </>
   );
 }
