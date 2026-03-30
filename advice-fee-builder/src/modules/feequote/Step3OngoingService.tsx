@@ -510,12 +510,9 @@ function PercentageModel({ quote, dispatch, calc, set }) {
       </div>
     </div>
 
-    {/* Service Delivery */}
-    <div className="bg-white rounded-card border border-light-border p-5 space-y-4">
-      <h3 className="text-base font-bold font-heading text-dark">Service Delivery</h3>
-      <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800">
-        These hours estimate the cost of delivering your ongoing service. They don't change the fee charged — they help you understand whether your FUM-based fee covers the actual work involved.
-      </div>
+    {/* Review meetings — standalone card matching Fixed Fee model */}
+    <div className="bg-white rounded-card border border-light-border p-5">
+      <h3 className="text-base font-bold font-heading text-dark mb-4">Review Meetings</h3>
       <div className="flex items-center gap-4">
         <div className="flex-1">
           <div className="text-sm font-medium text-dark">Review meetings per year</div>
@@ -534,6 +531,14 @@ function PercentageModel({ quote, dispatch, calc, set }) {
           />
           <span className="text-xs text-mid">per year (max 12)</span>
         </div>
+      </div>
+    </div>
+
+    {/* Service Delivery */}
+    <div className="bg-white rounded-card border border-light-border p-5 space-y-4">
+      <h3 className="text-base font-bold font-heading text-dark">Service Delivery</h3>
+      <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800">
+        These hours estimate the cost of delivering your ongoing service. They don't change the fee charged — they help you understand whether your FUM-based fee covers the actual work involved.
       </div>
       <OngoingTaskTables quote={quote} dispatch={dispatch} calc={calc} />
     </div>
