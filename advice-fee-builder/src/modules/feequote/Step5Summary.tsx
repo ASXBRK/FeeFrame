@@ -953,30 +953,107 @@ function Tab2Breakdown({ calc, quote }) {
                     <td className="py-2 text-right font-medium text-dark">{formatCurrency(t.fee)}</td>
                   </tr>
                 ))}
-                {quote.ongoingModel === 'percentageBased' && (
-                  <>
-                    <tr>
-                      <td className="py-2 text-mid" colSpan={5}>Service delivery cost</td>
-                      <td className="py-2 text-right font-medium text-mid">{formatCurrency(calc.ongoingTrueCost)}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2 text-mid" colSpan={5}>FUM-based fee ({formatCurrency(Number(quote.fum) || 0)} FUM, {(calc.effectiveFumRate * 100).toFixed(2)}%)</td>
-                      <td className="py-2 text-right font-medium text-dark">{formatCurrency(calc.variableFee)}</td>
-                    </tr>
-                  </>
-                )}
-                {quote.ongoingModel === 'subscription' && (
-                  <>
-                    <tr>
-                      <td className="py-2 text-mid" colSpan={5}>Service delivery cost</td>
-                      <td className="py-2 text-right font-medium text-mid">{formatCurrency(calc.ongoingTrueCost)}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2 text-mid" colSpan={5}>Subscription ({formatCurrency(Number(quote.monthlySubscription) || 0)}/month × 12)</td>
-                      <td className="py-2 text-right font-medium text-dark">{formatCurrency(calc.subscriptionAnnual)}</td>
-                    </tr>
-                  </>
-                )}
+                {quote.ongoingModel === 'percentageBased' && (() => {
+                  const totalHrs = calc.totalOngoingHours;
+                  const deliveryCost = calc.ongoingTrueCost;
+                  const feeExGst = calc.variableFee;
+                  const surplus = feeExGst - deliveryCost;
+                  const impliedRate = totalHrs > 0 ? feeExGst / totalHrs : 0;
+                  const costPerHr = totalHrs > 0 ? deliveryCost / totalHrs : 0;
+                  const surplusPct = feeExGst > 0 ? Math.round((surplus / feeExGst) * 100) : 0;
+                  return (
+                    <>
+                      <tr className="border-t-2 border-light-border bg-light-surface">
+                        <td className="py-2 px-0 font-semibold text-dark" colSpan={4}>Total service delivery hours</td>
+                        <td className="py-2 text-right font-bold text-dark">{formatHours(totalHrs)}</td>
+                        <td className="py-2 text-right text-mid text-xs">p.a.</td>
+                      </tr>
+                      <tr className="bg-light-surface">
+                        <td className="py-1 text-xs text-mid" colSpan={6}>
+                          Reviews: {formatHours(calc.totalReviewHours * calc.reviewMeetings)} ({calc.reviewMeetings} × {formatHours(calc.totalReviewHours)}) · Annual tasks: {formatHours(calc.annualTaskItems.reduce((s,t) => s + t.totalHours, 0))}
+                        </td>
+                      </tr>
+
+                      {/* Hourly analysis */}
+                      <tr className="border-t border-light-border">
+                        <td className="pt-3 pb-1 text-xs font-semibold text-mid uppercase tracking-wide" colSpan={6}>Hourly Analysis</td>
+                      </tr>
+                      <tr>
+                        <td className="py-1.5 text-dark" colSpan={4}>Service delivery cost</td>
+                        <td className="py-1.5 text-right font-medium text-dark">{formatCurrency(deliveryCost)}</td>
+                        <td className="py-1.5 text-right text-xs text-mid">{totalHrs > 0 ? `${formatCurrency(costPerHr)}/hr` : '—'}</td>
+                      </tr>
+                      <tr>
+                        <td className="py-1.5 text-dark" colSpan={4}>
+                          FUM-based fee — {formatCurrency(Number(quote.fum) || 0)} FUM at {(calc.effectiveFumRate * 100).toFixed(2)}%
+                          {calc.variableFeeRaw < (Number(quote.minimumAnnualFee) || 0) && (
+                            <span className="ml-2 text-xs text-amber-600">(minimum applied)</span>
+                          )}
+                        </td>
+                        <td className="py-1.5 text-right font-medium text-dark">{formatCurrency(feeExGst)}</td>
+                        <td className="py-1.5 text-right text-xs text-mid">{totalHrs > 0 ? `${formatCurrency(impliedRate)}/hr` : '—'}</td>
+                      </tr>
+                      <tr className="border-t border-light-border">
+                        <td className="py-1.5 font-semibold text-dark" colSpan={4}>Surplus / (Deficit)</td>
+                        <td className={`py-1.5 text-right font-bold ${surplus >= 0 ? 'text-healthy-text' : 'text-risk-text'}`}>{surplus >= 0 ? '+' : ''}{formatCurrency(surplus)}</td>
+                        <td className={`py-1.5 text-right text-xs font-medium ${surplus >= 0 ? 'text-healthy-text' : 'text-risk-text'}`}>{surplusPct}%</td>
+                      </tr>
+                    </>
+                  );
+                })()}
+                {quote.ongoingModel === 'subscription' && (() => {
+                  const totalHrs = calc.totalOngoingHours;
+                  const deliveryCost = calc.ongoingTrueCost;
+                  const feeExGst = calc.subscriptionAnnual;
+                  const surplus = feeExGst - deliveryCost;
+                  const impliedRate = totalHrs > 0 ? feeExGst / totalHrs : 0;
+                  const costPerHr = totalHrs > 0 ? deliveryCost / totalHrs : 0;
+                  const surplusPct = feeExGst > 0 ? Math.round((surplus / feeExGst) * 100) : 0;
+                  const monthlyFee = Number(quote.monthlySubscription) || 0;
+                  const monthlyCost = deliveryCost / 12;
+                  return (
+                    <>
+                      <tr className="border-t-2 border-light-border bg-light-surface">
+                        <td className="py-2 px-0 font-semibold text-dark" colSpan={4}>Total service delivery hours</td>
+                        <td className="py-2 text-right font-bold text-dark">{formatHours(totalHrs)}</td>
+                        <td className="py-2 text-right text-mid text-xs">p.a.</td>
+                      </tr>
+                      <tr className="bg-light-surface">
+                        <td className="py-1 text-xs text-mid" colSpan={6}>
+                          Reviews: {formatHours(calc.totalReviewHours * calc.reviewMeetings)} ({calc.reviewMeetings} × {formatHours(calc.totalReviewHours)}) · Annual tasks: {formatHours(calc.annualTaskItems.reduce((s,t) => s + t.totalHours, 0))}
+                        </td>
+                      </tr>
+
+                      {/* Hourly analysis */}
+                      <tr className="border-t border-light-border">
+                        <td className="pt-3 pb-1 text-xs font-semibold text-mid uppercase tracking-wide" colSpan={6}>Hourly Analysis</td>
+                      </tr>
+                      <tr>
+                        <td className="py-1.5 text-dark" colSpan={4}>Service delivery cost</td>
+                        <td className="py-1.5 text-right font-medium text-dark">{formatCurrency(deliveryCost)}</td>
+                        <td className="py-1.5 text-right text-xs text-mid">{formatCurrency(monthlyCost)}/mth</td>
+                      </tr>
+                      <tr>
+                        <td className="py-1.5 text-dark" colSpan={4}>Subscription fee ({formatCurrency(monthlyFee)}/month × 12)</td>
+                        <td className="py-1.5 text-right font-medium text-dark">{formatCurrency(feeExGst)}</td>
+                        <td className="py-1.5 text-right text-xs text-mid">{formatCurrency(monthlyFee)}/mth</td>
+                      </tr>
+                      <tr>
+                        <td className="py-1.5 text-mid" colSpan={4}>Cost per hour</td>
+                        <td className="py-1.5 text-right text-mid" colSpan={2}>{totalHrs > 0 ? `${formatCurrency(costPerHr)}/hr` : '—'}</td>
+                      </tr>
+                      <tr>
+                        <td className="py-1.5 text-mid" colSpan={4}>Implied hourly rate (fee ÷ hours)</td>
+                        <td className="py-1.5 text-right text-mid" colSpan={2}>{totalHrs > 0 ? `${formatCurrency(impliedRate)}/hr` : '—'}</td>
+                      </tr>
+                      <tr className="border-t border-light-border">
+                        <td className="py-1.5 font-semibold text-dark" colSpan={4}>Surplus / (Deficit)</td>
+                        <td className={`py-1.5 text-right font-bold ${surplus >= 0 ? 'text-healthy-text' : 'text-risk-text'}`}>{surplus >= 0 ? '+' : ''}{formatCurrency(surplus)}</td>
+                        <td className={`py-1.5 text-right text-xs font-medium ${surplus >= 0 ? 'text-healthy-text' : 'text-risk-text'}`}>{surplusPct}%</td>
+                      </tr>
+                    </>
+                  );
+                })()}
                 {calc.ongoingPremium > 0 && (
                   <tr>
                     <td className="py-2 text-warning-text" colSpan={5}>
