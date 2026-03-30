@@ -516,6 +516,25 @@ function PercentageModel({ quote, dispatch, calc, set }) {
       <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800">
         These hours estimate the cost of delivering your ongoing service. They don't change the fee charged — they help you understand whether your FUM-based fee covers the actual work involved.
       </div>
+      <div className="flex items-center gap-4">
+        <div className="flex-1">
+          <div className="text-sm font-medium text-dark">Review meetings per year</div>
+          <div className="text-xs text-mid mt-0.5">
+            Cost per review: {formatCurrency(calc.costPerReview)} · Total: {formatCurrency(calc.costPerReview * (Number(quote.reviewMeetings) || 0))}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <NumInput
+            value={quote.reviewMeetings}
+            onChange={v => set('reviewMeetings', Math.max(0, Math.min(12, Math.round(v))))}
+            integer
+            min={0}
+            max={12}
+            className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
+          />
+          <span className="text-xs text-mid">per year (max 12)</span>
+        </div>
+      </div>
       <OngoingTaskTables quote={quote} dispatch={dispatch} calc={calc} />
     </div>
     </>
