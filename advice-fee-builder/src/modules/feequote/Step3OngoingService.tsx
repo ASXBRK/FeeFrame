@@ -81,7 +81,7 @@ export default function Step3OngoingService({ quote, dispatch, onNext, onBack })
 
             {/* Subscription model */}
             {quote.ongoingModel === 'subscription' && (
-              <SubscriptionModel quote={quote} set={set} calc={calc} />
+              <SubscriptionModel quote={quote} dispatch={dispatch} set={set} calc={calc} />
             )}
 
             {/* Ongoing insurance commission offset */}
@@ -156,9 +156,8 @@ export default function Step3OngoingService({ quote, dispatch, onNext, onBack })
   );
 }
 
-// ── Fixed Fee model ───────────────────────────────────────────────────────────
-function FixedFeeModel({ quote, dispatch, calc }) {
-  const set = (field, value) => dispatch({ type: 'SET_QUOTE_FIELD', field, value });
+// ── Shared: task tables (review + annual) ─────────────────────────────────────
+function OngoingTaskTables({ quote, dispatch, calc }) {
   const [expandedReview, setExpandedReview] = useState<string | null>(null);
   const [expandedAnnual, setExpandedAnnual] = useState<string | null>(null);
 
@@ -180,30 +179,6 @@ function FixedFeeModel({ quote, dispatch, calc }) {
 
   return (
     <>
-      {/* Review meetings count */}
-      <div className="bg-white rounded-card border border-light-border p-5">
-        <h3 className="text-base font-bold font-heading text-dark mb-4">Review Meetings</h3>
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
-            <div className="text-sm font-medium text-dark">Review meetings per year</div>
-            <div className="text-xs text-mid mt-0.5">
-              Cost per review: {formatCurrency(calc.costPerReview)} · Total: {formatCurrency(calc.costPerReview * (Number(quote.reviewMeetings) || 0))}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <NumInput
-              value={quote.reviewMeetings}
-              onChange={v => set('reviewMeetings', Math.max(0, Math.min(12, Math.round(v))))}
-              integer
-              min={0}
-              max={12}
-              className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
-            />
-            <span className="text-xs text-mid">per year (max 12)</span>
-          </div>
-        </div>
-      </div>
-
       {/* Per-review task breakdown */}
       <div className="bg-white rounded-card border border-light-border overflow-hidden">
         <div className="px-5 py-4 border-b border-light-border">
@@ -268,10 +243,10 @@ function FixedFeeModel({ quote, dispatch, calc }) {
               </tr>
               <tr className="bg-light-surface">
                 <td className="py-2 px-5 text-xs text-mid" colSpan={4}>
-                  {Number(quote.reviewMeetings) || 0} meetings × {formatCurrency(calc.costPerReview)}
+                  {calc.reviewMeetings} meeting{calc.reviewMeetings !== 1 ? 's' : ''} × {formatCurrency(calc.costPerReview)}
                 </td>
                 <td className="py-2 px-5 text-right text-sm font-semibold text-teal">
-                  {formatCurrency((Number(quote.reviewMeetings) || 0) * calc.costPerReview)}
+                  {formatCurrency(calc.reviewMeetings * calc.costPerReview)}
                 </td>
                 <td></td>
               </tr>
@@ -350,6 +325,41 @@ function FixedFeeModel({ quote, dispatch, calc }) {
   );
 }
 
+// ── Fixed Fee model ───────────────────────────────────────────────────────────
+function FixedFeeModel({ quote, dispatch, calc }) {
+  const set = (field, value) => dispatch({ type: 'SET_QUOTE_FIELD', field, value });
+
+  return (
+    <>
+      {/* Review meetings count */}
+      <div className="bg-white rounded-card border border-light-border p-5">
+        <h3 className="text-base font-bold font-heading text-dark mb-4">Review Meetings</h3>
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <div className="text-sm font-medium text-dark">Review meetings per year</div>
+            <div className="text-xs text-mid mt-0.5">
+              Cost per review: {formatCurrency(calc.costPerReview)} · Total: {formatCurrency(calc.costPerReview * (Number(quote.reviewMeetings) || 0))}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <NumInput
+              value={quote.reviewMeetings}
+              onChange={v => set('reviewMeetings', Math.max(0, Math.min(12, Math.round(v))))}
+              integer
+              min={0}
+              max={12}
+              className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
+            />
+            <span className="text-xs text-mid">per year (max 12)</span>
+          </div>
+        </div>
+      </div>
+
+      <OngoingTaskTables quote={quote} dispatch={dispatch} calc={calc} />
+    </>
+  );
+}
+
 // ── Percentage Based model ─────────────────────────────────────────────────────
 function PercentageModel({ quote, dispatch, calc, set }) {
   const fum = Number(quote.fum) || 0;
@@ -357,6 +367,7 @@ function PercentageModel({ quote, dispatch, calc, set }) {
   const hasPlatformFee = (Number(quote.platformFeeRate) || 0) > 0;
 
   return (
+    <>
     <div className="bg-white rounded-card border border-light-border p-5 space-y-5">
       <h3 className="text-base font-bold font-heading text-dark">Percentage Based (FUM)</h3>
 
@@ -498,12 +509,23 @@ function PercentageModel({ quote, dispatch, calc, set }) {
         )}
       </div>
     </div>
+
+    {/* Service Delivery */}
+    <div className="bg-white rounded-card border border-light-border p-5 space-y-4">
+      <h3 className="text-base font-bold font-heading text-dark">Service Delivery</h3>
+      <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800">
+        These hours estimate the cost of delivering your ongoing service. They don't change the fee charged — they help you understand whether your FUM-based fee covers the actual work involved.
+      </div>
+      <OngoingTaskTables quote={quote} dispatch={dispatch} calc={calc} />
+    </div>
+    </>
   );
 }
 
 // ── Subscription model ─────────────────────────────────────────────────────────
-function SubscriptionModel({ quote, set, calc }) {
+function SubscriptionModel({ quote, dispatch, set, calc }) {
   return (
+    <>
     <div className="bg-white rounded-card border border-light-border p-5 space-y-5">
       <h3 className="text-base font-bold font-heading text-dark">Subscription</h3>
 
@@ -559,6 +581,16 @@ function SubscriptionModel({ quote, set, calc }) {
         </div>
       </div>
     </div>
+
+    {/* Service Delivery */}
+    <div className="bg-white rounded-card border border-light-border p-5 space-y-4">
+      <h3 className="text-base font-bold font-heading text-dark">Service Delivery</h3>
+      <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800">
+        These hours estimate the cost of delivering your included review meetings and annual tasks. They don't change your subscription fee — they help you understand whether the subscription covers the actual work involved.
+      </div>
+      <OngoingTaskTables quote={quote} dispatch={dispatch} calc={calc} />
+    </div>
+    </>
   );
 }
 

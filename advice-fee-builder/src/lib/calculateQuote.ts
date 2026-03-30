@@ -201,7 +201,10 @@ export function calculateQuote(state: any) {
   const costPerReview = reviewTaskItems.reduce((s, t) => s + t.fee, 0);
   const totalReviewHours = reviewTaskItems.reduce((s, t) => s + t.totalHours, 0);
   const totalAnnualTaskFee = annualTaskItems.reduce((s, t) => s + t.fee, 0);
-  const reviewMeetings = Number(state.reviewMeetings) || 0;
+  const effectiveReviewMeetings = state.ongoingModel === 'subscription'
+    ? (Number(state.includedReviews) || 0)
+    : (Number(state.reviewMeetings) || 0);
+  const reviewMeetings = effectiveReviewMeetings; // backwards-compat alias
   const reviewMeetingFee = costPerReview * reviewMeetings;
   const fixedOngoingFee = reviewMeetingFee + totalAnnualTaskFee;
 
@@ -657,6 +660,7 @@ export function calculateQuote(state: any) {
     costPerReview,
     totalReviewHours,
     totalOngoingHours,
+    effectiveReviewMeetings,
     reviewMeetings,
     fixedOngoingFee,
     totalAnnualTaskFee,

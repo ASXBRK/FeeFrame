@@ -80,7 +80,7 @@ export default function Step5Summary({ quote, dispatch, onReset, onNavigate, onG
         {tab === 0 && <Tab1Summary calc={calc} quote={quote} dispatch={dispatch} />}
       </div>
       {tab === 1 && <Tab2Breakdown calc={calc} quote={quote} />}
-      {tab === 2 && <Tab3Profitability calc={calc} quote={quote} onNavigate={onNavigate} onGoAnalysis={onGoAnalysis} />}
+      {tab === 2 && <Tab3Profitability calc={calc} quote={quote} />}
       {tab === 3 && (
         <Tab4ClientOutput
           calc={calc}
@@ -954,16 +954,28 @@ function Tab2Breakdown({ calc, quote }) {
                   </tr>
                 ))}
                 {quote.ongoingModel === 'percentageBased' && (
-                  <tr>
-                    <td className="py-2 text-mid" colSpan={5}>FUM-based fee ({formatCurrency(quote.fum)} FUM)</td>
-                    <td className="py-2 text-right font-medium text-dark">{formatCurrency(calc.variableFee)}</td>
-                  </tr>
+                  <>
+                    <tr>
+                      <td className="py-2 text-mid" colSpan={5}>Service delivery cost</td>
+                      <td className="py-2 text-right font-medium text-mid">{formatCurrency(calc.ongoingTrueCost)}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 text-mid" colSpan={5}>FUM-based fee ({formatCurrency(Number(quote.fum) || 0)} FUM, {(calc.effectiveFumRate * 100).toFixed(2)}%)</td>
+                      <td className="py-2 text-right font-medium text-dark">{formatCurrency(calc.variableFee)}</td>
+                    </tr>
+                  </>
                 )}
                 {quote.ongoingModel === 'subscription' && (
-                  <tr>
-                    <td className="py-2 text-mid" colSpan={5}>Subscription ({formatCurrency(quote.monthlySubscription)}/month × 12)</td>
-                    <td className="py-2 text-right font-medium text-dark">{formatCurrency(calc.subscriptionAnnual)}</td>
-                  </tr>
+                  <>
+                    <tr>
+                      <td className="py-2 text-mid" colSpan={5}>Service delivery cost</td>
+                      <td className="py-2 text-right font-medium text-mid">{formatCurrency(calc.ongoingTrueCost)}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 text-mid" colSpan={5}>Subscription ({formatCurrency(Number(quote.monthlySubscription) || 0)}/month × 12)</td>
+                      <td className="py-2 text-right font-medium text-dark">{formatCurrency(calc.subscriptionAnnual)}</td>
+                    </tr>
+                  </>
                 )}
                 {calc.ongoingPremium > 0 && (
                   <tr>
@@ -1078,11 +1090,11 @@ function StackedBar({ segments, segmentInsights }: {
   );
 }
 
-function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
+function Tab3Profitability({ calc, quote }) {
   const isFixedOngoing = calc.hasOngoing && quote.ongoingModel === 'fixedOnly';
   const isPercentageOngoing = calc.hasOngoing && quote.ongoingModel === 'percentageBased';
   const isSubscriptionOngoing = calc.hasOngoing && quote.ongoingModel === 'subscription';
-  const hasOngoingCostData = isFixedOngoing;
+  const hasOngoingCostData = calc.hasOngoing;
   const [insightsOpen, setInsightsOpen] = useState(false);
 
   const soaDirectCost = calc.soaAdviserCost + calc.soaParaplannerCost + calc.soaAdminCost;
@@ -1229,6 +1241,47 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
     insights.push({ severity: 'amber', message: `You've included ${calc.reviewMeetings} review meetings per year. The industry average is 2 meetings annually (Adviser Ratings 2025). Ensure this frequency is valued by the client.` });
   }
 
+  // Percentage model insights
+  if (isPercentageOngoing && calc.hasOngoing && calc.ongoingTrueCost > 0) {
+    const fumFee = calc.totalOngoingRounded;
+    const deliveryCost = calc.ongoingTrueCost;
+    if (fumFee < deliveryCost) {
+      insights.push({ severity: 'red', message: `Your FUM-based fee of ${formatCurrency(fumFee)} p.a. is below your estimated service delivery cost of ${formatCurrency(deliveryCost)} p.a. This arrangement runs at a loss.` });
+    } else if (fumFee < deliveryCost * 1.1) {
+      insights.push({ severity: 'amber', message: `Your FUM-based fee of ${formatCurrency(fumFee)} p.a. barely covers your estimated delivery cost of ${formatCurrency(deliveryCost)} p.a. Consider whether your fee tiers are set appropriately.` });
+    } else {
+      const surplusPct = Math.round(((fumFee - deliveryCost) / fumFee) * 100);
+      if (surplusPct >= 40) {
+        insights.push({ severity: 'green', message: `Your FUM-based fee generates a ${surplusPct}% margin above your estimated service delivery cost. This is a strong ongoing margin.` });
+      }
+    }
+    if (calc.variableFeeRaw < (Number(quote.minimumAnnualFee) || 0)) {
+      insights.push({ severity: 'amber', message: `The minimum fee of ${formatCurrency(Number(quote.minimumAnnualFee) || 0)} is being applied — the FUM-calculated fee of ${formatCurrency(calc.variableFeeRaw)} would otherwise be lower.` });
+    }
+    if (calc.effectiveFumRate > 0 && (calc.effectiveFumRate * 100) > 1.5) {
+      insights.push({ severity: 'amber', message: `Your effective rate of ${(calc.effectiveFumRate * 100).toFixed(2)}% is above the common industry ceiling of 1.5%. Ensure the client is aware of the total annual cost relative to their portfolio.` });
+    }
+  }
+
+  // Subscription model insights
+  if (isSubscriptionOngoing && calc.hasOngoing && calc.ongoingTrueCost > 0) {
+    const subFee = calc.totalOngoingRounded;
+    const deliveryCost = calc.ongoingTrueCost;
+    const monthlyCost = deliveryCost / 12;
+    const monthlyFee = Number(quote.monthlySubscription) || 0;
+    if (subFee < deliveryCost) {
+      insights.push({ severity: 'red', message: `Your subscription of ${formatCurrency(monthlyFee)}/month generates ${formatCurrency(subFee)} p.a., which is below your estimated service delivery cost of ${formatCurrency(deliveryCost)} p.a.` });
+    } else if (subFee >= deliveryCost) {
+      const surplusPct = Math.round(((subFee - deliveryCost) / subFee) * 100);
+      if (surplusPct >= 40) {
+        insights.push({ severity: 'green', message: `Your subscription generates a ${surplusPct}% margin above estimated delivery cost. Monthly delivery cost is ${formatCurrency(monthlyCost)}/month against ${formatCurrency(monthlyFee)}/month charged.` });
+      }
+    }
+    if (calc.reviewMeetings >= 4 && monthlyFee > 0) {
+      insights.push({ severity: 'amber', message: `${calc.reviewMeetings} review meetings are included in your subscription. Each review costs approximately ${formatCurrency(calc.costPerReview)} — ensure the subscription fee accounts for this.` });
+    }
+  }
+
   // Green
   if (calc.adjustedFeeRounded >= 2500 && calc.adjustedFeeRounded <= 4400) {
     insights.push({ severity: 'green', message: `Your SOA fee of ${formatCurrency(calc.adjustedFeeRounded)} (excl GST) falls within the industry average range of $2,500–$4,400 for initial advice (Investment Trends 2024).` });
@@ -1253,20 +1306,6 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
   const redCount = insights.filter(i => i.severity === 'red').length;
   const amberCount = insights.filter(i => i.severity === 'amber').length;
   const greenCount = insights.filter(i => i.severity === 'green').length;
-
-  const showCtaCard = isPercentageOngoing || isSubscriptionOngoing;
-
-  function handleGoToFeeAnalysis() {
-    if (onGoAnalysis) {
-      onGoAnalysis({
-        soaFeeExGst: calc.adjustedFeeRounded,
-        implFeeExGst: calc.implTotal > 0 ? calc.implTotal / 1.1 : 0,
-        ongoingFeeExGst: calc.totalOngoingRounded,
-      });
-    } else {
-      onNavigate('feeanalysis');
-    }
-  }
 
   return (
     <div className="space-y-5">
@@ -1377,11 +1416,7 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
           <div className={`text-2xl font-bold ${firstYearMargin > 0 ? 'text-green-600' : firstYearMargin < 0 ? 'text-red-600' : 'text-gray-400'}`}>
             {formatCurrency(firstYearMargin)}
           </div>
-          {(isPercentageOngoing || isSubscriptionOngoing) ? (
-            <div className="text-sm text-gray-400 mt-1">SOA margin only (ex GST) — ongoing cost data not available</div>
-          ) : (
-            <div className="text-sm text-gray-400 mt-1">Combined first year margin (ex GST{soaCommission + ongoingCommission > 0 ? ', incl commission' : ''})</div>
-          )}
+          <div className="text-sm text-gray-400 mt-1">Combined first year margin (ex GST{soaCommission + ongoingCommission > 0 ? ', incl commission' : ''})</div>
         </div>
       </div>
 
@@ -1407,8 +1442,8 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
           )}
         </div>
 
-        {/* Fixed ongoing cost breakdown */}
-        {isFixedOngoing && calc.totalOngoingHours > 0 && (
+        {/* Ongoing cost breakdown — all models */}
+        {calc.hasOngoing && calc.totalOngoingHours > 0 && (
           <div>
             <div className="text-sm font-medium text-dark mb-2">Ongoing (annual)</div>
             <StackedBar
@@ -1425,29 +1460,6 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
             {ongoingBarMargin < 0 && (
               <p className="text-sm text-red-600 font-medium mt-1">Loss: {formatCurrency(ongoingBarMargin)}</p>
             )}
-          </div>
-        )}
-
-        {/* Percentage-based ongoing — no cost breakdown */}
-        {isPercentageOngoing && (
-          <div className="border-t border-light-border pt-4">
-            <div className="text-sm font-medium text-dark mb-2">Ongoing (percentage-based)</div>
-            <div className="text-sm text-mid">
-              <span className="text-dark font-medium">Percentage-based fee: {formatCurrency(calc.totalOngoingRounded)} p.a.</span>
-              {' '}Based on {formatCurrency(Number(quote.fum) || 0)} FUM across {(quote.tiers || []).length} tier{(quote.tiers || []).length !== 1 ? 's' : ''}.
-              {' '}Effective rate: {(calc.effectiveFumRate * 100).toFixed(2)}%
-            </div>
-          </div>
-        )}
-
-        {/* Subscription ongoing — no cost breakdown */}
-        {isSubscriptionOngoing && (
-          <div className="border-t border-light-border pt-4">
-            <div className="text-sm font-medium text-dark mb-2">Ongoing (subscription)</div>
-            <div className="text-sm text-mid">
-              <span className="text-dark font-medium">Subscription fee: {formatCurrency(calc.totalOngoingRounded)} p.a.</span>
-              {' '}({formatCurrency(Number(quote.monthlySubscription) || 0)}/month). Includes {quote.reviewMeetings || 0} review meeting{(quote.reviewMeetings || 0) !== 1 ? 's' : ''} per year.
-            </div>
           </div>
         )}
       </div>
@@ -1523,25 +1535,6 @@ function Tab3Profitability({ calc, quote, onNavigate, onGoAnalysis }) {
               ))}
             </div>
           )}
-        </div>
-      )}
-
-      {/* FeeAnalysis CTA — percentage/subscription models only */}
-      {showCtaCard && (
-        <div className="bg-white border border-gray-200 border-l-4 border-l-teal-500 rounded-xl p-6 mt-6">
-          <img src={feeanalysisLogo} alt="FeeAnalysis" className="h-8 mb-4" />
-          <h4 className="text-sm font-semibold text-gray-900 mb-1">
-            Want to know if this arrangement is profitable?
-          </h4>
-          <p className="text-sm text-gray-500 mb-4">
-            FeeAnalysis lets you input your actual time data against fee arrangements to check your real margins. Your quote data will be pre-filled.
-          </p>
-          <button
-            onClick={handleGoToFeeAnalysis}
-            className="bg-teal hover:opacity-90 text-white font-medium py-2 px-5 rounded-lg transition-opacity text-sm"
-          >
-            Analyse in FeeAnalysis →
-          </button>
         </div>
       )}
 
