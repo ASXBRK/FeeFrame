@@ -55,7 +55,7 @@ export default function Step5Summary({ quote, dispatch, onReset, onNavigate, onG
           </label>
         </div>
         <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mt-3">
-          Your firm's target profit margin. The average Australian advice practice operates at 21% (Adviser Ratings 2024). Top-performing practices achieve 47% (Iress Advisely Index 2024).
+          Your firm's target profit margin — the percentage of the fee that represents profit on direct costs. The average Australian advice practice operates at 21% (Adviser Ratings 2024). Top-performing practices achieve 47% (Iress Advisely Index 2024). If practice overheads are entered, your true margin after overheads will be shown separately in the profitability tab.
         </div>
       </div>
 
@@ -1193,6 +1193,21 @@ function Tab3Profitability({ calc, quote }) {
   const soaBarMargin = calc.soaTotalInclGst / 1.1 - calc.soaTrueCost;
   const ongoingBarMargin = calc.totalOngoingRounded - calc.ongoingTrueCost;
 
+  // ── Dual margin: direct costs vs after overheads ──────────────────────────────
+  const soaDirectCostFull = calc.soaAdviserCost + calc.soaParaplannerCost + calc.soaAdminCost + calc.soaExternalFee;
+  const soaDirectProfit = calc.adjustedFeeRounded - soaDirectCostFull;
+  const directMarginPct = calc.adjustedFeeRounded > 0
+    ? Math.round((soaDirectProfit / calc.adjustedFeeRounded) * 100) : 0;
+  const trueMarginPct = calc.adjustedFeeRounded > 0
+    ? Math.round((soaTrueProfit / calc.adjustedFeeRounded) * 100) : 0;
+
+  const ongoingDirectCost = calc.ongoingAdviserCost + calc.ongoingParaplannerCost + calc.ongoingAdminCost;
+  const ongoingDirectProfit = calc.totalOngoingRounded - ongoingDirectCost;
+  const ongoingDirectMarginPct = calc.totalOngoingRounded > 0
+    ? Math.round((ongoingDirectProfit / calc.totalOngoingRounded) * 100) : 0;
+  const ongoingTrueMarginPct = calc.totalOngoingRounded > 0
+    ? Math.round((ongoingTrueProfit / calc.totalOngoingRounded) * 100) : 0;
+
   // ── Effective margin (used for both headline and insights) ────────────────────
   const effectiveMarginPct = calc.adjustedFeeRounded > 0
     ? Math.round(((calc.adjustedFeeRounded - calc.soaTrueCost) / calc.adjustedFeeRounded) * 100)
@@ -1442,11 +1457,19 @@ function Tab3Profitability({ calc, quote }) {
             <div className="text-xs text-indigo-600 mt-1">+ {formatCurrency(soaCommission)} commission income</div>
           )}
           <div className="text-sm text-gray-500 mt-1.5">
-            Margin:{' '}
-            <span className={soaTrueProfit > 0 ? 'font-semibold text-green-600' : soaTrueProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
-              {formatCurrency(soaTrueProfit)}
+            {calc.overheadPerClient > 0 ? 'Margin on direct costs:' : 'Margin:'}{' '}
+            <span className={soaDirectProfit > 0 ? 'font-semibold text-green-600' : soaDirectProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
+              {formatCurrency(soaDirectProfit)} ({directMarginPct}%)
             </span>
           </div>
+          {calc.overheadPerClient > 0 && (
+            <div className="text-sm text-gray-500 mt-0.5">
+              After overheads:{' '}
+              <span className={soaTrueProfit > 0 ? 'font-semibold text-green-600' : soaTrueProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
+                {formatCurrency(soaTrueProfit)} ({trueMarginPct}%)
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Card 2: Ongoing cost → fee */}
@@ -1467,11 +1490,19 @@ function Tab3Profitability({ calc, quote }) {
                 <div className="text-xs text-indigo-600 mt-1">+ {formatCurrency(ongoingCommission)} commission income</div>
               )}
               <div className="text-sm text-gray-500 mt-1.5">
-                Margin:{' '}
-                <span className={ongoingTrueProfit > 0 ? 'font-semibold text-green-600' : ongoingTrueProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
-                  {formatCurrency(ongoingTrueProfit)}
+                {calc.overheadPerClient > 0 ? 'Margin on direct costs:' : 'Margin:'}{' '}
+                <span className={ongoingDirectProfit > 0 ? 'font-semibold text-green-600' : ongoingDirectProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
+                  {formatCurrency(ongoingDirectProfit)} ({ongoingDirectMarginPct}%)
                 </span>
               </div>
+              {calc.overheadPerClient > 0 && (
+                <div className="text-sm text-gray-500 mt-0.5">
+                  After overheads:{' '}
+                  <span className={ongoingTrueProfit > 0 ? 'font-semibold text-green-600' : ongoingTrueProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
+                    {formatCurrency(ongoingTrueProfit)} ({ongoingTrueMarginPct}%)
+                  </span>
+                </div>
+              )}
             </>
           ) : (
             <>
