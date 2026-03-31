@@ -1,5 +1,5 @@
-import { STRATEGIES, ADD_ONS, CORE_TASKS, REVIEW_TASKS, ANNUAL_TASKS, PREMIUM_FACTORS, DISCOUNT_FACTORS, getPremiumRateFromFactors, getDiscountRate, formatStrategyList } from './serviceLines.js';
-import { roundToNearest100 } from './formatters.js';
+import { STRATEGIES, ADD_ONS, CORE_TASKS, REVIEW_TASKS, ANNUAL_TASKS, PREMIUM_FACTORS, DISCOUNT_FACTORS, getPremiumRateFromFactors, getDiscountRate, formatStrategyList } from './serviceLines';
+import { roundToNearest100 } from './formatters';
 
 // Full repo audit 2026-03-23 — 3 bugs found and fixed. See audit report.
 /**

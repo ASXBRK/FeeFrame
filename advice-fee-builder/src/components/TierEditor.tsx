@@ -1,4 +1,4 @@
-import { formatCurrency } from '../lib/formatters.js';
+import { formatCurrency } from '../lib/formatters';
 
 export default function TierEditor({ tiers, onChange }) {
   const addTier = () => {

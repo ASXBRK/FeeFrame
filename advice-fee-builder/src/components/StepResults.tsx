@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { calculateFees } from '../lib/calculateFees.js';
-import { formatCurrency, formatHours } from '../lib/formatters.js';
+import { calculateFees } from '../lib/calculateFees';
+import { formatCurrency, formatHours } from '../lib/formatters';
 import ImpliedRateGauge from './ImpliedRateGauge.jsx';
 import FeeComparisonBar from './FeeComparisonBar.jsx';
 import CopyButton from './CopyButton.jsx';

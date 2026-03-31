@@ -1,5 +1,5 @@
 import StrategyCard from './StrategyCard.jsx';
-import { STRATEGIES } from '../lib/strategies.js';
+import { STRATEGIES } from '../lib/strategies';
 
 function Card({ children, className = '' }) {
   return (

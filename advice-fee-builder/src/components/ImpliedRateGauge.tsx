@@ -1,4 +1,4 @@
-import { formatCurrency, formatHours } from '../lib/formatters.js';
+import { formatCurrency, formatHours } from '../lib/formatters';
 
 export default function ImpliedRateGauge({ rate, totalHours, fee, status }) {
   const colors = {

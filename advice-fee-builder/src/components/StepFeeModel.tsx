@@ -1,5 +1,5 @@
 import TierEditor from './TierEditor.jsx';
-import { formatCurrency, formatPercent } from '../lib/formatters.js';
+import { formatCurrency, formatPercent } from '../lib/formatters';
 
 const FEE_MODELS = [
   {

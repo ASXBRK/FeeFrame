@@ -1,4 +1,4 @@
-import { STRATEGIES, getEnabledStrategies, formatStrategyList } from './strategies.js';
+import { STRATEGIES, getEnabledStrategies, formatStrategyList } from './strategies';
 
 /**
  * Pure calculation function — no side effects
