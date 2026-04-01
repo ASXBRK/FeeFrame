@@ -852,6 +852,20 @@ function Tab2Breakdown({ calc, quote }) {
                 <td className="py-2 font-bold text-dark" colSpan={5}>SOA Fee (incl GST)</td>
                 <td className="py-2 text-right font-bold text-teal">{formatCurrency(calc.soaTotalInclGst)}</td>
               </tr>
+              {calc.soaDiscountPercent > 0 && (
+                <>
+                  <tr>
+                    <td className="py-2 text-healthy-text" colSpan={5}>Client incentive: SOA discount ({calc.soaDiscountPercent}%)</td>
+                    <td className="py-2 text-right font-medium text-healthy-text">-{formatCurrency(calc.soaDiscountAmount)}</td>
+                  </tr>
+                  <tr className="border-t border-light-border">
+                    <td className="py-2 font-bold text-dark" colSpan={5}>Client pays (incl GST)</td>
+                    <td className="py-2 text-right font-bold text-teal">
+                      {calc.soaDiscountPercent === 100 ? 'Waived' : formatCurrency(calc.soaIncentivisedFee)}
+                    </td>
+                  </tr>
+                </>
+              )}
             </tbody>
           </table>
         </div>
@@ -1099,6 +1113,65 @@ function Tab2Breakdown({ calc, quote }) {
           </div>
         </div>
       )}
+
+      {/* Incentives summary */}
+      {calc.hasIncentives && (
+        <div className="bg-white rounded-card border border-light-border p-5">
+          <h3 className="text-base font-bold font-heading text-dark mb-4">After Client Incentives</h3>
+          <table className="w-full text-sm">
+            <tbody className="divide-y divide-light-border">
+              {calc.soaDiscountPercent > 0 && (
+                <>
+                  <tr>
+                    <td className="py-2 text-dark">SOA Fee (standard)</td>
+                    <td className="py-2 text-right text-gray-400 line-through">{formatCurrency(calc.soaTotalInclGst)}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 text-healthy-text">SOA discount ({calc.soaDiscountPercent}%)</td>
+                    <td className="py-2 text-right text-healthy-text">-{formatCurrency(calc.soaDiscountAmount)}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 font-semibold text-dark">SOA client pays</td>
+                    <td className="py-2 text-right font-semibold text-dark">
+                      {calc.soaDiscountPercent === 100 ? 'Waived' : formatCurrency(calc.soaIncentivisedFee)}
+                    </td>
+                  </tr>
+                </>
+              )}
+              {calc.implTotal > 0 && (
+                <>
+                  <tr>
+                    <td className="py-2 text-dark">Implementation (standard)</td>
+                    <td className={`py-2 text-right ${calc.implDiscountPercent > 0 ? 'text-gray-400 line-through' : 'text-dark'}`}>
+                      {formatCurrency(calc.implGross)}
+                    </td>
+                  </tr>
+                  {calc.implDiscountPercent > 0 && (
+                    <tr>
+                      <td className="py-2 text-healthy-text">Implementation discount ({calc.implDiscountPercent}%)</td>
+                      <td className="py-2 text-right text-healthy-text">-{formatCurrency(calc.implDiscountAmount)}</td>
+                    </tr>
+                  )}
+                  <tr>
+                    <td className="py-2 font-semibold text-dark">Implementation client pays</td>
+                    <td className="py-2 text-right font-semibold text-dark">
+                      {calc.implDiscountPercent === 100 ? 'Waived' : formatCurrency(calc.implIncentivisedFee)}
+                    </td>
+                  </tr>
+                </>
+              )}
+              <tr className="border-t-2 border-light-border">
+                <td className="py-2 text-base font-bold text-dark">Total client pays</td>
+                <td className="py-2 text-right text-base font-bold text-teal">{formatCurrency(calc.totalIncentivisedInitialFees)}</td>
+              </tr>
+              <tr>
+                <td className="py-2 text-healthy-text">Total savings from incentives</td>
+                <td className="py-2 text-right font-semibold text-healthy-text">{formatCurrency(calc.totalIncentiveSaving)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
@@ -1190,7 +1263,8 @@ function Tab3Profitability({ calc, quote }) {
   const firstYearMargin = soaTrueProfit + (hasOngoingCostData ? ongoingTrueProfit : 0);
 
   // Bar margin: ex-GST margin from client fees only (bars show fee structure, not commission)
-  const soaBarMargin = calc.soaTotalInclGst / 1.1 - calc.soaTrueCost;
+  // Use incentivised fee so bar reflects what the client actually pays
+  const soaBarMargin = calc.soaIncentivisedFee / 1.1 - calc.soaTrueCost;
   const ongoingBarMargin = calc.totalOngoingRounded - calc.ongoingTrueCost;
 
   // ── Dual margin: direct costs vs after overheads ──────────────────────────────
@@ -1540,8 +1614,9 @@ function Tab3Profitability({ calc, quote }) {
               { label: calc.soaExternalFee > 0 ? 'External paraplanning' : 'Paraplanning', value: calc.soaParaplannerCost + calc.soaExternalFee, color: 'bg-violet-600', textColor: 'text-violet-600' },
               { label: 'Admin', value: calc.soaAdminCost, color: 'bg-amber-600', textColor: 'text-amber-600' },
               ...(calc.overheadPerClient > 0 ? [{ label: 'Overheads', value: calc.overheadPerClient, color: 'bg-gray-400', textColor: 'text-gray-500' }] : []),
+              ...(calc.referralFee > 0 ? [{ label: 'Referral fee', value: calc.referralFee, color: 'bg-rose-400', textColor: 'text-rose-500' }] : []),
               ...(soaBarMargin > 0 ? [{ label: 'Margin from fees', value: soaBarMargin, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
-              { label: 'GST', value: calc.soaTotalInclGst - calc.soaTotalInclGst / 1.1, color: 'bg-slate-200', textColor: 'text-slate-400' },
+              { label: 'GST', value: calc.soaIncentivisedFee - calc.soaIncentivisedFee / 1.1, color: 'bg-slate-200', textColor: 'text-slate-400' },
             ]}
             segmentInsights={soaSegmentInsights}
           />
