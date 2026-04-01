@@ -1238,7 +1238,7 @@ function Tab3Profitability({ calc, quote }) {
   if (soaTrueProfit > 0) {
     if (effectiveMarginPct >= 40) {
       soaSegmentInsights['Margin from fees'] = `Your effective margin of ${effectiveMarginPct}% approaches top-10% territory. The highest-performing practices operate at 47% (Iress Advisely 2024).`;
-    } else if (effectiveMarginPct >= 21) {
+    } else if (effectiveMarginPct >= 25) {
       soaSegmentInsights['Margin from fees'] = `Your effective margin of ${effectiveMarginPct}% is above the industry average of 21% (Adviser Ratings 2024).`;
     }
   }
@@ -1261,7 +1261,7 @@ function Tab3Profitability({ calc, quote }) {
       const oMarginPct = Math.round((ongoingTrueProfit / calc.totalOngoingRounded) * 100);
       if (oMarginPct >= 40) {
         ongoingSegmentInsights['Margin from fees'] = `Your effective ongoing margin of ${oMarginPct}% approaches top-10% territory.`;
-      } else if (oMarginPct >= 21) {
+      } else if (oMarginPct >= 25) {
         ongoingSegmentInsights['Margin from fees'] = `Your effective ongoing margin of ${oMarginPct}% is above the industry average of 21%.`;
       }
     }
@@ -1294,7 +1294,7 @@ function Tab3Profitability({ calc, quote }) {
   }
 
   // Amber
-  if (headlineType !== 'lowMargin' && effectiveMarginPct > 0 && effectiveMarginPct < 21) {
+  if (headlineType !== 'lowMargin' && effectiveMarginPct > 0 && effectiveMarginPct < 17) {
     insights.push({ severity: 'amber', message: `Your effective profit margin is ${effectiveMarginPct}% after all costs. The industry average is 21% (Adviser Ratings 2024). Consider whether this is sustainable.` });
   }
   if (headlineType !== 'zeroMargin' && calc.soaMarginPercent === 0) {
@@ -1386,7 +1386,7 @@ function Tab3Profitability({ calc, quote }) {
   }
   if (effectiveMarginPct >= 40) {
     insights.push({ severity: 'green', message: `Your effective SOA margin of ${effectiveMarginPct}% is approaching top-10% territory. The highest-performing practices operate at 47% (Iress Advisely Index 2024).` });
-  } else if (effectiveMarginPct >= 21) {
+  } else if (effectiveMarginPct >= 25) {
     insights.push({ severity: 'green', message: `Your effective SOA margin of ${effectiveMarginPct}% is above the industry average of 21% (Adviser Ratings 2024). This is a healthy position.` });
   }
   if (calc.overheadPerClient > 0 && soaTrueProfit > calc.overheadPerClient * 1.5) {
