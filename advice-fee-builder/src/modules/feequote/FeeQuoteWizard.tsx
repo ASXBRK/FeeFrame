@@ -35,6 +35,10 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
     return () => scrollContainer.removeEventListener('scroll', handleScroll);
   }, [quoteStep]);
 
+  useEffect(() => {
+    scrollContainerRef.current?.scrollTo({ top: 0 });
+  }, [quoteStep]);
+
   const goToStep = (step) => dispatch({ type: 'SET_QUOTE_STEP', step });
   const next = () => goToStep(Math.min(quoteStep + 1, 5));
   const back = () => goToStep(Math.max(quoteStep - 1, 1));
