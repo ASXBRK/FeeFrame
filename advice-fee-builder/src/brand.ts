@@ -101,9 +101,9 @@ export const modules = {
     tagline: 'Scope & quote',
     color:   colors.teal,
   },
-  feeanalysis: {
-    name:    'FeeAnalysis',
-    tagline: 'Profitability check',
+  feereview: {
+    name:    'FeeReview',
+    tagline: 'Annual fee consent & renewal',
     color:   colors.teal,
   },
 } as const

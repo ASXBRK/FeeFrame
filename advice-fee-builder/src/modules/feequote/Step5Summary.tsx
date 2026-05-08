@@ -4,11 +4,10 @@ import { calculateQuote } from '../../lib/calculateQuote';
 import { formatCurrency, formatHours } from '../../lib/formatters';
 import NumInput from '../../components/shared/NumInput';
 import ConfirmModal from '../../components/shared/ConfirmModal';
-import feeanalysisLogo from '../../assets/logos/feeanalysis-light.svg';
 
 const TABS = ['Summary', 'Detailed Breakdown', 'Profitability', 'Client Output'];
 
-export default function Step5Summary({ quote, dispatch, onReset, onNavigate, onGoAnalysis }) {
+export default function Step5Summary({ quote, dispatch, onReset, onNavigate }) {
   const [tab, setTab] = useState(0);
   const [copied, setCopied] = useState(false);
   const [editingParagraph, setEditingParagraph] = useState(false);
@@ -1721,11 +1720,6 @@ function Tab3Profitability({ calc, quote }) {
         </div>
       )}
 
-      {/* Attribution */}
-      <div className="flex items-center justify-center gap-2 mt-8 mb-4">
-        <span className="text-sm text-gray-400">Powered by</span>
-        <img src={feeanalysisLogo} alt="FeeAnalysis" className="h-8 opacity-40" />
-      </div>
     </div>
   );
 }

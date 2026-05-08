@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import feeframeLogo from '../assets/logos/feeframe-light.svg';
 import feequoteLogo from '../assets/logos/feequote-light.svg';
-import feeanalysisLogo from '../assets/logos/feeanalysis-light.svg';
 import FooterBar from './shared/FooterBar';
 
-export default function Landing({ onStartQuote, onStartAnalysis, onNavigate }: { onStartQuote: () => void; onStartAnalysis: () => void; onNavigate: (page: string) => void }) {
+export default function Landing({ onStartQuote, onStartReview, onNavigate }: { onStartQuote: () => void; onStartReview: () => void; onNavigate: (page: string) => void }) {
   const [quoteHovered, setQuoteHovered] = useState(false);
-  const [analysisHovered, setAnalysisHovered] = useState(false);
+  const [reviewHovered, setReviewHovered] = useState(false);
   const [heroVisible, setHeroVisible] = useState(false);
   const [cardsVisible, setCardsVisible] = useState(false);
   const [videoVisible, setVideoVisible] = useState(false);
@@ -154,9 +153,9 @@ export default function Landing({ onStartQuote, onStartAnalysis, onNavigate }: {
               <div style={slideOverlay(quoteHovered)} />
               <span style={btnText}>Start FeeQuote →</span>
             </button>
-            <button onClick={onStartAnalysis} onMouseEnter={() => setAnalysisHovered(true)} onMouseLeave={() => setAnalysisHovered(false)} style={slideBtn(analysisHovered)}>
-              <div style={slideOverlay(analysisHovered)} />
-              <span style={btnText}>Run FeeAnalysis →</span>
+            <button onClick={onStartReview} onMouseEnter={() => setReviewHovered(true)} onMouseLeave={() => setReviewHovered(false)} style={slideBtn(reviewHovered)}>
+              <div style={slideOverlay(reviewHovered)} />
+              <span style={btnText}>Start FeeReview →</span>
             </button>
           </div>
 
@@ -200,24 +199,26 @@ export default function Landing({ onStartQuote, onStartAnalysis, onNavigate }: {
               </div>
             </div>
 
-            {/* FeeAnalysis */}
+            {/* FeeReview */}
             <div
-              onClick={onStartAnalysis}
+              onClick={onStartReview}
               style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '96px 80px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
               onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 12px 32px rgba(0,0,0,0.10)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; }}
             >
-              <div style={{ marginBottom: '48px' }}>
-                <img src={feeanalysisLogo} alt="FeeAnalysis" style={{ height: '120px', width: 'auto' }} />
+              <div style={{ marginBottom: '48px', height: '120px', display: 'flex', alignItems: 'center' }}>
+                <span style={{ fontFamily: '"DM Sans", sans-serif', fontWeight: 700, fontSize: '56px', color: '#0d9488', letterSpacing: '-1.5px' }}>
+                  [ FeeReview ]
+                </span>
               </div>
               <h2 style={{ fontWeight: 700, fontSize: '40px', color: '#111827', letterSpacing: '-1px', marginBottom: '24px', lineHeight: 1.15 }}>
-                Am I making money?
+                Time to renew?
               </h2>
               <p style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '19px', color: '#6b7280', lineHeight: 1.65, marginBottom: '64px', flex: 1 }}>
-                Enter what you're charging. Find out if the client is actually profitable.
+                Generate an annual fee consent and renewal document for an existing client. DBFO Act-aligned.
               </p>
               <div style={{ fontWeight: 700, fontSize: '16px', color: '#0d9488', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                Analyse a client →
+                Start a renewal →
               </div>
             </div>
 
@@ -259,7 +260,7 @@ export default function Landing({ onStartQuote, onStartAnalysis, onNavigate }: {
         currentPage="home"
         onNavigate={(page) => {
           if (page === 'feequote') onStartQuote();
-          else if (page === 'feeanalysis') onStartAnalysis();
+          else if (page === 'feereview') onStartReview();
           else onNavigate(page);
         }}
       />

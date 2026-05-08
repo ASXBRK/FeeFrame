@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import ffFavicon from '../assets/logos/ff-favicon-teal.svg';
 
 type NavPage = 'landing' | 'about' | 'contact';
-type AnyPage = NavPage | 'feequote' | 'feeanalysis';
+type AnyPage = NavPage | 'feequote' | 'feereview';
 
 export default function Nav({ current, onNavigate }: { current: NavPage; onNavigate: (p: AnyPage) => void }) {
   const [shadow, setShadow] = useState(false);
@@ -57,7 +57,7 @@ export default function Nav({ current, onNavigate }: { current: NavPage; onNavig
         {link('landing', 'Home')}
         {link('about', 'About')}
         {link('feequote', 'FeeQuote')}
-        {link('feeanalysis', 'FeeAnalysis')}
+        {link('feereview', 'FeeReview')}
         {link('contact', 'Contact')}
       </div>
     </nav>

@@ -4,19 +4,17 @@ import Nav from './components/Nav';
 import About from './components/About';
 import Contact from './components/Contact';
 import FeeQuoteWizard from './modules/feequote/FeeQuoteWizard';
-import FeeAnalysis from './modules/feeanalysis/FeeAnalysis';
-import FeeAnalysisComingSoon from './modules/feeanalysis/FeeAnalysisComingSoon';
+import FeeReview from './modules/feereview/FeeReview';
 import { defaultQuoteState } from './lib/quoteDefaults';
-import { defaultAnalysisState } from './lib/analysisDefaults';
 // ── Types ──────────────────────────────────────────────────────────────────────
 type NavPage = 'landing' | 'about' | 'contact';
-type Page = NavPage | 'quote' | 'analysis';
+type Page = NavPage | 'quote' | 'review';
 
 // ── URL routing helpers ────────────────────────────────────────────────────────
 function getViewFromPath(pathname: string): { view: string; page: Page } {
   const p = pathname.replace(/\/$/, '') || '/';
   if (p === '/feequote') return { view: 'quote', page: 'quote' };
-  if (p === '/feeanalysis') return { view: 'analysis', page: 'analysis' };
+  if (p === '/feereview') return { view: 'review', page: 'review' };
   if (p === '/about') return { view: 'landing', page: 'about' };
   if (p === '/contact') return { view: 'landing', page: 'contact' };
   return { view: 'landing', page: 'landing' };
@@ -24,21 +22,20 @@ function getViewFromPath(pathname: string): { view: string; page: Page } {
 
 function pathForView(p: string): string {
   if (p === 'feequote') return '/feequote';
-  if (p === 'feeanalysis') return '/feeanalysis';
+  if (p === 'feereview') return '/feereview';
   if (p === 'about') return '/about';
   if (p === 'contact') return '/contact';
   return '/';
 }
 
 // ── State ──────────────────────────────────────────────────────────────────────
-const STATE_VERSION = 6; // bumped: waiveImplementation → implDiscountPercent
+const STATE_VERSION = 7; // bumped: removed analysis state slice
 
 const initialState = {
   view: getViewFromPath(window.location.pathname).view,
   quoteStep: 1,
   maxQuoteStep: 1,
   quote: defaultQuoteState,
-  analysis: defaultAnalysisState,
 };
 
 function deepMerge(defaults, saved) {
@@ -215,38 +212,6 @@ function reducer(state, action) {
         maxQuoteStep: 1,
       };
 
-    case 'SET_ANALYSIS_FIELD':
-      return { ...state, analysis: { ...state.analysis, [action.field]: action.value } };
-
-    case 'SET_SOA_TASK': {
-      const soaTasks = state.analysis.soaTasks.map((t, i) =>
-        i === action.index ? { ...t, [action.field]: action.value } : t
-      );
-      return { ...state, analysis: { ...state.analysis, soaTasks } };
-    }
-
-    case 'SET_ONGOING_TASK': {
-      const ongoingTasks = state.analysis.ongoingTasks.map((t, i) =>
-        i === action.index ? { ...t, [action.field]: action.value } : t
-      );
-      return { ...state, analysis: { ...state.analysis, ongoingTasks } };
-    }
-
-    case 'RESET_ANALYSIS':
-      return { ...state, analysis: defaultAnalysisState };
-
-    case 'HANDOFF_TO_ANALYSIS':
-      return {
-        ...state,
-        view: 'analysis',
-        analysis: {
-          ...state.analysis,
-          soaFeeExGst: action.soaFeeExGst,
-          implFeeExGst: action.implFeeExGst,
-          ongoingFeeExGst: action.ongoingFeeExGst,
-        },
-      };
-
     default:
       return state;
   }
@@ -295,7 +260,7 @@ export default function App() {
   const handleNavigate = useCallback((p: string) => {
     history.pushState(null, '', pathForView(p));
     if (p === 'feequote') { goTo('quote'); setPage('quote'); }
-    else if (p === 'feeanalysis') { goTo('analysis'); setPage('analysis'); }
+    else if (p === 'feereview') { goTo('review'); setPage('review'); }
     else if (p === 'about') { goTo('landing'); setPage('about'); }
     else if (p === 'contact') { goTo('landing'); setPage('contact'); }
     else { goTo('landing'); setPage('landing'); }
@@ -307,40 +272,22 @@ export default function App() {
         state={state}
         dispatch={dispatch}
         onGoHome={() => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); }}
-        onGoAnalysis={(fees) => {
-          history.pushState(null, '', '/feeanalysis');
-          setPage('analysis');
-          dispatch({ type: 'HANDOFF_TO_ANALYSIS', ...fees });
-        }}
         onNavigate={handleNavigate}
       />
     );
   }
 
-  if (state.view === 'analysis') {
+  if (state.view === 'review') {
     const goHome = () => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); };
-    // Set ANALYSIS_ENABLED = true when FeeAnalysis is ready for public access
-    const ANALYSIS_ENABLED = false;
-    if (ANALYSIS_ENABLED) {
-      return (
-        <FeeAnalysis
-          state={state}
-          dispatch={dispatch}
-          onGoHome={goHome}
-          onGoQuote={() => { history.pushState(null, '', '/feequote'); goTo('quote'); setPage('quote'); }}
-          onNavigate={handleNavigate}
-        />
-      );
-    }
     return (
-      <FeeAnalysisComingSoon
+      <FeeReview
         onGoHome={goHome}
         onNavigate={handleNavigate}
       />
     );
   }
 
-  const navPage = (page === 'quote' || page === 'analysis' ? 'landing' : page) as NavPage;
+  const navPage = (page === 'quote' || page === 'review' ? 'landing' : page) as NavPage;
 
   return (
     <>
@@ -350,7 +297,7 @@ export default function App() {
       {navPage === 'landing' && (
         <Landing
           onStartQuote={() => { history.pushState(null, '', '/feequote'); goTo('quote'); setPage('quote'); }}
-          onStartAnalysis={() => { history.pushState(null, '', '/feeanalysis'); goTo('analysis'); setPage('analysis'); }}
+          onStartReview={() => { history.pushState(null, '', '/feereview'); goTo('review'); setPage('review'); }}
           onNavigate={handleNavigate}
         />
       )}

@@ -303,8 +303,7 @@ export default function Step2ScopeOfAdvice({ quote, dispatch, onNext, onBack }) 
               </div>
               {calc.overheadPerClient > 0 && (
                 <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800">
-                  <span className="font-medium">{formatCurrency(calc.overheadPerClient)}</span> per client added to cost base.
-                  Visit <span className="font-medium">FeeAnalysis</span> to see how this affects overall practice profitability.
+                  <span className="font-medium">{formatCurrency(calc.overheadPerClient)}</span> per client added to cost base. Affects profitability only — does not change the fee quoted.
                 </div>
               )}
             </div>

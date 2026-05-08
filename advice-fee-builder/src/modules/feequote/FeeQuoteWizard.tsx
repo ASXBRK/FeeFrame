@@ -10,7 +10,7 @@ import ConfirmModal from '../../components/shared/ConfirmModal';
 
 const STEP_LABELS = ['', 'Next: Scope of Advice →', 'Next: Ongoing Service →', 'Next: Adjustments →', 'Next: Fee Summary →'];
 
-export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis, onNavigate }: { state: any; dispatch: any; onGoHome: () => void; onGoAnalysis: (fees: any) => void; onNavigate: (page: string) => void }) {
+export default function FeeQuoteWizard({ state, dispatch, onGoHome, onNavigate }: { state: any; dispatch: any; onGoHome: () => void; onNavigate: (page: string) => void }) {
   const [showReset, setShowReset] = useState(false);
   const [footerOffset, setFooterOffset] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -97,7 +97,6 @@ export default function FeeQuoteWizard({ state, dispatch, onGoHome, onGoAnalysis
           {quoteStep === 5 && (
             <Step5Summary
               {...sharedProps}
-              onGoAnalysis={onGoAnalysis}
               onReset={() => setShowReset(true)}
               onNavigate={onNavigate}
             />
