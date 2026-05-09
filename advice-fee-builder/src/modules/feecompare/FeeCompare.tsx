@@ -4,6 +4,7 @@ import BenchmarkSection from '../../components/benchmarks/BenchmarkSection';
 import { useFeeCompareForm } from './useFeeCompareForm';
 import { useDebouncedValue } from '../../lib/useDebouncedValue';
 import CrossLinkCTAs from './CrossLinkCTAs';
+import { useDocumentMeta } from '../../lib/useDocumentMeta';
 import type { FeeCompareStructure, AdviceComplexity } from './types';
 
 interface Props {
@@ -29,6 +30,7 @@ function fmtAnnual(v: number): string {
 const inputCls = 'w-full rounded-input border border-light-border px-3 py-2 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0';
 
 export default function FeeCompare({ onGoHome, onNavigate }: Props) {
+  useDocumentMeta({ title: 'FeeCompare — Benchmark your fee against the Australian advice market', description: 'See how your fee compares to current Australian market data, auto-scaled to your client\'s wealth band. Free, no signup.', ogUrl: 'https://feeframe.com/feecompare' });
   const { state, setFee, setStructure, setFeePercent, setFeeMonthly, setClientFUA, setComplexity } = useFeeCompareForm();
 
   // Debounce numeric inputs 300ms; structure/complexity are immediate

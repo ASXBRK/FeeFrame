@@ -1,5 +1,6 @@
 import Nav from '../../components/Nav';
 import FooterBar from '../../components/shared/FooterBar';
+import { useDocumentMeta } from '../../lib/useDocumentMeta';
 
 interface Props {
   onGoHome: () => void;
@@ -10,6 +11,7 @@ const sectionHeadingClass = 'text-lg font-bold font-heading text-teal mb-3';
 const paragraphClass = 'text-[15px] text-dark leading-relaxed';
 
 export default function About({ onGoHome, onNavigate }: Props) {
+  useDocumentMeta({ title: 'About FeeFrame — Free tools for Australian financial advisers', description: 'Why FeeFrame exists: free, transparent, Australian-specific tools for the modern financial advice fee conversation.', ogUrl: 'https://feeframe.com/about' });
   return (
     <>
       <Nav current="landing" onNavigate={p => onNavigate(p)} />

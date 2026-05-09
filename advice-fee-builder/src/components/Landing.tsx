@@ -4,8 +4,10 @@ import feequoteLogo from '../assets/logos/feequote-light.svg';
 import feecompareLogo from '../assets/logos/feecompare-light.svg';
 import feereviewLogo from '../assets/logos/feereview-light.svg';
 import FooterBar from './shared/FooterBar';
+import { useDocumentMeta } from '../lib/useDocumentMeta';
 
 export default function Landing({ onStartCompare, onStartQuote, onStartReview, onNavigate }: { onStartCompare: () => void; onStartQuote: () => void; onStartReview: () => void; onNavigate: (page: string) => void }) {
+  useDocumentMeta({ title: 'FeeFrame — Free tools for Australian financial advisers', description: 'Benchmark fees, build justified quotes, and generate DBFO-compliant consent letters. Three free tools for the modern fee conversation.', ogUrl: 'https://feeframe.com' });
   const [compareHovered, setCompareHovered] = useState(false);
   const [quoteHovered, setQuoteHovered] = useState(false);
   const [reviewHovered, setReviewHovered] = useState(false);

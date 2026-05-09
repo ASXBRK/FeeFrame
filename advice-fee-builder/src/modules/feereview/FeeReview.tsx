@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Nav from '../../components/Nav';
 import FooterBar from '../../components/shared/FooterBar';
+import { useDocumentMeta } from '../../lib/useDocumentMeta';
 import ConfirmModal from '../../components/shared/ConfirmModal';
 import AdviserDetails from './sections/AdviserDetails';
 import ClientDetails from './sections/ClientDetails';
@@ -48,6 +49,7 @@ function deriveAnnualFee(state: FeeReviewState): number {
 }
 
 export default function FeeReview({ onGoHome, onNavigate }: Props) {
+  useDocumentMeta({ title: 'FeeReview — Annual fee consent and renewal letter generator', description: 'Generate the DBFO-compliant annual fee consent letter for existing clients. Free for Australian financial advisers.', ogUrl: 'https://feeframe.com/feereview' });
   const form = useFeeReviewForm();
   const { state, set, toggleService, addAccount, updateAccount, removeAccount, reset, errors, warnings, isValid } = form;
   const [showErrors, setShowErrors] = useState(false);
