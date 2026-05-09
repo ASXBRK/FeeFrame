@@ -25,4 +25,4 @@ interface BenchmarkPayload {
   };
 }
 
-export const BENCHMARKS: BenchmarkPayload = rawData.benchmarks as BenchmarkPayload;
+export const BENCHMARKS: BenchmarkPayload | null = (rawData as { benchmarks?: BenchmarkPayload })?.benchmarks ?? null;

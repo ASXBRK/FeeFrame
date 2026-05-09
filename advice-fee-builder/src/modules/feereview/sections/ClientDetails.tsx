@@ -12,7 +12,7 @@ export default function ClientDetails({ state, set, errors, showErrors }: Props)
   return (
     <div className={cardClass} id="section-client">
       <div className="mb-4">
-        <h3 className={sectionHeadingClass}>Client</h3>
+        <h2 className={sectionHeadingClass}>Client</h2>
         <p className={sectionSubheadingClass}>Identifies who the consent is being sought from.</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 248 76" width="248" height="76">
+  <rect width="248" height="76" fill="#111827"/>
+  <path d="M18 10 L6 10 L6 52 L18 52" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="square"/>
+  <text font-family="'DM Sans', sans-serif" font-size="30" font-weight="700" letter-spacing="-0.5" fill="#ffffff" x="26" y="46">FeeCompare</text>
+  <path d="M228 10 L240 10 L240 52 L228 52" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="square"/>
+  <text font-family="'DM Sans', sans-serif" font-size="9" font-weight="500" letter-spacing="2" fill="#6b7280" x="26" y="66">COMPARE &amp; POSITION</text>
+</svg>

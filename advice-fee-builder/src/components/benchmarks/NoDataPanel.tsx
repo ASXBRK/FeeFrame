@@ -8,6 +8,8 @@ const GAP_COPY: Record<string, string> = {
     'The Australian financial advice industry does not publish granular fee data for subscription pricing models. We\'re keeping an eye out and will surface comparisons when reliable data becomes available.',
   'enter client FUA to see a dollar-equivalent comparison':
     'Enter your client\'s FUA in the field above to see a dollar-equivalent benchmark for percentage-based fees.',
+  'benchmark data unavailable':
+    'Benchmark data couldn\'t be loaded. Try refreshing the page.',
 };
 
 function fmt(v: number): string {

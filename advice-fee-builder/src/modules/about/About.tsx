@@ -1,5 +1,6 @@
 import Nav from '../../components/Nav';
 import FooterBar from '../../components/shared/FooterBar';
+import { useDocumentMeta } from '../../lib/useDocumentMeta';
 
 interface Props {
   onGoHome: () => void;
@@ -10,6 +11,7 @@ const sectionHeadingClass = 'text-lg font-bold font-heading text-teal mb-3';
 const paragraphClass = 'text-[15px] text-dark leading-relaxed';
 
 export default function About({ onGoHome, onNavigate }: Props) {
+  useDocumentMeta({ title: 'About FeeFrame — Free tools for Australian financial advisers', description: 'Why FeeFrame exists: free, transparent, Australian-specific tools for the modern financial advice fee conversation.', ogUrl: 'https://feeframe.com/about' });
   return (
     <>
       <Nav current="landing" onNavigate={p => onNavigate(p)} />
@@ -28,7 +30,7 @@ export default function About({ onGoHome, onNavigate }: Props) {
             </div>
             <button
               onClick={onGoHome}
-              className="text-xs text-mid hover:text-dark transition-colors"
+              className="text-xs text-mid hover:text-dark transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 rounded"
             >
               ← Home
             </button>
@@ -36,7 +38,7 @@ export default function About({ onGoHome, onNavigate }: Props) {
         </header>
 
         {/* Main content */}
-        <main className="flex-1 px-4 sm:px-6 py-10 pb-16 max-w-[720px] w-full mx-auto">
+        <main id="main-content" className="flex-1 px-4 sm:px-6 py-10 pb-16 max-w-[720px] w-full mx-auto">
           <div className="space-y-10">
 
             {/* Section 1 — The problem */}
@@ -119,73 +121,6 @@ export default function About({ onGoHome, onNavigate }: Props) {
                 top of compliance costs, licensee fees, and PI insurance doesn't help anyone. Free
                 maximises adoption, removes friction at the moment of decision, and keeps the focus on
                 the work — defending fees, justifying value, sustaining a practice.
-              </p>
-            </section>
-
-            {/* Section 5 — About the data */}
-            <section className="space-y-4">
-              <h2 className={sectionHeadingClass}>[ About the data ]</h2>
-              <p className={paragraphClass}>
-                FeeFrame benchmarks are sourced from Australia's most reputable industry research:
-              </p>
-              <ul className="space-y-2 pl-4">
-                <li className={paragraphClass}>
-                  <span className="font-semibold">Adviser Ratings 2025 Australian Financial Advice Landscape Report</span>{' '}
-                  (median ongoing fee, fee trends, FUA per client)
-                </li>
-                <li className={paragraphClass}>
-                  <span className="font-semibold">Investment Trends 2025 Adviser Business Model Report</span>{' '}
-                  (advice complexity splits, top-20% practice data)
-                </li>
-                <li className={paragraphClass}>
-                  <span className="font-semibold">KPMG/FSC Cost Profile of Advice Industry</span>{' '}
-                  (cost-to-produce reference)
-                </li>
-                <li className={paragraphClass}>
-                  <span className="font-semibold">ATO SMSF Statistical Overview</span>{' '}
-                  (SMSF operating costs)
-                </li>
-              </ul>
-              <p className={paragraphClass}>
-                The benchmark data refreshes annually. We're transparent about gaps — where Australian
-                public data doesn't exist (single vs couple, metro vs regional, true percentile
-                distributions), the tool says so rather than fabricating numbers.
-              </p>
-              <p className={paragraphClass}>
-                Cost-justified anchors are computed from your own practice profile using a true-margin
-                formula (
-                <code className="font-mono text-sm bg-gray-100 text-dark px-1.5 py-0.5 rounded">
-                  fee = cost ÷ (1 − target margin)
-                </code>
-                ). Your practice data stays in your browser only — it's never transmitted, stored, or shared.
-              </p>
-            </section>
-
-            {/* Section 6 — Contact */}
-            <section className="space-y-4">
-              <h2 className={sectionHeadingClass}>[ Contact ]</h2>
-              <p className={paragraphClass}>
-                Found a bug? Have feedback on the benchmarks or the tools? I'd genuinely like to hear
-                it. This product gets better with adviser input.
-              </p>
-              <p className={paragraphClass}>
-                Reach out at{' '}
-                <a
-                  href="mailto:[your-email@example.com]"
-                  className="text-teal hover:underline"
-                >
-                  [your-email@example.com]
-                </a>
-                {' '}or via{' '}
-                <a
-                  href="#"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-teal hover:underline"
-                >
-                  [LinkedIn URL placeholder]
-                </a>
-                .
               </p>
             </section>
 

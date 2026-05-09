@@ -38,6 +38,7 @@ const errorClass = 'text-xs text-risk mt-1';
 export default function PracticeProfileForm({ initial, onSave, onCancel }: Props) {
   const [vals, setVals] = useState<FormValues>(() => toValues(initial));
   const [touched, setTouched] = useState(false);
+  const [saveError, setSaveError] = useState(false);
 
   function v(field: keyof FormValues, value: string) {
     setVals(prev => ({ ...prev, [field]: value }));
@@ -74,7 +75,8 @@ export default function PracticeProfileForm({ initial, onSave, onCancel }: Props
       totalOverheads: Number(vals.totalOverheads) || 0,
       lastUpdated: new Date().toISOString().split('T')[0],
     };
-    savePracticeProfile(profile);
+    const saved = savePracticeProfile(profile);
+    if (!saved) { setSaveError(true); }
     onSave(profile);
   }
 
@@ -129,8 +131,13 @@ export default function PracticeProfileForm({ initial, onSave, onCancel }: Props
           </div>
         </div>
 
+        {saveError && (
+          <div className="px-5 py-3 bg-amber-50 border-t border-amber-200 text-xs text-amber-800">
+            Couldn't save your practice profile to this browser. You can still use it for this session.
+          </div>
+        )}
         <div className="px-5 py-4 border-t border-light-border flex justify-end gap-3">
-          <button onClick={onCancel} className="text-sm text-mid hover:text-dark transition-colors px-4 py-2">Cancel</button>
+          <button onClick={onCancel} className="text-sm text-mid hover:text-dark transition-colors px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-1 rounded">Cancel</button>
           <button
             onClick={handleSave}
             className="text-sm font-semibold bg-teal hover:opacity-90 text-white rounded-input px-5 py-2 transition-opacity"

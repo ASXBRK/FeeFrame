@@ -20,11 +20,13 @@ export function loadPracticeProfile(): PracticeProfile | null {
   }
 }
 
-export function savePracticeProfile(profile: PracticeProfile): void {
+export function savePracticeProfile(profile: PracticeProfile): boolean {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+    return true;
   } catch {
     console.warn('[FeeFrame] Failed to save practice profile to localStorage.');
+    return false;
   }
 }
 

@@ -22,7 +22,7 @@ export default function DeductionAccounts({ state, addAccount, updateAccount, re
   return (
     <div className={cardClass} id="section-accounts">
       <div className="mb-4">
-        <h3 className={sectionHeadingClass}>Accounts for fee deduction</h3>
+        <h2 className={sectionHeadingClass}>Accounts for fee deduction</h2>
         <p className={sectionSubheadingClass}>List every account the practice will arrange deductions from.</p>
       </div>
 

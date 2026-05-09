@@ -26,7 +26,7 @@ export default function FeesNextPeriod({ state, set, errors, showErrors }: Props
   return (
     <div className={cardClass} id="section-fees">
       <div className="mb-4">
-        <h3 className={sectionHeadingClass}>Fees for the next 12 months</h3>
+        <h2 className={sectionHeadingClass}>Fees for the next 12 months</h2>
         <p className={sectionSubheadingClass}>Choose how the fee is structured. Only one structure applies per consent.</p>
       </div>
 

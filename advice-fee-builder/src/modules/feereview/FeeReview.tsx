@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Nav from '../../components/Nav';
 import FooterBar from '../../components/shared/FooterBar';
+import { useDocumentMeta } from '../../lib/useDocumentMeta';
 import ConfirmModal from '../../components/shared/ConfirmModal';
 import AdviserDetails from './sections/AdviserDetails';
 import ClientDetails from './sections/ClientDetails';
@@ -48,10 +49,12 @@ function deriveAnnualFee(state: FeeReviewState): number {
 }
 
 export default function FeeReview({ onGoHome, onNavigate }: Props) {
+  useDocumentMeta({ title: 'FeeReview — Annual fee consent and renewal letter generator', description: 'Generate the DBFO-compliant annual fee consent letter for existing clients. Free for Australian financial advisers.', ogUrl: 'https://feeframe.com/feereview' });
   const form = useFeeReviewForm();
   const { state, set, toggleService, addAccount, updateAccount, removeAccount, reset, errors, warnings, isValid } = form;
   const [showErrors, setShowErrors] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [pdfError, setPdfError] = useState(false);
 
   const annualFee = deriveAnnualFee(state);
   const annualCommission = state.insuranceCommissionsEnabled ? state.insuranceCommissionsAmount : 0;
@@ -66,7 +69,8 @@ export default function FeeReview({ onGoHome, onNavigate }: Props) {
       }
       return;
     }
-    triggerPdfDownload(state);
+    const ok = triggerPdfDownload(state);
+    if (!ok) setPdfError(true);
   }
 
   function handleReset() {
@@ -110,7 +114,7 @@ export default function FeeReview({ onGoHome, onNavigate }: Props) {
         </header>
 
         {/* Main content */}
-        <main className="flex-1 px-4 sm:px-6 py-6 pb-12 max-w-4xl w-full mx-auto">
+        <main id="main-content" className="flex-1 px-4 sm:px-6 py-6 pb-12 max-w-4xl w-full mx-auto">
           <div className="space-y-5">
             <AdviserDetails state={state} set={set} errors={errors} showErrors={showErrors} />
             <ClientDetails state={state} set={set} errors={errors} showErrors={showErrors} />
@@ -165,6 +169,10 @@ export default function FeeReview({ onGoHome, onNavigate }: Props) {
               >
                 {showErrors && !isValid ? 'Resolve errors to continue' : 'Generate PDF'}
               </button>
+
+              {pdfError && (
+                <p className="mt-2 text-xs text-risk">Couldn't open the print dialog. Try allowing popups for this site, or contact support.</p>
+              )}
 
               <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-800">
                 <span className="font-medium">Draft document.</span> Verify against your licensee’s requirements before issuing to the client.

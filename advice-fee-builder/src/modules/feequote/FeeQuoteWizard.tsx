@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import QuoteSidebar from './QuoteSidebar';
 import FooterBar from '../../components/shared/FooterBar';
+import { useDocumentMeta } from '../../lib/useDocumentMeta';
 import Step1ClientProfile from './Step1ClientProfile';
 import Step2ScopeOfAdvice from './Step2ScopeOfAdvice';
 import Step3OngoingService from './Step3OngoingService';
@@ -11,6 +12,7 @@ import ConfirmModal from '../../components/shared/ConfirmModal';
 const STEP_LABELS = ['', 'Next: Scope of Advice →', 'Next: Ongoing Service →', 'Next: Adjustments →', 'Next: Fee Summary →'];
 
 export default function FeeQuoteWizard({ state, dispatch, onGoHome, onNavigate }: { state: any; dispatch: any; onGoHome: () => void; onNavigate: (page: string) => void }) {
+  useDocumentMeta({ title: 'FeeQuote — Build a justified fee for new client engagements', description: 'A five-step wizard that builds a defensible fee from cost up. Practice overheads, service mix, target margin — every assumption traceable.', ogUrl: 'https://feeframe.com/feequote' });
   const [showReset, setShowReset] = useState(false);
   const [footerOffset, setFooterOffset] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);

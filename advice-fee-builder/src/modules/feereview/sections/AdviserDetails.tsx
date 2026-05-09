@@ -13,7 +13,7 @@ export default function AdviserDetails({ state, set, errors, showErrors }: Props
   return (
     <div className={cardClass} id="section-adviser">
       <div className="mb-4">
-        <h3 className={sectionHeadingClass}>Adviser and practice</h3>
+        <h2 className={sectionHeadingClass}>Adviser and practice</h2>
         <p className={sectionSubheadingClass}>Identifies who is providing the advice and under whose licence.</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

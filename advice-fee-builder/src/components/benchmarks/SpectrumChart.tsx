@@ -86,8 +86,8 @@ export default function SpectrumChart({ anchors, userFee, costJustifiedFee }: Pr
         {/* Anchor pins */}
         {pins.map(({ x, label, zone, main }) => (
           <g key={zone}>
-            <line x1={x} y1={27} x2={x} y2={BAR_Y} stroke={main ? '#0d9488' : '#94a3b8'} strokeWidth={main ? 2 : 1.5}/>
-            <text x={x} y={22} textAnchor={textAnchor(x, width)} fontSize="10" fontWeight={main ? '600' : 'normal'} fill={main ? '#0d9488' : '#94a3b8'}>{label}</text>
+            <line x1={x} y1={27} x2={x} y2={BAR_Y} stroke={main ? '#0d9488' : '#64748b'} strokeWidth={main ? 2 : 1.5}/>
+            <text x={x} y={22} textAnchor={textAnchor(x, width)} fontSize="10" fontWeight={main ? '600' : 'normal'} fill={main ? '#0d9488' : '#64748b'}>{label}</text>
             <text x={x} y={11} textAnchor={textAnchor(x, width)} fontSize="9" fill="#64748b">{zone}</text>
           </g>
         ))}

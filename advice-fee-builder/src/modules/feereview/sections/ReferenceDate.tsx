@@ -13,7 +13,7 @@ export default function ReferenceDate({ state, set, errors, warnings, showErrors
   return (
     <div className={cardClass} id="section-reference-date">
       <div className="mb-4">
-        <h3 className={sectionHeadingClass}>Reference date</h3>
+        <h2 className={sectionHeadingClass}>Reference date</h2>
         <p className={sectionSubheadingClass}>The date the new 12-month consent period applies up to.</p>
       </div>
       <div className="max-w-xs">

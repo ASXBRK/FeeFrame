@@ -1742,7 +1742,10 @@ function Tab3Profitability({ calc, quote }) {
 
 // ── Tab 4: Client Output ───────────────────────────────────────────────────────
 function Tab4ClientOutput({ calc, quote, dispatch, copied, onCopy, editingParagraph, setEditingParagraph, onReset }) {
+  const [pdfError, setPdfError] = useState(false);
+
   function handleDownloadPDF() {
+    setPdfError(false);
     const letterContent = calc.clientParagraph;
     const clientName = quote.clientName?.trim() || 'Client';
     const date = quote.date || new Date().toLocaleDateString('en-AU');
@@ -1788,10 +1791,15 @@ function Tab4ClientOutput({ calc, quote, dispatch, copied, onCopy, editingParagr
     iframe.contentDocument!.open();
     iframe.contentDocument!.write(html);
     iframe.contentDocument!.close();
-    setTimeout(() => {
-      iframe.contentWindow!.print();
-      setTimeout(() => { document.body.removeChild(iframe); }, 1000);
-    }, 500);
+    try {
+      setTimeout(() => {
+        iframe.contentWindow!.print();
+        setTimeout(() => { document.body.removeChild(iframe); }, 1000);
+      }, 500);
+    } catch {
+      document.body.removeChild(iframe);
+      setPdfError(true);
+    }
   }
 
   return (
@@ -1866,6 +1874,9 @@ function Tab4ClientOutput({ calc, quote, dispatch, copied, onCopy, editingParagr
         >
           Download as PDF
         </button>
+        {pdfError && (
+          <p className="mt-2 text-xs text-risk">Couldn't open the print dialog. Try allowing popups for this site, or copy the letter and print manually.</p>
+        )}
       </div>
 
       {/* Reset */}

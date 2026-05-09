@@ -1,4 +1,6 @@
 import { useReducer, useEffect, useCallback, useRef, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import Landing from './components/Landing';
 import Nav from './components/Nav';
 import About from './modules/about/About';
@@ -6,20 +8,26 @@ import Contact from './components/Contact';
 import FeeQuoteWizard from './modules/feequote/FeeQuoteWizard';
 import FeeReview from './modules/feereview/FeeReview';
 import FeeCompare from './modules/feecompare/FeeCompare';
+import Privacy from './modules/legal/Privacy';
+import Terms from './modules/legal/Terms';
+import NotFound from './components/NotFound';
 import { defaultQuoteState } from './lib/quoteDefaults';
 // ── Types ──────────────────────────────────────────────────────────────────────
 type NavPage = 'landing' | 'about' | 'contact';
-type Page = NavPage | 'quote' | 'review' | 'compare';
+type Page = NavPage | 'quote' | 'review' | 'compare' | 'privacy' | 'terms' | 'notfound';
 
 // ── URL routing helpers ────────────────────────────────────────────────────────
 function getViewFromPath(pathname: string): { view: string; page: Page } {
   const p = pathname.replace(/\/$/, '') || '/';
-  if (p === '/feequote')  return { view: 'quote',   page: 'quote' };
-  if (p === '/feereview') return { view: 'review',  page: 'review' };
-  if (p === '/feecompare')return { view: 'compare', page: 'compare' };
-  if (p === '/about')     return { view: 'about',   page: 'about' };
-  if (p === '/contact')   return { view: 'landing', page: 'contact' };
-  return { view: 'landing', page: 'landing' };
+  if (p === '/')          return { view: 'landing',  page: 'landing' };
+  if (p === '/feequote')  return { view: 'quote',    page: 'quote' };
+  if (p === '/feereview') return { view: 'review',   page: 'review' };
+  if (p === '/feecompare')return { view: 'compare',  page: 'compare' };
+  if (p === '/about')     return { view: 'about',    page: 'about' };
+  if (p === '/contact')   return { view: 'landing',  page: 'contact' };
+  if (p === '/privacy')   return { view: 'privacy',  page: 'privacy' };
+  if (p === '/terms')     return { view: 'terms',    page: 'terms' };
+  return { view: 'notfound', page: 'notfound' };
 }
 
 function pathForView(p: string): string {
@@ -28,6 +36,8 @@ function pathForView(p: string): string {
   if (p === 'feecompare')return '/feecompare';
   if (p === 'about')     return '/about';
   if (p === 'contact')   return '/contact';
+  if (p === 'privacy')   return '/privacy';
+  if (p === 'terms')     return '/terms';
   return '/';
 }
 
@@ -265,66 +275,73 @@ export default function App() {
     if (p === 'feequote')       { goTo('quote');   setPage('quote'); }
     else if (p === 'feereview') { goTo('review');  setPage('review'); }
     else if (p === 'feecompare'){ goTo('compare'); setPage('compare'); }
-    else if (p === 'about')     { goTo('about');   setPage('about'); }
+    else if (p === 'about')     { goTo('about');    setPage('about'); }
     else if (p === 'contact')   { goTo('landing'); setPage('contact'); }
+    else if (p === 'privacy')   { goTo('privacy'); setPage('privacy'); }
+    else if (p === 'terms')     { goTo('terms');   setPage('terms'); }
+    else if (p === 'home')      { goTo('landing'); setPage('landing'); }
     else                        { goTo('landing'); setPage('landing'); }
   }, [goTo]);
 
-  if (state.view === 'quote') {
+  const goHome = () => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); };
+
+  function renderView() {
+    if (state.view === 'quote') {
+      return (
+        <FeeQuoteWizard
+          state={state}
+          dispatch={dispatch}
+          onGoHome={goHome}
+          onNavigate={handleNavigate}
+        />
+      );
+    }
+    if (state.view === 'review') {
+      return <FeeReview onGoHome={goHome} onNavigate={handleNavigate} />;
+    }
+    if (state.view === 'compare') {
+      return <FeeCompare onGoHome={goHome} onNavigate={handleNavigate} />;
+    }
+    if (state.view === 'about') {
+      return <About onGoHome={goHome} onNavigate={handleNavigate} />;
+    }
+    if (state.view === 'privacy') {
+      return <Privacy onGoHome={goHome} onNavigate={handleNavigate} />;
+    }
+    if (state.view === 'terms') {
+      return <Terms onGoHome={goHome} onNavigate={handleNavigate} />;
+    }
+    if (state.view === 'notfound') {
+      return <NotFound onNavigate={handleNavigate} />;
+    }
+    const navPage = (page === 'quote' || page === 'review' || page === 'compare' || page === 'about' ? 'landing' : page) as NavPage;
     return (
-      <FeeQuoteWizard
-        state={state}
-        dispatch={dispatch}
-        onGoHome={() => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); }}
-        onNavigate={handleNavigate}
-      />
+      <>
+        <Nav current={navPage} onNavigate={handleNavigate} />
+        {page === 'contact' && <Contact />}
+        {navPage === 'landing' && (
+          <Landing
+            onStartCompare={() => { history.pushState(null, '', '/feecompare'); goTo('compare'); setPage('compare'); }}
+            onStartQuote={() => { history.pushState(null, '', '/feequote'); goTo('quote'); setPage('quote'); }}
+            onStartReview={() => { history.pushState(null, '', '/feereview'); goTo('review'); setPage('review'); }}
+            onNavigate={handleNavigate}
+          />
+        )}
+      </>
     );
   }
-
-  if (state.view === 'review') {
-    const goHome = () => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); };
-    return (
-      <FeeReview
-        onGoHome={goHome}
-        onNavigate={handleNavigate}
-      />
-    );
-  }
-
-  if (state.view === 'compare') {
-    const goHome = () => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); };
-    return (
-      <FeeCompare
-        onGoHome={goHome}
-        onNavigate={handleNavigate}
-      />
-    );
-  }
-
-  if (state.view === 'about') {
-    const goHome = () => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); };
-    return (
-      <About
-        onGoHome={goHome}
-        onNavigate={handleNavigate}
-      />
-    );
-  }
-
-  const navPage = (page === 'quote' || page === 'review' || page === 'compare' || page === 'about' ? 'landing' : page) as NavPage;
 
   return (
     <>
-      <Nav current={navPage} onNavigate={handleNavigate} />
-      {page === 'contact' && <Contact />}
-      {navPage === 'landing' && (
-        <Landing
-          onStartCompare={() => { history.pushState(null, '', '/feecompare'); goTo('compare'); setPage('compare'); }}
-          onStartQuote={() => { history.pushState(null, '', '/feequote'); goTo('quote'); setPage('quote'); }}
-          onStartReview={() => { history.pushState(null, '', '/feereview'); goTo('review'); setPage('review'); }}
-          onNavigate={handleNavigate}
-        />
-      )}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:text-teal-700 focus:font-medium"
+      >
+        Skip to main content
+      </a>
+      {renderView()}
+      <Analytics />
+      <SpeedInsights />
     </>
   );
 }
