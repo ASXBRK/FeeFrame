@@ -3,7 +3,8 @@ import feeframeLogo from '../assets/logos/feeframe-light.svg';
 import feequoteLogo from '../assets/logos/feequote-light.svg';
 import FooterBar from './shared/FooterBar';
 
-export default function Landing({ onStartQuote, onStartReview, onNavigate }: { onStartQuote: () => void; onStartReview: () => void; onNavigate: (page: string) => void }) {
+export default function Landing({ onStartCompare, onStartQuote, onStartReview, onNavigate }: { onStartCompare: () => void; onStartQuote: () => void; onStartReview: () => void; onNavigate: (page: string) => void }) {
+  const [compareHovered, setCompareHovered] = useState(false);
   const [quoteHovered, setQuoteHovered] = useState(false);
   const [reviewHovered, setReviewHovered] = useState(false);
   const [heroVisible, setHeroVisible] = useState(false);
@@ -147,15 +148,23 @@ export default function Landing({ onStartQuote, onStartReview, onNavigate }: { o
             Know what to charge. Know your profitability.
           </p>
 
-          {/* CTAs */}
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '28px' }}>
-            <button onClick={onStartQuote} onMouseEnter={() => setQuoteHovered(true)} onMouseLeave={() => setQuoteHovered(false)} style={slideBtn(quoteHovered)}>
-              <div style={slideOverlay(quoteHovered)} />
-              <span style={btnText}>Start FeeQuote →</span>
+          {/* Primary CTA — FeeCompare */}
+          <div style={{ marginBottom: '20px' }}>
+            <button onClick={onStartCompare} onMouseEnter={() => setCompareHovered(true)} onMouseLeave={() => setCompareHovered(false)} style={slideBtn(compareHovered)}>
+              <div style={slideOverlay(compareHovered)} />
+              <span style={btnText}>Benchmark your fee →</span>
             </button>
-            <button onClick={onStartReview} onMouseEnter={() => setReviewHovered(true)} onMouseLeave={() => setReviewHovered(false)} style={slideBtn(reviewHovered)}>
+          </div>
+
+          {/* Secondary CTAs */}
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '28px' }}>
+            <button onClick={onStartQuote} onMouseEnter={() => setQuoteHovered(true)} onMouseLeave={() => setQuoteHovered(false)} style={{ ...slideBtn(quoteHovered), fontSize: '14px', padding: '12px 24px' }}>
+              <div style={slideOverlay(quoteHovered)} />
+              <span style={btnText}>FeeQuote →</span>
+            </button>
+            <button onClick={onStartReview} onMouseEnter={() => setReviewHovered(true)} onMouseLeave={() => setReviewHovered(false)} style={{ ...slideBtn(reviewHovered), fontSize: '14px', padding: '12px 24px' }}>
               <div style={slideOverlay(reviewHovered)} />
-              <span style={btnText}>Start FeeReview →</span>
+              <span style={btnText}>FeeReview →</span>
             </button>
           </div>
 
@@ -176,52 +185,86 @@ export default function Landing({ onStartQuote, onStartReview, onNavigate }: { o
           transform: cardsVisible ? 'translateY(0)' : 'translateY(40px)',
           transition: 'opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1)',
         }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(560px, 1fr))', gap: '40px', width: '100%', maxWidth: '1400px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', width: '100%', maxWidth: '1400px' }}>
 
-            {/* FeeQuote */}
+            {/* FeeCompare — hero card, full width */}
             <div
-              onClick={onStartQuote}
-              style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '96px 80px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 12px 32px rgba(0,0,0,0.10)'; }}
+              onClick={onStartCompare}
+              style={{ background: '#ffffff', borderRadius: '12px', border: '2px solid #0d9488', padding: '64px 80px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 12px 32px rgba(13,148,136,0.15)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; }}
             >
-              <div style={{ marginBottom: '48px' }}>
-                <img src={feequoteLogo} alt="FeeQuote" style={{ height: '120px', width: 'auto' }} />
-              </div>
-              <h2 style={{ fontWeight: 700, fontSize: '40px', color: '#111827', letterSpacing: '-1px', marginBottom: '24px', lineHeight: 1.15 }}>
-                What should I charge?
-              </h2>
-              <p style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '19px', color: '#6b7280', lineHeight: 1.65, marginBottom: '64px', flex: 1 }}>
-                Scope a new client engagement and generate a fee you can actually justify.
-              </p>
-              <div style={{ fontWeight: 700, fontSize: '16px', color: '#0d9488', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                Start quoting →
-              </div>
-            </div>
-
-            {/* FeeReview */}
-            <div
-              onClick={onStartReview}
-              style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '96px 80px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 12px 32px rgba(0,0,0,0.10)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; }}
-            >
-              <div style={{ marginBottom: '48px', height: '120px', display: 'flex', alignItems: 'center' }}>
-                <span style={{ fontFamily: '"DM Sans", sans-serif', fontWeight: 700, fontSize: '56px', color: '#0d9488', letterSpacing: '-1.5px' }}>
-                  [ FeeReview ]
+              <div style={{ marginBottom: '24px' }}>
+                <span style={{ fontFamily: '"DM Sans", sans-serif', fontWeight: 700, fontSize: '14px', color: '#0d9488', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                  Start here
                 </span>
               </div>
-              <h2 style={{ fontWeight: 700, fontSize: '40px', color: '#111827', letterSpacing: '-1px', marginBottom: '24px', lineHeight: 1.15 }}>
-                Time to renew?
-              </h2>
-              <p style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '19px', color: '#6b7280', lineHeight: 1.65, marginBottom: '64px', flex: 1 }}>
-                Generate an annual fee consent and renewal document for an existing client. DBFO Act-aligned.
-              </p>
-              <div style={{ fontWeight: 700, fontSize: '16px', color: '#0d9488', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                Start a renewal →
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '32px' }}>
+                <div style={{ flex: 1, minWidth: '280px' }}>
+                  <div style={{ marginBottom: '24px' }}>
+                    <span style={{ fontFamily: '"DM Sans", sans-serif', fontWeight: 700, fontSize: '48px', color: '#0d9488', letterSpacing: '-1.5px' }}>
+                      [ FeeCompare ]
+                    </span>
+                  </div>
+                  <h2 style={{ fontWeight: 700, fontSize: '32px', color: '#111827', letterSpacing: '-0.5px', marginBottom: '16px', lineHeight: 1.2 }}>
+                    Is your fee in range?
+                  </h2>
+                  <p style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '17px', color: '#6b7280', lineHeight: 1.65, marginBottom: '32px' }}>
+                    Enter a fee and see instantly how it sits against 2025 Australian market data. No login, no setup.
+                  </p>
+                  <div style={{ fontWeight: 700, fontSize: '16px', color: '#0d9488', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                    Compare now →
+                  </div>
+                </div>
               </div>
             </div>
 
+            {/* FeeQuote + FeeReview — secondary 2-col grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px' }}>
+
+              <div
+                onClick={onStartQuote}
+                style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '64px 56px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 12px 32px rgba(0,0,0,0.10)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; }}
+              >
+                <div style={{ marginBottom: '36px' }}>
+                  <img src={feequoteLogo} alt="FeeQuote" style={{ height: '96px', width: 'auto' }} />
+                </div>
+                <h2 style={{ fontWeight: 700, fontSize: '32px', color: '#111827', letterSpacing: '-0.5px', marginBottom: '16px', lineHeight: 1.2 }}>
+                  What should I charge?
+                </h2>
+                <p style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '17px', color: '#6b7280', lineHeight: 1.65, marginBottom: '48px', flex: 1 }}>
+                  Scope a new engagement and generate a fee you can justify — time, overheads, and scope in one place.
+                </p>
+                <div style={{ fontWeight: 700, fontSize: '15px', color: '#0d9488', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  Start quoting →
+                </div>
+              </div>
+
+              <div
+                onClick={onStartReview}
+                style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '64px 56px', display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 12px 32px rgba(0,0,0,0.10)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; }}
+              >
+                <div style={{ marginBottom: '36px', height: '96px', display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontFamily: '"DM Sans", sans-serif', fontWeight: 700, fontSize: '40px', color: '#0d9488', letterSpacing: '-1px' }}>
+                    [ FeeReview ]
+                  </span>
+                </div>
+                <h2 style={{ fontWeight: 700, fontSize: '32px', color: '#111827', letterSpacing: '-0.5px', marginBottom: '16px', lineHeight: 1.2 }}>
+                  Time to renew?
+                </h2>
+                <p style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '17px', color: '#6b7280', lineHeight: 1.65, marginBottom: '48px', flex: 1 }}>
+                  Generate a DBFO Act–aligned annual fee consent and renewal document. OFA and fee deduction consent in one PDF.
+                </p>
+                <div style={{ fontWeight: 700, fontSize: '15px', color: '#0d9488', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  Start a renewal →
+                </div>
+              </div>
+
+            </div>
           </div>
         </section>
       </div>
@@ -259,7 +302,8 @@ export default function Landing({ onStartQuote, onStartReview, onNavigate }: { o
       <FooterBar
         currentPage="home"
         onNavigate={(page) => {
-          if (page === 'feequote') onStartQuote();
+          if (page === 'feecompare') onStartCompare();
+          else if (page === 'feequote') onStartQuote();
           else if (page === 'feereview') onStartReview();
           else onNavigate(page);
         }}

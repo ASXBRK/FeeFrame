@@ -1,11 +1,12 @@
-type FooterPage = 'home' | 'about' | 'feequote' | 'feereview' | 'contact';
+type FooterPage = 'home' | 'about' | 'feecompare' | 'feequote' | 'feereview' | 'contact';
 
 const NAV_LINKS: { id: FooterPage; label: string }[] = [
-  { id: 'home',      label: 'Home' },
-  { id: 'about',     label: 'About' },
-  { id: 'feequote',  label: 'FeeQuote' },
-  { id: 'feereview', label: 'FeeReview' },
-  { id: 'contact',   label: 'Contact' },
+  { id: 'home',       label: 'Home' },
+  { id: 'about',      label: 'About' },
+  { id: 'feecompare', label: 'FeeCompare' },
+  { id: 'feequote',   label: 'FeeQuote' },
+  { id: 'feereview',  label: 'FeeReview' },
+  { id: 'contact',    label: 'Contact' },
 ];
 
 function FeeFrameLogo({ className }: { className?: string }) {

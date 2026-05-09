@@ -14,14 +14,15 @@ interface Props {
   fee: number;
   feeStructure: BenchmarkFeeStructure;
   feePercent?: number;
-  clientFUA?: number;       // caller may pass a known FUA (e.g. FeeQuote wizard state.fum)
-  hoursPerYear?: number;    // for cost-justified calculation
+  clientFUA?: number;
+  hoursPerYear?: number;
+  defaultOpen?: boolean;
 }
 
 const DEFAULT_HOURS = 10;
 
-export default function BenchmarkSection({ fee, feeStructure, feePercent, clientFUA: propFUA = 0, hoursPerYear = DEFAULT_HOURS }: Props) {
-  const [open, setOpen] = useState(false);
+export default function BenchmarkSection({ fee, feeStructure, feePercent, clientFUA: propFUA = 0, hoursPerYear = DEFAULT_HOURS, defaultOpen = false }: Props) {
+  const [open, setOpen] = useState(defaultOpen);
   const [profile, setProfile] = useState<PracticeProfile | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [localFUA, setLocalFUA] = useState(propFUA > 0 ? propFUA : 0);

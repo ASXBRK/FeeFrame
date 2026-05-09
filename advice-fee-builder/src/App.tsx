@@ -5,26 +5,29 @@ import About from './components/About';
 import Contact from './components/Contact';
 import FeeQuoteWizard from './modules/feequote/FeeQuoteWizard';
 import FeeReview from './modules/feereview/FeeReview';
+import FeeCompare from './modules/feecompare/FeeCompare';
 import { defaultQuoteState } from './lib/quoteDefaults';
 // ── Types ──────────────────────────────────────────────────────────────────────
 type NavPage = 'landing' | 'about' | 'contact';
-type Page = NavPage | 'quote' | 'review';
+type Page = NavPage | 'quote' | 'review' | 'compare';
 
 // ── URL routing helpers ────────────────────────────────────────────────────────
 function getViewFromPath(pathname: string): { view: string; page: Page } {
   const p = pathname.replace(/\/$/, '') || '/';
-  if (p === '/feequote') return { view: 'quote', page: 'quote' };
-  if (p === '/feereview') return { view: 'review', page: 'review' };
-  if (p === '/about') return { view: 'landing', page: 'about' };
-  if (p === '/contact') return { view: 'landing', page: 'contact' };
+  if (p === '/feequote')  return { view: 'quote',   page: 'quote' };
+  if (p === '/feereview') return { view: 'review',  page: 'review' };
+  if (p === '/feecompare')return { view: 'compare', page: 'compare' };
+  if (p === '/about')     return { view: 'landing', page: 'about' };
+  if (p === '/contact')   return { view: 'landing', page: 'contact' };
   return { view: 'landing', page: 'landing' };
 }
 
 function pathForView(p: string): string {
-  if (p === 'feequote') return '/feequote';
+  if (p === 'feequote')  return '/feequote';
   if (p === 'feereview') return '/feereview';
-  if (p === 'about') return '/about';
-  if (p === 'contact') return '/contact';
+  if (p === 'feecompare')return '/feecompare';
+  if (p === 'about')     return '/about';
+  if (p === 'contact')   return '/contact';
   return '/';
 }
 
@@ -259,11 +262,12 @@ export default function App() {
 
   const handleNavigate = useCallback((p: string) => {
     history.pushState(null, '', pathForView(p));
-    if (p === 'feequote') { goTo('quote'); setPage('quote'); }
-    else if (p === 'feereview') { goTo('review'); setPage('review'); }
-    else if (p === 'about') { goTo('landing'); setPage('about'); }
-    else if (p === 'contact') { goTo('landing'); setPage('contact'); }
-    else { goTo('landing'); setPage('landing'); }
+    if (p === 'feequote')       { goTo('quote');   setPage('quote'); }
+    else if (p === 'feereview') { goTo('review');  setPage('review'); }
+    else if (p === 'feecompare'){ goTo('compare'); setPage('compare'); }
+    else if (p === 'about')     { goTo('landing'); setPage('about'); }
+    else if (p === 'contact')   { goTo('landing'); setPage('contact'); }
+    else                        { goTo('landing'); setPage('landing'); }
   }, [goTo]);
 
   if (state.view === 'quote') {
@@ -287,7 +291,17 @@ export default function App() {
     );
   }
 
-  const navPage = (page === 'quote' || page === 'review' ? 'landing' : page) as NavPage;
+  if (state.view === 'compare') {
+    const goHome = () => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); };
+    return (
+      <FeeCompare
+        onGoHome={goHome}
+        onNavigate={handleNavigate}
+      />
+    );
+  }
+
+  const navPage = (page === 'quote' || page === 'review' || page === 'compare' ? 'landing' : page) as NavPage;
 
   return (
     <>
@@ -296,6 +310,7 @@ export default function App() {
       {page === 'contact' && <Contact />}
       {navPage === 'landing' && (
         <Landing
+          onStartCompare={() => { history.pushState(null, '', '/feecompare'); goTo('compare'); setPage('compare'); }}
           onStartQuote={() => { history.pushState(null, '', '/feequote'); goTo('quote'); setPage('quote'); }}
           onStartReview={() => { history.pushState(null, '', '/feereview'); goTo('review'); setPage('review'); }}
           onNavigate={handleNavigate}
