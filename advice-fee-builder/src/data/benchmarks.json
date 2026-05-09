@@ -1,0 +1,218 @@
+{
+  "schema_version": "1.0",
+  "data_vintage": "2025",
+  "last_updated": "2026-05-09",
+  "currency": "AUD",
+  "regulatory_context": {
+    "dbfo_tranche_2_status": "draft_consultation_2025-03-21; SOA→CAR proposed; new class of adviser deferred; passage delayed past 2026 (Mulino Feb 2026)",
+    "qualifications_deadline": "2026-01-01",
+    "advisers_on_FAR": { "value": 15469, "as_at": "2025-11-20", "source": "ASIC" },
+    "cslr_levy_per_adviser_FY25": 1186,
+    "cslr_FY27_advice_subsector_estimate_initial": 126900000,
+    "asic_levy_per_adviser_FY23": 2691,
+    "fee_consent_regime_start": "2025-01-10 (ASIC INFO 286/287)"
+  },
+  "interpolation_policy": {
+    "method": "nearest_segment_match",
+    "boundary_tiebreaker": "use_higher_tier",
+    "engagement_type_default": "ongoing",
+    "practice_tier_default": "typical",
+    "practice_tier_top20_trigger": "user_self_identifies_or_practice_revenue>1.5M_AND_profit_margin>=40%",
+    "confidence_degradation": "downgrade one level per stacked segment beyond 1 (high→medium→medium→null)"
+  },
+  "benchmarks": {
+    "initial_advice_soa": {
+      "simple": {
+        "value": 2500,
+        "p25": null,
+        "p75": null,
+        "range": [1500, 3500],
+        "source": "Adviser Ratings 2024 Landscape; Moneysmart 2026",
+        "year": 2025,
+        "confidence": "medium",
+        "gap_reason": null
+      },
+      "comprehensive": {
+        "value": 4400,
+        "p25": null,
+        "p75": null,
+        "range": [3500, 6000],
+        "source": "Adviser Ratings; Great Advice 2026; Coleman Financial 2026",
+        "year": 2025,
+        "confidence": "medium",
+        "gap_reason": "no_published_percentiles"
+      }
+    },
+    "ongoing_fee": {
+      "typical": {
+        "median_ongoing_fee": 4668,
+        "average_ongoing_fee": 4744,
+        "average_per_client_investment_trends": 5500,
+        "p25": null,
+        "p75": null,
+        "range": [3500, 7000],
+        "yoy_change_median_pct": 18,
+        "yoy_change_average_pct": 4,
+        "five_year_change_pct": 67,
+        "source": "Adviser Ratings 2025 Landscape Report; Investment Trends 2024 ABM",
+        "year": 2025,
+        "confidence": "high",
+        "gap_reason": "no_published_percentiles"
+      },
+      "top_20pct_highly_profitable": {
+        "value": 7700,
+        "value_min": 7700,
+        "value_descriptor": "approximately 2x typical; 40%+ profit-margin practices charge upwards of $7,700 p.a.",
+        "source": "Investment Trends 2025 ABM Report (released 2025-08-19)",
+        "year": 2025,
+        "confidence": "medium"
+      }
+    },
+    "fua_based_fee": {
+      "under_250k": {
+        "value_pct": 1.5,
+        "range": [1.0, 2.0],
+        "p25": null,
+        "p75": null,
+        "source": "Industry typical (multi-source)",
+        "year": 2025,
+        "confidence": "low",
+        "gap_reason": "stated_range_not_quartiles"
+      },
+      "250k_to_1m": {
+        "value_pct": 0.875,
+        "range": [0.75, 1.0],
+        "p25": null,
+        "p75": null,
+        "source": "Industry typical (multi-source)",
+        "year": 2025,
+        "confidence": "low",
+        "gap_reason": "stated_range_not_quartiles"
+      },
+      "1m_to_3m": {
+        "value_pct": 0.625,
+        "range": [0.5, 0.75],
+        "p25": null,
+        "p75": null,
+        "source": "Industry typical (multi-source)",
+        "year": 2025,
+        "confidence": "low",
+        "gap_reason": "stated_range_not_quartiles"
+      },
+      "above_3m": {
+        "value_pct": 0.5,
+        "range": [0.3, 0.6],
+        "p25": null,
+        "p75": null,
+        "source": "Industry typical (multi-source)",
+        "year": 2025,
+        "confidence": "low",
+        "gap_reason": "negotiated_at_this_tier"
+      }
+    },
+    "hourly_rate": {
+      "junior":     { "value": 250, "range": [200, 350], "source": "Moneypath 2026; acroaccounting 2026", "year": 2026, "confidence": "medium" },
+      "senior_cfp": { "value": 500, "range": [400, 650], "source": "Great Advice 2026; Lifelong Wealth 2025", "year": 2026, "confidence": "medium" }
+    },
+    "implementation_fee": {
+      "value": 3000,
+      "range": [1500, 7000],
+      "p25": null,
+      "p75": null,
+      "source": "Source document; Moneysmart 2026",
+      "year": 2025,
+      "confidence": "medium",
+      "gap_reason": "no_published_percentiles"
+    },
+    "specialist_advice": {
+      "smsf_setup": {
+        "individual_trustee":  { "value": 750,  "range": [450, 900] },
+        "corporate_trustee":   { "value": 1500, "range": [1200, 2500] },
+        "source": "Grow SMSF; Stake; SMSF Australia (2025)",
+        "year": 2025,
+        "confidence": "high"
+      },
+      "smsf_ongoing_admin": {
+        "median": 4309,
+        "average": 8931,
+        "audit_median": 550,
+        "audit_average": 641,
+        "source": "ATO SMSF Statistical Overview FY2022-23",
+        "year": 2023,
+        "confidence": "high"
+      },
+      "aged_care_advice": {
+        "value": 3000,
+        "range": [1500, 5000],
+        "source": "Source document (industry-standard fixed-fee range)",
+        "year": 2025,
+        "confidence": "low",
+        "gap_reason": "no_recent_survey; Aged Care Act 2024 commenced 2025-11-01"
+      }
+    },
+    "digital_scaled_advice": {
+      "subscription_b2c": {
+        "value_per_year": 165,
+        "range": [144, 320],
+        "source": "Otivo 2025-2026; Investment Trends 2023 calibration ($320)",
+        "year": 2026,
+        "confidence": "medium"
+      },
+      "hybrid_human_ai": {
+        "value_per_year": 990,
+        "source": "Otivo (launching January 2026)",
+        "year": 2026,
+        "confidence": "low",
+        "gap_reason": "single_provider_datapoint"
+      }
+    },
+    "insurance_commissions": {
+      "upfront_cap_pct": 60,
+      "ongoing_cap_pct": 20,
+      "level_alternative_pct": 27.5,
+      "source": "ASIC; Corporations Act",
+      "year": 2026,
+      "confidence": "high"
+    },
+    "consumer_wtp": {
+      "advised_average":    { "value": 911, "source": "Adviser Ratings 2024", "year": 2024 },
+      "unadvised_average":  { "value": 553, "range": [553, 580], "source": "Adviser Ratings 2024; Investment Trends 2023" },
+      "unadvised_for_retirement_income_advice":      { "value": 800, "source": "Investment Trends 2023" },
+      "unadvised_for_investment_property_advice":    { "value": 800, "source": "Investment Trends 2023" },
+      "digital_advice_ceiling_72pct": { "value": 300, "source": "Investment Trends 2023" },
+      "digital_advice_ceiling_17pct": { "value": 750, "source": "Investment Trends 2023" },
+      "willing_to_pay_above_2500_pct": 6,
+      "wont_pay_anything_pct": 57,
+      "by_income_band": null,
+      "by_wealth_band": null,
+      "gap_reason_segments": "no_published_AU_data_by_income_or_wealth_band"
+    },
+    "production_cost_reference": {
+      "kpmg_fsc_cost_to_produce": 5334.64,
+      "kpmg_fsc_hours_per_client": 23.9,
+      "practice_cost_stack_per_adviser_low": 36896,
+      "practice_cost_stack_per_adviser_high": 83877,
+      "source": "KPMG/FSC; Padua Solutions; Adviser Ratings 2025",
+      "year": 2025
+    }
+  },
+  "documented_gaps": {
+    "fee_model_split_pct": { "flat": null, "fua_pct": null, "subscription": null, "hybrid": null, "gap_reason": "no_AU_published_breakdown_2025_2026" },
+    "metro_vs_regional_differential": { "value": null, "gap_reason": "no_quantitative_AU_survey" },
+    "experience_band_differential": { "value": null, "gap_reason": "qualitative_only" },
+    "accumulation_vs_retirement_differential": { "value": null, "gap_reason": "no_published_data" },
+    "single_vs_couple_differential": { "value": null, "gap_reason": "no_published_data" },
+    "standalone_estate_planning": { "value": null, "gap_reason": "no_AU_benchmark_published" },
+    "standalone_debt_advice": { "value": null, "gap_reason": "no_AU_benchmark_published" },
+    "standalone_super_consolidation": { "value": null, "gap_reason": "no_AU_benchmark_published" },
+    "wtp_by_income_band": { "value": null, "gap_reason": "no_AU_published_segmentation" },
+    "wtp_by_wealth_band": { "value": null, "gap_reason": "no_AU_published_segmentation" }
+  },
+  "curation_notes": {
+    "div_296_dropped": "Standalone $7,700 figure removed — too high for standalone modelling.",
+    "padua_costs_dropped": "Padua $250/$125 production cost figures removed — tech-enabled assembly only.",
+    "cost_to_produce_methodology_v1.1": "Future: combine Hays Salary Guide rates with Iress Advisely Index hours-per-SOA.",
+    "standalones_methodology": "For standalone advice, FeeFrame derives cost-justified fee via practice profile engine.",
+    "regulatory_context_usage": "regulatory_context block retained as metadata; not surfaced in v1 UI."
+  }
+}

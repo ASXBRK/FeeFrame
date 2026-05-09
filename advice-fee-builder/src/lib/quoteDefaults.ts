@@ -1,4 +1,4 @@
-import { CORE_TASKS } from './serviceLines.js';
+import { CORE_TASKS } from './serviceLines';
 
 const defaultCoreTasks: Record<string, boolean> = {};
 CORE_TASKS.forEach(t => { defaultCoreTasks[t.id] = t.defaultOn ?? false; });

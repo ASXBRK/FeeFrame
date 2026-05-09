@@ -1,5 +1,5 @@
-import { STRATEGIES, ADD_ONS, CORE_TASKS, REVIEW_TASKS, ANNUAL_TASKS, PREMIUM_FACTORS, DISCOUNT_FACTORS, getPremiumRateFromFactors, getDiscountRate, formatStrategyList } from './serviceLines.js';
-import { roundToNearest100 } from './formatters.js';
+import { STRATEGIES, ADD_ONS, CORE_TASKS, REVIEW_TASKS, ANNUAL_TASKS, PREMIUM_FACTORS, DISCOUNT_FACTORS, getPremiumRateFromFactors, getDiscountRate, formatStrategyList } from './serviceLines';
+import { roundToNearest100 } from './formatters';
 
 // Full repo audit 2026-03-23 — 3 bugs found and fixed. See audit report.
 /**
@@ -161,9 +161,14 @@ export function calculateQuote(state: any) {
   const soaDiscount = state.discountSoaOverride ?? soaDiscountAuto;
 
   // Apply margin AFTER adjustments, BEFORE rounding/GST
+  // True margin: fee = cost / (1 - margin%), so margin% of the fee is profit
   const soaCostBeforeMargin = baseFee + soaPremium - soaDiscount;
-  const soaMarginAmount = soaCostBeforeMargin * (marginPercent / 100);
-  const adjustedFeeRounded = roundToNearest100(soaCostBeforeMargin + soaMarginAmount);
+  const marginDecimal = Math.min(marginPercent / 100, 0.99); // cap at 99% to prevent division by zero
+  const adjustedFeeBeforeRounding = marginDecimal > 0
+    ? soaCostBeforeMargin / (1 - marginDecimal)
+    : soaCostBeforeMargin;
+  const soaMarginAmount = adjustedFeeBeforeRounding - soaCostBeforeMargin;
+  const adjustedFeeRounded = roundToNearest100(adjustedFeeBeforeRounding);
   const soaGst = adjustedFeeRounded * 0.1;
   const soaTotalInclGst = adjustedFeeRounded + soaGst;
 
@@ -275,16 +280,16 @@ export function calculateQuote(state: any) {
   // Gross ongoing (before commission) — used for display only
   const ongoingGrossCost = Math.max(0, totalOngoingExGst + ongoingPremium - ongoingDiscount);
   const ongoingGrossMargin = hasOngoing && applyMarginToOngoing && state.ongoingModel === 'fixedOnly'
-    ? ongoingGrossCost * (marginPercent / 100)
+    ? (marginDecimal > 0 ? ongoingGrossCost / (1 - marginDecimal) - ongoingGrossCost : 0)
     : 0;
   const ongoingRoundedBeforeCommission = hasOngoing
     ? roundToNearest100(ongoingGrossCost + ongoingGrossMargin)
     : 0;
 
-  // Apply margin to ongoing AFTER adjustments, BEFORE rounding/GST
+  // Apply margin to ongoing AFTER adjustments, BEFORE rounding/GST (true margin)
   const ongoingCostBeforeMargin = Math.max(0, totalOngoingExGst + ongoingPremium - ongoingDiscount - ongoingCommissionOffset);
   const ongoingMarginAmount = hasOngoing && applyMarginToOngoing && state.ongoingModel === 'fixedOnly'
-    ? ongoingCostBeforeMargin * (marginPercent / 100)
+    ? (marginDecimal > 0 ? ongoingCostBeforeMargin / (1 - marginDecimal) - ongoingCostBeforeMargin : 0)
     : 0;
   const ongoingMgnOutput = hasOngoing && applyMarginToOngoing && state.ongoingModel === 'fixedOnly' ? marginPercent : 0;
 

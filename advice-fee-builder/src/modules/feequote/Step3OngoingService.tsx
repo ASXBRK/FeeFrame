@@ -156,8 +156,9 @@ export default function Step3OngoingService({ quote, dispatch, onNext, onBack })
   );
 }
 
-// ── Shared: task tables (review + annual) ─────────────────────────────────────
+// ── Shared: task tables (review + annual) — collapsible ───────────────────────
 function OngoingTaskTables({ quote, dispatch, calc }) {
+  const [open, setOpen] = useState(false);
   const [expandedReview, setExpandedReview] = useState<string | null>(null);
   const [expandedAnnual, setExpandedAnnual] = useState<string | null>(null);
 
@@ -177,151 +178,173 @@ function OngoingTaskTables({ quote, dispatch, calc }) {
     return quote.annualTaskHourOverrides?.[`${task.id}.${role}`] ?? task[`${role}Hours`];
   }
 
-  return (
-    <>
-      {/* Per-review task breakdown */}
-      <div className="bg-white rounded-card border border-light-border overflow-hidden">
-        <div className="px-5 py-4 border-b border-light-border">
-          <h3 className="text-base font-bold font-heading text-dark">Per-Review Task Breakdown</h3>
-          <p className="text-xs text-mid mt-0.5">Hours per single review cycle. Click ✏️ to edit a row.</p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-light-border bg-light-surface">
-                <th className="text-left py-2.5 px-5 text-xs font-medium text-mid">Task</th>
-                <th className="text-right py-2.5 px-3 text-xs font-medium text-mid">Adviser</th>
-                <th className="text-right py-2.5 px-3 text-xs font-medium text-mid">Paraplanner</th>
-                <th className="text-right py-2.5 px-3 text-xs font-medium text-mid">Admin</th>
-                <th className="text-right py-2.5 px-5 text-xs font-medium text-mid">Fee</th>
-                <th className="py-2.5 px-3 w-8"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-light-border">
-              {REVIEW_TASKS.map((task, idx) => {
-                const calcTask = calc.reviewTaskItems?.[idx];
-                const isEditing = expandedReview === task.id;
-                return (
-                  <tr key={task.id} className={isEditing ? 'bg-light-surface' : ''}>
-                    <td className="py-2.5 px-5 text-dark">{task.label}</td>
-                    {(['adviser', 'paraplanner', 'admin'] as const).map(role => (
-                      <td key={role} className="py-2.5 px-3 text-right">
-                        {isEditing ? (
-                          <NumInput
-                            value={getReviewHour(task, role)}
-                            onChange={v => setReviewOverride(task.id, role, v)}
-                            min={0}
-                            max={50}
-                            className="w-16 rounded-input border border-teal px-1.5 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 float-right"
-                          />
-                        ) : (
-                          <span className="text-mid">{getReviewHour(task, role)}h</span>
-                        )}
-                      </td>
-                    ))}
-                    <td className="py-2.5 px-5 text-right font-medium text-dark">
-                      {formatCurrency(calcTask?.fee ?? 0)}
-                    </td>
-                    <td className="py-2.5 px-3">
-                      <button
-                        type="button"
-                        onClick={() => setExpandedReview(isEditing ? null : task.id)}
-                        className={`text-sm transition-colors ${isEditing ? 'text-teal' : 'text-mid hover:text-dark'}`}
-                      >
-                        ✏️
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-            <tfoot>
-              <tr className="border-t-2 border-light-border bg-light-surface">
-                <td className="py-2.5 px-5 font-semibold text-dark" colSpan={4}>Cost per review meeting</td>
-                <td className="py-2.5 px-5 text-right font-bold text-dark">{formatCurrency(calc.costPerReview)}</td>
-                <td></td>
-              </tr>
-              <tr className="bg-light-surface">
-                <td className="py-2 px-5 text-xs text-mid" colSpan={4}>
-                  {calc.reviewMeetings} meeting{calc.reviewMeetings !== 1 ? 's' : ''} × {formatCurrency(calc.costPerReview)}
-                </td>
-                <td className="py-2 px-5 text-right text-sm font-semibold text-teal">
-                  {formatCurrency(calc.reviewMeetings * calc.costPerReview)}
-                </td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
+  const hasOverrides = Object.keys(quote.reviewHourOverrides || {}).length > 0
+    || Object.keys(quote.annualTaskHourOverrides || {}).length > 0;
 
-      {/* Annual tasks */}
-      <div className="bg-white rounded-card border border-light-border overflow-hidden">
-        <div className="px-5 py-4 border-b border-light-border">
-          <h3 className="text-base font-bold font-heading text-dark">Annual Tasks</h3>
-          <p className="text-xs text-mid mt-0.5">Fixed work per year, regardless of meeting count. Click ✏️ to edit.</p>
+  return (
+    <div className="bg-white rounded-card border border-light-border overflow-hidden">
+      {/* Header — always visible */}
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-light-surface transition-colors"
+      >
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold font-heading text-dark">Hour Assumptions</h3>
+            {hasOverrides && (
+              <span className="text-xs bg-teal text-white px-1.5 py-0.5 rounded font-medium">Customised</span>
+            )}
+          </div>
+          <p className="text-xs text-mid mt-0.5">
+            Per review: {formatCurrency(calc.costPerReview)} · Annual tasks: {formatCurrency(calc.totalAnnualTaskFee)}
+            {calc.reviewMeetings > 0 && ` · Total: ${formatCurrency(calc.reviewMeetings * calc.costPerReview + calc.totalAnnualTaskFee)}`}
+          </p>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-light-border bg-light-surface">
-                <th className="text-left py-2.5 px-5 text-xs font-medium text-mid">Task</th>
-                <th className="text-right py-2.5 px-3 text-xs font-medium text-mid">Adviser</th>
-                <th className="text-right py-2.5 px-3 text-xs font-medium text-mid">Paraplanner</th>
-                <th className="text-right py-2.5 px-3 text-xs font-medium text-mid">Admin</th>
-                <th className="text-right py-2.5 px-5 text-xs font-medium text-mid">Fee p.a.</th>
-                <th className="py-2.5 px-3 w-8"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-light-border">
-              {ANNUAL_TASKS.map((task, idx) => {
-                const calcTask = calc.annualTaskItems?.[idx];
-                const isEditing = expandedAnnual === task.id;
-                return (
-                  <tr key={task.id} className={isEditing ? 'bg-light-surface' : ''}>
-                    <td className="py-2.5 px-5 text-dark">{task.label}</td>
-                    {(['adviser', 'paraplanner', 'admin'] as const).map(role => (
-                      <td key={role} className="py-2.5 px-3 text-right">
-                        {isEditing ? (
-                          <NumInput
-                            value={getAnnualHour(task, role)}
-                            onChange={v => setAnnualOverride(task.id, role, v)}
-                            min={0}
-                            max={50}
-                            className="w-16 rounded-input border border-teal px-1.5 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 float-right"
-                          />
-                        ) : (
-                          <span className="text-mid">{getAnnualHour(task, role)}h</span>
-                        )}
-                      </td>
-                    ))}
-                    <td className="py-2.5 px-5 text-right font-medium text-dark">
-                      {formatCurrency(calcTask?.fee ?? 0)}
-                    </td>
-                    <td className="py-2.5 px-3">
-                      <button
-                        type="button"
-                        onClick={() => setExpandedAnnual(isEditing ? null : task.id)}
-                        className={`text-sm transition-colors ${isEditing ? 'text-teal' : 'text-mid hover:text-dark'}`}
-                      >
-                        ✏️
-                      </button>
-                    </td>
+        <span className="text-mid text-xs ml-4 flex-shrink-0">{open ? '▲' : '▼'}</span>
+      </button>
+
+      {open && (
+        <div className="border-t border-light-border divide-y divide-light-border">
+          {/* Per-review task breakdown */}
+          <div>
+            <div className="px-5 py-3 bg-light-surface">
+              <span className="text-xs font-medium text-mid uppercase tracking-wide">Per-Review Tasks</span>
+              <span className="text-xs text-mid ml-2">Click ✏️ to edit a row</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-light-border">
+                    <th className="text-left py-2 px-5 text-xs font-medium text-mid">Task</th>
+                    <th className="text-right py-2 px-3 text-xs font-medium text-mid">Adviser</th>
+                    <th className="text-right py-2 px-3 text-xs font-medium text-mid">Paraplanner</th>
+                    <th className="text-right py-2 px-3 text-xs font-medium text-mid">Admin</th>
+                    <th className="text-right py-2 px-5 text-xs font-medium text-mid">Fee</th>
+                    <th className="py-2 px-3 w-8"></th>
                   </tr>
-                );
-              })}
-            </tbody>
-            <tfoot>
-              <tr className="border-t-2 border-light-border bg-light-surface">
-                <td className="py-2.5 px-5 font-semibold text-dark" colSpan={4}>Total annual tasks</td>
-                <td className="py-2.5 px-5 text-right font-bold text-dark">{formatCurrency(calc.totalAnnualTaskFee)}</td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
+                </thead>
+                <tbody className="divide-y divide-light-border">
+                  {REVIEW_TASKS.map((task, idx) => {
+                    const calcTask = calc.reviewTaskItems?.[idx];
+                    const isEditing = expandedReview === task.id;
+                    return (
+                      <tr key={task.id} className={isEditing ? 'bg-light-surface' : ''}>
+                        <td className="py-2 px-5 text-dark">{task.label}</td>
+                        {(['adviser', 'paraplanner', 'admin'] as const).map(role => (
+                          <td key={role} className="py-2 px-3 text-right">
+                            {isEditing ? (
+                              <NumInput
+                                value={getReviewHour(task, role)}
+                                onChange={v => setReviewOverride(task.id, role, v)}
+                                min={0}
+                                max={50}
+                                className="w-16 rounded-input border border-teal px-1.5 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 float-right"
+                              />
+                            ) : (
+                              <span className="text-mid">{getReviewHour(task, role)}h</span>
+                            )}
+                          </td>
+                        ))}
+                        <td className="py-2 px-5 text-right font-medium text-dark">{formatCurrency(calcTask?.fee ?? 0)}</td>
+                        <td className="py-2 px-3">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedReview(isEditing ? null : task.id)}
+                            className={`text-sm transition-colors ${isEditing ? 'text-teal' : 'text-mid hover:text-dark'}`}
+                          >✏️</button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-light-border bg-light-surface">
+                    <td className="py-2 px-5 font-semibold text-dark" colSpan={4}>Cost per review</td>
+                    <td className="py-2 px-5 text-right font-bold text-dark">{formatCurrency(calc.costPerReview)}</td>
+                    <td></td>
+                  </tr>
+                  {calc.reviewMeetings > 0 && (
+                    <tr className="bg-light-surface">
+                      <td className="py-1.5 px-5 text-xs text-mid" colSpan={4}>
+                        {calc.reviewMeetings} meeting{calc.reviewMeetings !== 1 ? 's' : ''} × {formatCurrency(calc.costPerReview)}
+                      </td>
+                      <td className="py-1.5 px-5 text-right text-sm font-semibold text-teal">
+                        {formatCurrency(calc.reviewMeetings * calc.costPerReview)}
+                      </td>
+                      <td></td>
+                    </tr>
+                  )}
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          {/* Annual tasks */}
+          <div>
+            <div className="px-5 py-3 bg-light-surface">
+              <span className="text-xs font-medium text-mid uppercase tracking-wide">Annual Tasks</span>
+              <span className="text-xs text-mid ml-2">Fixed work per year regardless of meeting count</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-light-border">
+                    <th className="text-left py-2 px-5 text-xs font-medium text-mid">Task</th>
+                    <th className="text-right py-2 px-3 text-xs font-medium text-mid">Adviser</th>
+                    <th className="text-right py-2 px-3 text-xs font-medium text-mid">Paraplanner</th>
+                    <th className="text-right py-2 px-3 text-xs font-medium text-mid">Admin</th>
+                    <th className="text-right py-2 px-5 text-xs font-medium text-mid">Fee p.a.</th>
+                    <th className="py-2 px-3 w-8"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-light-border">
+                  {ANNUAL_TASKS.map((task, idx) => {
+                    const calcTask = calc.annualTaskItems?.[idx];
+                    const isEditing = expandedAnnual === task.id;
+                    return (
+                      <tr key={task.id} className={isEditing ? 'bg-light-surface' : ''}>
+                        <td className="py-2 px-5 text-dark">{task.label}</td>
+                        {(['adviser', 'paraplanner', 'admin'] as const).map(role => (
+                          <td key={role} className="py-2 px-3 text-right">
+                            {isEditing ? (
+                              <NumInput
+                                value={getAnnualHour(task, role)}
+                                onChange={v => setAnnualOverride(task.id, role, v)}
+                                min={0}
+                                max={50}
+                                className="w-16 rounded-input border border-teal px-1.5 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-teal focus:ring-offset-0 float-right"
+                              />
+                            ) : (
+                              <span className="text-mid">{getAnnualHour(task, role)}h</span>
+                            )}
+                          </td>
+                        ))}
+                        <td className="py-2 px-5 text-right font-medium text-dark">{formatCurrency(calcTask?.fee ?? 0)}</td>
+                        <td className="py-2 px-3">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedAnnual(isEditing ? null : task.id)}
+                            className={`text-sm transition-colors ${isEditing ? 'text-teal' : 'text-mid hover:text-dark'}`}
+                          >✏️</button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-light-border bg-light-surface">
+                    <td className="py-2 px-5 font-semibold text-dark" colSpan={4}>Total annual tasks</td>
+                    <td className="py-2 px-5 text-right font-bold text-dark">{formatCurrency(calc.totalAnnualTaskFee)}</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
         </div>
-      </div>
-    </>
+      )}
+    </div>
   );
 }
 
@@ -507,6 +530,30 @@ function PercentageModel({ quote, dispatch, calc, set }) {
             </div>
           </div>
         )}
+      </div>
+    </div>
+
+    {/* Review meetings — standalone card matching Fixed Fee model */}
+    <div className="bg-white rounded-card border border-light-border p-5">
+      <h3 className="text-base font-bold font-heading text-dark mb-4">Review Meetings</h3>
+      <div className="flex items-center gap-4">
+        <div className="flex-1">
+          <div className="text-sm font-medium text-dark">Review meetings per year</div>
+          <div className="text-xs text-mid mt-0.5">
+            Cost per review: {formatCurrency(calc.costPerReview)} · Total: {formatCurrency(calc.costPerReview * (Number(quote.reviewMeetings) || 0))}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <NumInput
+            value={quote.reviewMeetings}
+            onChange={v => set('reviewMeetings', Math.max(0, Math.min(12, Math.round(v))))}
+            integer
+            min={0}
+            max={12}
+            className="w-16 rounded-input border border-light-border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 text-center"
+          />
+          <span className="text-xs text-mid">per year (max 12)</span>
+        </div>
       </div>
     </div>
 

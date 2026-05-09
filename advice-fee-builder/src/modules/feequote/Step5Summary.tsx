@@ -4,11 +4,11 @@ import { calculateQuote } from '../../lib/calculateQuote';
 import { formatCurrency, formatHours } from '../../lib/formatters';
 import NumInput from '../../components/shared/NumInput';
 import ConfirmModal from '../../components/shared/ConfirmModal';
-import feeanalysisLogo from '../../assets/logos/feeanalysis-light.svg';
+import BenchmarkSection from '../../components/benchmarks/BenchmarkSection';
 
 const TABS = ['Summary', 'Detailed Breakdown', 'Profitability', 'Client Output'];
 
-export default function Step5Summary({ quote, dispatch, onReset, onNavigate, onGoAnalysis }) {
+export default function Step5Summary({ quote, dispatch, onReset, onNavigate }) {
   const [tab, setTab] = useState(0);
   const [copied, setCopied] = useState(false);
   const [editingParagraph, setEditingParagraph] = useState(false);
@@ -55,7 +55,7 @@ export default function Step5Summary({ quote, dispatch, onReset, onNavigate, onG
           </label>
         </div>
         <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm text-teal-800 mt-3">
-          Your firm's target profit margin. The average Australian advice practice operates at 21% (Adviser Ratings 2024). Top-performing practices achieve 47% (Iress Advisely Index 2024).
+          Your firm's target profit margin — the percentage of the fee that represents profit on direct costs. The average Australian advice practice operates at 21% (Adviser Ratings 2024). Top-performing practices achieve 47% (Iress Advisely Index 2024). If practice overheads are entered, your true margin after overheads will be shown separately in the profitability tab.
         </div>
       </div>
 
@@ -257,6 +257,21 @@ function Tab1Summary({ calc, quote, dispatch }) {
       )}
 
       <BillingPlanSection calc={calc} quote={quote} dispatch={dispatch} />
+
+      {/* Benchmark spectrum chart */}
+      {calc.hasOngoing && (
+        <BenchmarkSection
+          fee={calc.totalOngoingInclGst}
+          feeStructure={
+            quote.ongoingModel === 'percentageBased' ? 'percentage'
+            : quote.ongoingModel === 'subscription' ? 'subscription'
+            : 'fixed'
+          }
+          feePercent={quote.ongoingModel === 'percentageBased' ? calc.effectiveFumRate * 100 : undefined}
+          clientFUA={Number(quote.fum) || 0}
+          hoursPerYear={calc.totalOngoingHours}
+        />
+      )}
     </div>
   );
 }
@@ -852,6 +867,20 @@ function Tab2Breakdown({ calc, quote }) {
                 <td className="py-2 font-bold text-dark" colSpan={5}>SOA Fee (incl GST)</td>
                 <td className="py-2 text-right font-bold text-teal">{formatCurrency(calc.soaTotalInclGst)}</td>
               </tr>
+              {calc.soaDiscountPercent > 0 && (
+                <>
+                  <tr>
+                    <td className="py-2 text-healthy-text" colSpan={5}>Client incentive: SOA discount ({calc.soaDiscountPercent}%)</td>
+                    <td className="py-2 text-right font-medium text-healthy-text">-{formatCurrency(calc.soaDiscountAmount)}</td>
+                  </tr>
+                  <tr className="border-t border-light-border">
+                    <td className="py-2 font-bold text-dark" colSpan={5}>Client pays (incl GST)</td>
+                    <td className="py-2 text-right font-bold text-teal">
+                      {calc.soaDiscountPercent === 100 ? 'Waived' : formatCurrency(calc.soaIncentivisedFee)}
+                    </td>
+                  </tr>
+                </>
+              )}
             </tbody>
           </table>
         </div>
@@ -953,30 +982,107 @@ function Tab2Breakdown({ calc, quote }) {
                     <td className="py-2 text-right font-medium text-dark">{formatCurrency(t.fee)}</td>
                   </tr>
                 ))}
-                {quote.ongoingModel === 'percentageBased' && (
-                  <>
-                    <tr>
-                      <td className="py-2 text-mid" colSpan={5}>Service delivery cost</td>
-                      <td className="py-2 text-right font-medium text-mid">{formatCurrency(calc.ongoingTrueCost)}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2 text-mid" colSpan={5}>FUM-based fee ({formatCurrency(Number(quote.fum) || 0)} FUM, {(calc.effectiveFumRate * 100).toFixed(2)}%)</td>
-                      <td className="py-2 text-right font-medium text-dark">{formatCurrency(calc.variableFee)}</td>
-                    </tr>
-                  </>
-                )}
-                {quote.ongoingModel === 'subscription' && (
-                  <>
-                    <tr>
-                      <td className="py-2 text-mid" colSpan={5}>Service delivery cost</td>
-                      <td className="py-2 text-right font-medium text-mid">{formatCurrency(calc.ongoingTrueCost)}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2 text-mid" colSpan={5}>Subscription ({formatCurrency(Number(quote.monthlySubscription) || 0)}/month × 12)</td>
-                      <td className="py-2 text-right font-medium text-dark">{formatCurrency(calc.subscriptionAnnual)}</td>
-                    </tr>
-                  </>
-                )}
+                {quote.ongoingModel === 'percentageBased' && (() => {
+                  const totalHrs = calc.totalOngoingHours;
+                  const deliveryCost = calc.ongoingTrueCost;
+                  const feeExGst = calc.variableFee;
+                  const surplus = feeExGst - deliveryCost;
+                  const impliedRate = totalHrs > 0 ? feeExGst / totalHrs : 0;
+                  const costPerHr = totalHrs > 0 ? deliveryCost / totalHrs : 0;
+                  const surplusPct = feeExGst > 0 ? Math.round((surplus / feeExGst) * 100) : 0;
+                  return (
+                    <>
+                      <tr className="border-t-2 border-light-border bg-light-surface">
+                        <td className="py-2 px-0 font-semibold text-dark" colSpan={4}>Total service delivery hours</td>
+                        <td className="py-2 text-right font-bold text-dark">{formatHours(totalHrs)}</td>
+                        <td className="py-2 text-right text-mid text-xs">p.a.</td>
+                      </tr>
+                      <tr className="bg-light-surface">
+                        <td className="py-1 text-xs text-mid" colSpan={6}>
+                          Reviews: {formatHours(calc.totalReviewHours * calc.reviewMeetings)} ({calc.reviewMeetings} × {formatHours(calc.totalReviewHours)}) · Annual tasks: {formatHours(calc.annualTaskItems.reduce((s,t) => s + t.totalHours, 0))}
+                        </td>
+                      </tr>
+
+                      {/* Hourly analysis */}
+                      <tr className="border-t border-light-border">
+                        <td className="pt-3 pb-1 text-xs font-semibold text-mid uppercase tracking-wide" colSpan={6}>Hourly Analysis</td>
+                      </tr>
+                      <tr>
+                        <td className="py-1.5 text-dark" colSpan={4}>Service delivery cost</td>
+                        <td className="py-1.5 text-right font-medium text-dark">{formatCurrency(deliveryCost)}</td>
+                        <td className="py-1.5 text-right text-xs text-mid">{totalHrs > 0 ? `${formatCurrency(costPerHr)}/hr` : '—'}</td>
+                      </tr>
+                      <tr>
+                        <td className="py-1.5 text-dark" colSpan={4}>
+                          FUM-based fee — {formatCurrency(Number(quote.fum) || 0)} FUM at {(calc.effectiveFumRate * 100).toFixed(2)}%
+                          {calc.variableFeeRaw < (Number(quote.minimumAnnualFee) || 0) && (
+                            <span className="ml-2 text-xs text-amber-600">(minimum applied)</span>
+                          )}
+                        </td>
+                        <td className="py-1.5 text-right font-medium text-dark">{formatCurrency(feeExGst)}</td>
+                        <td className="py-1.5 text-right text-xs text-mid">{totalHrs > 0 ? `${formatCurrency(impliedRate)}/hr` : '—'}</td>
+                      </tr>
+                      <tr className="border-t border-light-border">
+                        <td className="py-1.5 font-semibold text-dark" colSpan={4}>Surplus / (Deficit)</td>
+                        <td className={`py-1.5 text-right font-bold ${surplus >= 0 ? 'text-healthy-text' : 'text-risk-text'}`}>{surplus >= 0 ? '+' : ''}{formatCurrency(surplus)}</td>
+                        <td className={`py-1.5 text-right text-xs font-medium ${surplus >= 0 ? 'text-healthy-text' : 'text-risk-text'}`}>{surplusPct}%</td>
+                      </tr>
+                    </>
+                  );
+                })()}
+                {quote.ongoingModel === 'subscription' && (() => {
+                  const totalHrs = calc.totalOngoingHours;
+                  const deliveryCost = calc.ongoingTrueCost;
+                  const feeExGst = calc.subscriptionAnnual;
+                  const surplus = feeExGst - deliveryCost;
+                  const impliedRate = totalHrs > 0 ? feeExGst / totalHrs : 0;
+                  const costPerHr = totalHrs > 0 ? deliveryCost / totalHrs : 0;
+                  const surplusPct = feeExGst > 0 ? Math.round((surplus / feeExGst) * 100) : 0;
+                  const monthlyFee = Number(quote.monthlySubscription) || 0;
+                  const monthlyCost = deliveryCost / 12;
+                  return (
+                    <>
+                      <tr className="border-t-2 border-light-border bg-light-surface">
+                        <td className="py-2 px-0 font-semibold text-dark" colSpan={4}>Total service delivery hours</td>
+                        <td className="py-2 text-right font-bold text-dark">{formatHours(totalHrs)}</td>
+                        <td className="py-2 text-right text-mid text-xs">p.a.</td>
+                      </tr>
+                      <tr className="bg-light-surface">
+                        <td className="py-1 text-xs text-mid" colSpan={6}>
+                          Reviews: {formatHours(calc.totalReviewHours * calc.reviewMeetings)} ({calc.reviewMeetings} × {formatHours(calc.totalReviewHours)}) · Annual tasks: {formatHours(calc.annualTaskItems.reduce((s,t) => s + t.totalHours, 0))}
+                        </td>
+                      </tr>
+
+                      {/* Hourly analysis */}
+                      <tr className="border-t border-light-border">
+                        <td className="pt-3 pb-1 text-xs font-semibold text-mid uppercase tracking-wide" colSpan={6}>Hourly Analysis</td>
+                      </tr>
+                      <tr>
+                        <td className="py-1.5 text-dark" colSpan={4}>Service delivery cost</td>
+                        <td className="py-1.5 text-right font-medium text-dark">{formatCurrency(deliveryCost)}</td>
+                        <td className="py-1.5 text-right text-xs text-mid">{formatCurrency(monthlyCost)}/mth</td>
+                      </tr>
+                      <tr>
+                        <td className="py-1.5 text-dark" colSpan={4}>Subscription fee ({formatCurrency(monthlyFee)}/month × 12)</td>
+                        <td className="py-1.5 text-right font-medium text-dark">{formatCurrency(feeExGst)}</td>
+                        <td className="py-1.5 text-right text-xs text-mid">{formatCurrency(monthlyFee)}/mth</td>
+                      </tr>
+                      <tr>
+                        <td className="py-1.5 text-mid" colSpan={4}>Cost per hour</td>
+                        <td className="py-1.5 text-right text-mid" colSpan={2}>{totalHrs > 0 ? `${formatCurrency(costPerHr)}/hr` : '—'}</td>
+                      </tr>
+                      <tr>
+                        <td className="py-1.5 text-mid" colSpan={4}>Implied hourly rate (fee ÷ hours)</td>
+                        <td className="py-1.5 text-right text-mid" colSpan={2}>{totalHrs > 0 ? `${formatCurrency(impliedRate)}/hr` : '—'}</td>
+                      </tr>
+                      <tr className="border-t border-light-border">
+                        <td className="py-1.5 font-semibold text-dark" colSpan={4}>Surplus / (Deficit)</td>
+                        <td className={`py-1.5 text-right font-bold ${surplus >= 0 ? 'text-healthy-text' : 'text-risk-text'}`}>{surplus >= 0 ? '+' : ''}{formatCurrency(surplus)}</td>
+                        <td className={`py-1.5 text-right text-xs font-medium ${surplus >= 0 ? 'text-healthy-text' : 'text-risk-text'}`}>{surplusPct}%</td>
+                      </tr>
+                    </>
+                  );
+                })()}
                 {calc.ongoingPremium > 0 && (
                   <tr>
                     <td className="py-2 text-warning-text" colSpan={5}>
@@ -1020,6 +1126,65 @@ function Tab2Breakdown({ calc, quote }) {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Incentives summary */}
+      {calc.hasIncentives && (
+        <div className="bg-white rounded-card border border-light-border p-5">
+          <h3 className="text-base font-bold font-heading text-dark mb-4">After Client Incentives</h3>
+          <table className="w-full text-sm">
+            <tbody className="divide-y divide-light-border">
+              {calc.soaDiscountPercent > 0 && (
+                <>
+                  <tr>
+                    <td className="py-2 text-dark">SOA Fee (standard)</td>
+                    <td className="py-2 text-right text-gray-400 line-through">{formatCurrency(calc.soaTotalInclGst)}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 text-healthy-text">SOA discount ({calc.soaDiscountPercent}%)</td>
+                    <td className="py-2 text-right text-healthy-text">-{formatCurrency(calc.soaDiscountAmount)}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 font-semibold text-dark">SOA client pays</td>
+                    <td className="py-2 text-right font-semibold text-dark">
+                      {calc.soaDiscountPercent === 100 ? 'Waived' : formatCurrency(calc.soaIncentivisedFee)}
+                    </td>
+                  </tr>
+                </>
+              )}
+              {calc.implTotal > 0 && (
+                <>
+                  <tr>
+                    <td className="py-2 text-dark">Implementation (standard)</td>
+                    <td className={`py-2 text-right ${calc.implDiscountPercent > 0 ? 'text-gray-400 line-through' : 'text-dark'}`}>
+                      {formatCurrency(calc.implGross)}
+                    </td>
+                  </tr>
+                  {calc.implDiscountPercent > 0 && (
+                    <tr>
+                      <td className="py-2 text-healthy-text">Implementation discount ({calc.implDiscountPercent}%)</td>
+                      <td className="py-2 text-right text-healthy-text">-{formatCurrency(calc.implDiscountAmount)}</td>
+                    </tr>
+                  )}
+                  <tr>
+                    <td className="py-2 font-semibold text-dark">Implementation client pays</td>
+                    <td className="py-2 text-right font-semibold text-dark">
+                      {calc.implDiscountPercent === 100 ? 'Waived' : formatCurrency(calc.implIncentivisedFee)}
+                    </td>
+                  </tr>
+                </>
+              )}
+              <tr className="border-t-2 border-light-border">
+                <td className="py-2 text-base font-bold text-dark">Total client pays</td>
+                <td className="py-2 text-right text-base font-bold text-teal">{formatCurrency(calc.totalIncentivisedInitialFees)}</td>
+              </tr>
+              <tr>
+                <td className="py-2 text-healthy-text">Total savings from incentives</td>
+                <td className="py-2 text-right font-semibold text-healthy-text">{formatCurrency(calc.totalIncentiveSaving)}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       )}
     </div>
@@ -1113,8 +1278,24 @@ function Tab3Profitability({ calc, quote }) {
   const firstYearMargin = soaTrueProfit + (hasOngoingCostData ? ongoingTrueProfit : 0);
 
   // Bar margin: ex-GST margin from client fees only (bars show fee structure, not commission)
-  const soaBarMargin = calc.soaTotalInclGst / 1.1 - calc.soaTrueCost;
+  // Use incentivised fee so bar reflects what the client actually pays
+  const soaBarMargin = calc.soaIncentivisedFee / 1.1 - calc.soaTrueCost;
   const ongoingBarMargin = calc.totalOngoingRounded - calc.ongoingTrueCost;
+
+  // ── Dual margin: direct costs vs after overheads ──────────────────────────────
+  const soaDirectCostFull = calc.soaAdviserCost + calc.soaParaplannerCost + calc.soaAdminCost + calc.soaExternalFee;
+  const soaDirectProfit = calc.adjustedFeeRounded - soaDirectCostFull;
+  const directMarginPct = calc.adjustedFeeRounded > 0
+    ? Math.round((soaDirectProfit / calc.adjustedFeeRounded) * 100) : 0;
+  const trueMarginPct = calc.adjustedFeeRounded > 0
+    ? Math.round((soaTrueProfit / calc.adjustedFeeRounded) * 100) : 0;
+
+  const ongoingDirectCost = calc.ongoingAdviserCost + calc.ongoingParaplannerCost + calc.ongoingAdminCost;
+  const ongoingDirectProfit = calc.totalOngoingRounded - ongoingDirectCost;
+  const ongoingDirectMarginPct = calc.totalOngoingRounded > 0
+    ? Math.round((ongoingDirectProfit / calc.totalOngoingRounded) * 100) : 0;
+  const ongoingTrueMarginPct = calc.totalOngoingRounded > 0
+    ? Math.round((ongoingTrueProfit / calc.totalOngoingRounded) * 100) : 0;
 
   // ── Effective margin (used for both headline and insights) ────────────────────
   const effectiveMarginPct = calc.adjustedFeeRounded > 0
@@ -1146,7 +1327,7 @@ function Tab3Profitability({ calc, quote }) {
   if (soaTrueProfit > 0) {
     if (effectiveMarginPct >= 40) {
       soaSegmentInsights['Margin from fees'] = `Your effective margin of ${effectiveMarginPct}% approaches top-10% territory. The highest-performing practices operate at 47% (Iress Advisely 2024).`;
-    } else if (effectiveMarginPct >= 21) {
+    } else if (effectiveMarginPct >= 25) {
       soaSegmentInsights['Margin from fees'] = `Your effective margin of ${effectiveMarginPct}% is above the industry average of 21% (Adviser Ratings 2024).`;
     }
   }
@@ -1169,7 +1350,7 @@ function Tab3Profitability({ calc, quote }) {
       const oMarginPct = Math.round((ongoingTrueProfit / calc.totalOngoingRounded) * 100);
       if (oMarginPct >= 40) {
         ongoingSegmentInsights['Margin from fees'] = `Your effective ongoing margin of ${oMarginPct}% approaches top-10% territory.`;
-      } else if (oMarginPct >= 21) {
+      } else if (oMarginPct >= 25) {
         ongoingSegmentInsights['Margin from fees'] = `Your effective ongoing margin of ${oMarginPct}% is above the industry average of 21%.`;
       }
     }
@@ -1202,7 +1383,7 @@ function Tab3Profitability({ calc, quote }) {
   }
 
   // Amber
-  if (headlineType !== 'lowMargin' && effectiveMarginPct > 0 && effectiveMarginPct < 21) {
+  if (headlineType !== 'lowMargin' && effectiveMarginPct > 0 && effectiveMarginPct < 17) {
     insights.push({ severity: 'amber', message: `Your effective profit margin is ${effectiveMarginPct}% after all costs. The industry average is 21% (Adviser Ratings 2024). Consider whether this is sustainable.` });
   }
   if (headlineType !== 'zeroMargin' && calc.soaMarginPercent === 0) {
@@ -1294,7 +1475,7 @@ function Tab3Profitability({ calc, quote }) {
   }
   if (effectiveMarginPct >= 40) {
     insights.push({ severity: 'green', message: `Your effective SOA margin of ${effectiveMarginPct}% is approaching top-10% territory. The highest-performing practices operate at 47% (Iress Advisely Index 2024).` });
-  } else if (effectiveMarginPct >= 21) {
+  } else if (effectiveMarginPct >= 25) {
     insights.push({ severity: 'green', message: `Your effective SOA margin of ${effectiveMarginPct}% is above the industry average of 21% (Adviser Ratings 2024). This is a healthy position.` });
   }
   if (calc.overheadPerClient > 0 && soaTrueProfit > calc.overheadPerClient * 1.5) {
@@ -1365,11 +1546,19 @@ function Tab3Profitability({ calc, quote }) {
             <div className="text-xs text-indigo-600 mt-1">+ {formatCurrency(soaCommission)} commission income</div>
           )}
           <div className="text-sm text-gray-500 mt-1.5">
-            Margin:{' '}
-            <span className={soaTrueProfit > 0 ? 'font-semibold text-green-600' : soaTrueProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
-              {formatCurrency(soaTrueProfit)}
+            {calc.overheadPerClient > 0 ? 'Margin on direct costs:' : 'Margin:'}{' '}
+            <span className={soaDirectProfit > 0 ? 'font-semibold text-green-600' : soaDirectProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
+              {formatCurrency(soaDirectProfit)} ({directMarginPct}%)
             </span>
           </div>
+          {calc.overheadPerClient > 0 && (
+            <div className="text-sm text-gray-500 mt-0.5">
+              After overheads:{' '}
+              <span className={soaTrueProfit > 0 ? 'font-semibold text-green-600' : soaTrueProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
+                {formatCurrency(soaTrueProfit)} ({trueMarginPct}%)
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Card 2: Ongoing cost → fee */}
@@ -1390,11 +1579,19 @@ function Tab3Profitability({ calc, quote }) {
                 <div className="text-xs text-indigo-600 mt-1">+ {formatCurrency(ongoingCommission)} commission income</div>
               )}
               <div className="text-sm text-gray-500 mt-1.5">
-                Margin:{' '}
-                <span className={ongoingTrueProfit > 0 ? 'font-semibold text-green-600' : ongoingTrueProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
-                  {formatCurrency(ongoingTrueProfit)}
+                {calc.overheadPerClient > 0 ? 'Margin on direct costs:' : 'Margin:'}{' '}
+                <span className={ongoingDirectProfit > 0 ? 'font-semibold text-green-600' : ongoingDirectProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
+                  {formatCurrency(ongoingDirectProfit)} ({ongoingDirectMarginPct}%)
                 </span>
               </div>
+              {calc.overheadPerClient > 0 && (
+                <div className="text-sm text-gray-500 mt-0.5">
+                  After overheads:{' '}
+                  <span className={ongoingTrueProfit > 0 ? 'font-semibold text-green-600' : ongoingTrueProfit < 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
+                    {formatCurrency(ongoingTrueProfit)} ({ongoingTrueMarginPct}%)
+                  </span>
+                </div>
+              )}
             </>
           ) : (
             <>
@@ -1432,8 +1629,9 @@ function Tab3Profitability({ calc, quote }) {
               { label: calc.soaExternalFee > 0 ? 'External paraplanning' : 'Paraplanning', value: calc.soaParaplannerCost + calc.soaExternalFee, color: 'bg-violet-600', textColor: 'text-violet-600' },
               { label: 'Admin', value: calc.soaAdminCost, color: 'bg-amber-600', textColor: 'text-amber-600' },
               ...(calc.overheadPerClient > 0 ? [{ label: 'Overheads', value: calc.overheadPerClient, color: 'bg-gray-400', textColor: 'text-gray-500' }] : []),
+              ...(calc.referralFee > 0 ? [{ label: 'Referral fee', value: calc.referralFee, color: 'bg-rose-400', textColor: 'text-rose-500' }] : []),
               ...(soaBarMargin > 0 ? [{ label: 'Margin from fees', value: soaBarMargin, color: 'bg-emerald-500', textColor: 'text-emerald-600' }] : []),
-              { label: 'GST', value: calc.soaTotalInclGst - calc.soaTotalInclGst / 1.1, color: 'bg-slate-200', textColor: 'text-slate-400' },
+              { label: 'GST', value: calc.soaIncentivisedFee - calc.soaIncentivisedFee / 1.1, color: 'bg-slate-200', textColor: 'text-slate-400' },
             ]}
             segmentInsights={soaSegmentInsights}
           />
@@ -1538,11 +1736,6 @@ function Tab3Profitability({ calc, quote }) {
         </div>
       )}
 
-      {/* Attribution */}
-      <div className="flex items-center justify-center gap-2 mt-8 mb-4">
-        <span className="text-sm text-gray-400">Powered by</span>
-        <img src={feeanalysisLogo} alt="FeeAnalysis" className="h-8 opacity-40" />
-      </div>
     </div>
   );
 }
