@@ -56,6 +56,9 @@ export interface FeeReviewState {
   // Indexation (collapsible)
   indexationEnabled: boolean;
   indexedFeeOverride: number | null;
+
+  // Profitability check (collapsible)
+  hoursPerYear: number;
 }
 
 export interface FeeReviewErrors {

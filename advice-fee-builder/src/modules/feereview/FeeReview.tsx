@@ -10,6 +10,8 @@ import ServicesNextPeriod from './sections/ServicesNextPeriod';
 import DeductionAccounts from './sections/DeductionAccounts';
 import RetrospectiveSection from './sections/RetrospectiveSection';
 import IndexationSection from './sections/IndexationSection';
+import BenchmarkSection from '../../components/benchmarks/BenchmarkSection';
+import ProfitabilitySection from '../../components/profitability/ProfitabilitySection';
 import { useFeeReviewForm } from './useFeeReviewForm';
 import { triggerPdfDownload } from './output/pdfDocument';
 import type { FeeReviewState } from './types';
@@ -39,11 +41,20 @@ function findFirstErrorAnchor(errors: ReturnType<typeof useFeeReviewForm>['error
   return null;
 }
 
+function deriveAnnualFee(state: FeeReviewState): number {
+  if (state.feeStructure === 'fixed') return state.fixedAmount;
+  if (state.feeStructure === 'percentage') return state.fuaBalance > 0 ? (state.percentageRate / 100) * state.fuaBalance : 0;
+  return state.subscriptionMonthly * 12;
+}
+
 export default function FeeReview({ onGoHome, onNavigate }: Props) {
   const form = useFeeReviewForm();
   const { state, set, toggleService, addAccount, updateAccount, removeAccount, reset, errors, warnings, isValid } = form;
   const [showErrors, setShowErrors] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const annualFee = deriveAnnualFee(state);
+  const annualCommission = state.insuranceCommissionsEnabled ? state.insuranceCommissionsAmount : 0;
 
   function handleGenerate() {
     if (!isValid) {
@@ -116,6 +127,19 @@ export default function FeeReview({ onGoHome, onNavigate }: Props) {
             />
             <RetrospectiveSection state={state} set={set} toggleService={toggleService} />
             <IndexationSection state={state} set={set} />
+            <BenchmarkSection
+              fee={annualFee}
+              feeStructure={state.feeStructure}
+              feePercent={state.feeStructure === 'percentage' ? state.percentageRate : undefined}
+              clientFUA={state.feeStructure === 'percentage' ? state.fuaBalance : 0}
+              hoursPerYear={state.hoursPerYear}
+            />
+            <ProfitabilitySection
+              fee={annualFee}
+              commission={annualCommission}
+              hoursPerYear={state.hoursPerYear}
+              onChangeHours={v => set('hoursPerYear', v)}
+            />
 
             {/* Generate PDF card */}
             <div className="bg-white rounded-card border border-light-border p-5">

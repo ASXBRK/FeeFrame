@@ -51,6 +51,8 @@ function makeInitialState(): FeeReviewState {
 
     indexationEnabled: false,
     indexedFeeOverride: null,
+
+    hoursPerYear: 10,
   };
 }
 

@@ -4,6 +4,7 @@ import { calculateQuote } from '../../lib/calculateQuote';
 import { formatCurrency, formatHours } from '../../lib/formatters';
 import NumInput from '../../components/shared/NumInput';
 import ConfirmModal from '../../components/shared/ConfirmModal';
+import BenchmarkSection from '../../components/benchmarks/BenchmarkSection';
 
 const TABS = ['Summary', 'Detailed Breakdown', 'Profitability', 'Client Output'];
 
@@ -256,6 +257,21 @@ function Tab1Summary({ calc, quote, dispatch }) {
       )}
 
       <BillingPlanSection calc={calc} quote={quote} dispatch={dispatch} />
+
+      {/* Benchmark spectrum chart */}
+      {calc.hasOngoing && (
+        <BenchmarkSection
+          fee={calc.totalOngoingInclGst}
+          feeStructure={
+            quote.ongoingModel === 'percentageBased' ? 'percentage'
+            : quote.ongoingModel === 'subscription' ? 'subscription'
+            : 'fixed'
+          }
+          feePercent={quote.ongoingModel === 'percentageBased' ? calc.effectiveFumRate * 100 : undefined}
+          clientFUA={Number(quote.fum) || 0}
+          hoursPerYear={calc.totalOngoingHours}
+        />
+      )}
     </div>
   );
 }
