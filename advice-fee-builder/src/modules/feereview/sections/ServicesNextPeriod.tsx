@@ -14,7 +14,7 @@ export default function ServicesNextPeriod({ state, set, toggleService, errors, 
   return (
     <div className={cardClass} id="section-services">
       <div className="mb-4">
-        <h3 className={sectionHeadingClass}>Services for the next 12 months</h3>
+        <h2 className={sectionHeadingClass}>Services for the next 12 months</h2>
         <p className={sectionSubheadingClass}>Select what you’re committing to deliver. Add specifics in the free text.</p>
       </div>
 

@@ -56,8 +56,9 @@ export default function TierEditor({ tiers, dispatch }) {
                     <button
                       type="button"
                       onClick={() => dispatch({ type: 'REMOVE_TIER', index: i })}
-                      className="text-light-border hover:text-risk transition-colors text-base leading-none"
+                      className="text-light-border hover:text-risk transition-colors text-base leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-1"
                       title="Remove tier"
+                      aria-label="Remove tier"
                     >
                       ×
                     </button>

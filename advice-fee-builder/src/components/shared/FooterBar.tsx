@@ -87,6 +87,13 @@ export default function FooterBar({ currentPage, onNavigate }: { currentPage: Fo
           >
             Terms
           </button>
+          {' · '}
+          <a
+            href="mailto:[your-email@example.com]?subject=FeeFrame%20feedback&body=Hi%2C%0A%0AI%20have%20some%20feedback%20about%20FeeFrame%3A%0A%0A"
+            className="hover:text-gray-600 transition-colors underline underline-offset-2"
+          >
+            Send feedback
+          </a>
         </p>
       </div>
     </div>

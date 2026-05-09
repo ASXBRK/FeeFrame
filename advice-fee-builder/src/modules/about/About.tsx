@@ -30,7 +30,7 @@ export default function About({ onGoHome, onNavigate }: Props) {
             </div>
             <button
               onClick={onGoHome}
-              className="text-xs text-mid hover:text-dark transition-colors"
+              className="text-xs text-mid hover:text-dark transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 rounded"
             >
               ← Home
             </button>
@@ -38,7 +38,7 @@ export default function About({ onGoHome, onNavigate }: Props) {
         </header>
 
         {/* Main content */}
-        <main className="flex-1 px-4 sm:px-6 py-10 pb-16 max-w-[720px] w-full mx-auto">
+        <main id="main-content" className="flex-1 px-4 sm:px-6 py-10 pb-16 max-w-[720px] w-full mx-auto">
           <div className="space-y-10">
 
             {/* Section 1 — The problem */}

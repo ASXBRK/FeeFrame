@@ -98,14 +98,16 @@ export default function Step1ClientProfile({ quote, dispatch }) {
               type="button"
               onClick={() => set('entityCount', Math.max(0, quote.entityCount - 1))}
               disabled={quote.entityCount <= 0}
-              className="w-8 h-8 rounded-input border border-light-border flex items-center justify-center text-dark hover:bg-light-surface disabled:opacity-30 text-lg font-medium leading-none"
+              aria-label="Decrease entity count"
+              className="w-8 h-8 rounded-input border border-light-border flex items-center justify-center text-dark hover:bg-light-surface disabled:opacity-30 text-lg font-medium leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-1"
             >−</button>
-            <span className="w-8 text-center text-sm font-semibold text-dark">{quote.entityCount}</span>
+            <span className="w-8 text-center text-sm font-semibold text-dark" aria-live="polite">{quote.entityCount}</span>
             <button
               type="button"
               onClick={() => set('entityCount', Math.min(10, quote.entityCount + 1))}
               disabled={quote.entityCount >= 10}
-              className="w-8 h-8 rounded-input border border-light-border flex items-center justify-center text-dark hover:bg-light-surface disabled:opacity-30 text-lg font-medium leading-none"
+              aria-label="Increase entity count"
+              className="w-8 h-8 rounded-input border border-light-border flex items-center justify-center text-dark hover:bg-light-surface disabled:opacity-30 text-lg font-medium leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-1"
             >+</button>
           </div>
           {quote.entityCount > 3 && (

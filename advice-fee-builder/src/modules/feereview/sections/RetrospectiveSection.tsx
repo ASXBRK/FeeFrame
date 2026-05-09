@@ -21,7 +21,7 @@ export default function RetrospectiveSection({ state, set, toggleService }: Prop
         className="w-full flex items-center justify-between px-5 py-4 text-left"
       >
         <div>
-          <h3 className={sectionHeadingClass}>Past 12 months <span className="text-mid font-normal text-sm">(optional)</span></h3>
+          <h2 className={sectionHeadingClass}>Past 12 months <span className="text-mid font-normal text-sm">(optional)</span></h2>
           <p className="text-xs text-mid mt-0.5">
             {open
               ? 'Including this helps the client see what they paid and received in the past year.'

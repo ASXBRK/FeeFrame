@@ -219,28 +219,33 @@ export function buildPdfHtml(state: FeeReviewState): string {
 </html>`;
 }
 
-export function triggerPdfDownload(state: FeeReviewState): void {
-  const html = buildPdfHtml(state);
-  const iframe = document.createElement('iframe');
-  iframe.style.position = 'fixed';
-  iframe.style.right = '0';
-  iframe.style.bottom = '0';
-  iframe.style.width = '0';
-  iframe.style.height = '0';
-  iframe.style.border = '0';
-  document.body.appendChild(iframe);
-  const doc = iframe.contentDocument;
-  if (!doc) {
-    document.body.removeChild(iframe);
-    return;
-  }
-  doc.open();
-  doc.write(html);
-  doc.close();
-  setTimeout(() => {
-    iframe.contentWindow?.print();
+export function triggerPdfDownload(state: FeeReviewState): boolean {
+  try {
+    const html = buildPdfHtml(state);
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentDocument;
+    if (!doc) {
+      document.body.removeChild(iframe);
+      return false;
+    }
+    doc.open();
+    doc.write(html);
+    doc.close();
     setTimeout(() => {
-      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-    }, 1000);
-  }, 500);
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+      }, 1000);
+    }, 500);
+    return true;
+  } catch {
+    return false;
+  }
 }

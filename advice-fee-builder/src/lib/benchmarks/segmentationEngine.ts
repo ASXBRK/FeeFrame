@@ -21,22 +21,27 @@ function noData(fuaBand: FuaBand, gapReason: string): AnchorSet {
 }
 
 // For low-FUA bands (under_250k, 250k_to_1m): pick the absolute median for the complexity tier
+// Only called from within deriveAnchors after null guard, so BENCHMARKS is non-null here.
 function getOngoingMedian(complexity?: AdviceComplexity): number {
-  if (complexity === 'simple')        return BENCHMARKS.ongoing_fee.simple.median_ongoing_fee;
-  if (complexity === 'comprehensive') return BENCHMARKS.ongoing_fee.comprehensive.median_ongoing_fee;
-  return BENCHMARKS.ongoing_fee.typical.median_ongoing_fee;
+  if (complexity === 'simple')        return BENCHMARKS!.ongoing_fee.simple.median_ongoing_fee;
+  if (complexity === 'comprehensive') return BENCHMARKS!.ongoing_fee.comprehensive.median_ongoing_fee;
+  return BENCHMARKS!.ongoing_fee.typical.median_ongoing_fee;
 }
 
 // For high-FUA bands (1m_to_3m, above_3m): scale FUA-based median by complexity ratio against typical
 function getComplexityMultiplier(complexity?: AdviceComplexity): number {
   if (!complexity) return 1;
-  const typical = BENCHMARKS.ongoing_fee.typical.median_ongoing_fee;
-  if (complexity === 'simple')        return BENCHMARKS.ongoing_fee.simple.median_ongoing_fee / typical;
-  if (complexity === 'comprehensive') return BENCHMARKS.ongoing_fee.comprehensive.median_ongoing_fee / typical;
+  const typical = BENCHMARKS!.ongoing_fee.typical.median_ongoing_fee;
+  if (complexity === 'simple')        return BENCHMARKS!.ongoing_fee.simple.median_ongoing_fee / typical;
+  if (complexity === 'comprehensive') return BENCHMARKS!.ongoing_fee.comprehensive.median_ongoing_fee / typical;
   return 1;
 }
 
 export function deriveAnchors(input: BenchmarkInput): AnchorSet {
+  if (!BENCHMARKS) {
+    return noData('250k_to_1m', 'benchmark data unavailable');
+  }
+
   const { fee, feeStructure, feePercent, clientFUA, adviceComplexity } = input;
 
   // Subscription below $1,500/yr — only digital-scale data exists, not useful for full-service

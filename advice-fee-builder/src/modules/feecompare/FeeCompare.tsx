@@ -96,12 +96,12 @@ export default function FeeCompare({ onGoHome, onNavigate }: Props) {
         </header>
 
         {/* Main content */}
-        <main className="flex-1 px-4 sm:px-6 py-6 pb-12 max-w-3xl w-full mx-auto space-y-5">
+        <main id="main-content" className="flex-1 px-4 sm:px-6 py-6 pb-12 max-w-3xl w-full mx-auto space-y-5">
 
           {/* Quick-entry form card */}
           <div className="bg-white rounded-card border border-light-border p-5 space-y-5">
             <div>
-              <h3 className="text-base font-bold font-heading text-dark">Enter your fee details</h3>
+              <h2 className="text-base font-bold font-heading text-dark">Enter your fee details</h2>
               <p className="text-xs text-mid mt-0.5">Fill in the fields below to see an instant benchmark.</p>
             </div>
 

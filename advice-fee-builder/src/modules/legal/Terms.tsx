@@ -28,13 +28,13 @@ export default function Terms({ onGoHome, onNavigate }: Props) {
               </h1>
               <p className="text-sm text-mid mt-0.5">Last updated: May 2026</p>
             </div>
-            <button onClick={onGoHome} className="text-xs text-mid hover:text-dark transition-colors">
+            <button onClick={onGoHome} className="text-xs text-mid hover:text-dark transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 rounded">
               ← Home
             </button>
           </div>
         </header>
 
-        <main className="flex-1 px-4 sm:px-6 py-10 pb-16 max-w-[720px] w-full mx-auto">
+        <main id="main-content" className="flex-1 px-4 sm:px-6 py-10 pb-16 max-w-[720px] w-full mx-auto">
           <div className="space-y-8">
 
             <section>

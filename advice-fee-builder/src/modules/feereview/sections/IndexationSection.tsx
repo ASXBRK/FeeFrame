@@ -29,7 +29,7 @@ export default function IndexationSection({ state, set }: Props) {
         className="w-full flex items-center justify-between px-5 py-4 text-left"
       >
         <div>
-          <h3 className={sectionHeadingClass}>CPI indexation <span className="text-mid font-normal text-sm">(optional)</span></h3>
+          <h2 className={sectionHeadingClass}>CPI indexation <span className="text-mid font-normal text-sm">(optional)</span></h2>
           <p className="text-xs text-mid mt-0.5">
             {open
               ? `Auto-suggest a CPI-indexed fee for the next period (currently ${cpiPct}%).`
