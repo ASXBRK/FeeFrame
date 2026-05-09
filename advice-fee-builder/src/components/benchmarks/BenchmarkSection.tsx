@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { BenchmarkFeeStructure } from '../../lib/benchmarks/types';
+import type { BenchmarkFeeStructure, AdviceComplexity } from '../../lib/benchmarks/types';
 import type { PracticeProfile } from '../../lib/practiceProfile/types';
 import { loadPracticeProfile, clearPracticeProfile } from '../../lib/practiceProfile/storage';
 import { deriveAnchors } from '../../lib/benchmarks/segmentationEngine';
@@ -16,12 +16,13 @@ interface Props {
   feePercent?: number;
   clientFUA?: number;
   hoursPerYear?: number;
+  adviceComplexity?: AdviceComplexity;
   defaultOpen?: boolean;
 }
 
 const DEFAULT_HOURS = 10;
 
-export default function BenchmarkSection({ fee, feeStructure, feePercent, clientFUA: propFUA = 0, hoursPerYear = DEFAULT_HOURS, defaultOpen = false }: Props) {
+export default function BenchmarkSection({ fee, feeStructure, feePercent, clientFUA: propFUA = 0, hoursPerYear = DEFAULT_HOURS, adviceComplexity, defaultOpen = false }: Props) {
   const [open, setOpen] = useState(defaultOpen);
   const [profile, setProfile] = useState<PracticeProfile | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -36,7 +37,7 @@ export default function BenchmarkSection({ fee, feeStructure, feePercent, client
 
   const effectiveFUA = localFUA;
 
-  const anchors = deriveAnchors({ fee, feeStructure, feePercent, clientFUA: effectiveFUA });
+  const anchors = deriveAnchors({ fee, feeStructure, feePercent, clientFUA: effectiveFUA, adviceComplexity });
 
   const costJustifiedFee = profile
     ? deriveCostJustifiedFee(profile, { hoursPerYear: localHours })

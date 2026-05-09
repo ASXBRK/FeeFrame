@@ -9,6 +9,8 @@ interface FuaBandData {
 interface BenchmarkPayload {
   ongoing_fee: {
     typical: { median_ongoing_fee: number; average_ongoing_fee: number };
+    simple: { median_ongoing_fee: number; source: string };
+    comprehensive: { median_ongoing_fee: number; source: string };
     top_20pct_highly_profitable: { value: number };
   };
   fua_based_fee: {

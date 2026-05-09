@@ -256,6 +256,7 @@ export default function FeeCompare({ onGoHome, onNavigate }: Props) {
               feeStructure={state.feeStructure}
               feePercent={dFeePercent ?? undefined}
               clientFUA={dClientFUA ?? 0}
+              adviceComplexity={state.adviceComplexity}
               defaultOpen={true}
             />
           ) : (
