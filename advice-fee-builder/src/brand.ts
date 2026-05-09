@@ -1,33 +1,27 @@
 /**
- * FeeFrame brand tokens
- * Single source of truth for colours, typography, and UI constants.
- * Import this wherever you need brand values in logic (charts, PDFs, etc.)
- * For component styling, prefer the Tailwind classes derived from tailwind.config.js.
+ * FeeFrame brand tokens — v3
+ * Simplified colour system. Single source of truth.
  */
 
 export const colors = {
-  // Primary brand
-  teal:        '#0d9488',
-  tealLight:   '#5eead4',
-  tealSubtle:  '#ccfbf1',
+  // ── Primary brand ──────────────────────────────────
+  teal:        '#0d9488',   // Primary brand colour — buttons, logos, accents
 
-  // Structure
-  dark:        '#111827',
-  darkSurface: '#1f2937',
-  darkBorder:  '#374151',
+  // ── Structure ──────────────────────────────────────
+  dark:        '#111827',   // Primary dark — sidebar, dark backgrounds
+  white:       '#ffffff',   // Cards, nav background
+  offWhite:    '#f8fafc',   // Primary light — page background
 
-  // Light backgrounds
-  light:        '#f8fafc',
-  lightSurface: '#f1f5f9',
-  lightBorder:  '#e2e8f0',
+  // ── Text ───────────────────────────────────────────
+  textPrimary:   '#111827', // Headings, strong text
+  textSecondary: '#374151', // Body text
+  textMuted:     '#6b7280', // Descriptions, secondary labels
+  textSubtle:    '#9ca3af', // Tags, badge text, logo subtags
 
-  // Text
-  textPrimary:   '#111827',
-  textSecondary: '#374151',
-  textMuted:     '#6b7280',
-  textInverse:   '#f8fafc',
+  // ── Borders ────────────────────────────────────────
+  border:      '#e2e8f0',   // Card and input borders
 
-  // Traffic light — implied hourly rate health check
+  // ── Traffic light ──────────────────────────────────
   healthy:     '#10b981',
   healthyBg:   '#d1fae5',
   healthyText: '#065f46',
@@ -41,6 +35,19 @@ export const colors = {
   riskText:    '#991b1b',
 } as const
 
+/**
+ * Logo colour rule:
+ * - Background is light (white / off-white) → logo is teal #0d9488
+ * - Background is dark (#111827)            → logo is white #ffffff
+ * - Background is teal (#0d9488)            → logo is white #ffffff
+ * Never use any other colour for logos.
+ */
+export const logoColors = {
+  onLight: colors.teal,
+  onDark:  colors.white,
+  onTeal:  colors.white,
+} as const
+
 export const fonts = {
   heading: '"DM Sans", sans-serif',
   body:    '"Plus Jakarta Sans", sans-serif',
@@ -48,25 +55,20 @@ export const fonts = {
 } as const
 
 export const fontWeights = {
-  regular: 400,
-  medium:  500,
+  regular:  400,
+  medium:   500,
   semibold: 600,
-  bold:    700,
+  bold:     700,
 } as const
 
 /**
  * Traffic light thresholds for implied hourly rate.
- * Adjust these to match practice benchmarks.
  */
 export const rateThresholds = {
-  healthyAbove: 300,  // $/hr — green above this
-  warningAbove: 200,  // $/hr — amber between this and healthy
-  // below warningAbove = red
+  healthyAbove: 300,
+  warningAbove: 200,
 } as const
 
-/**
- * Returns the traffic light status for a given implied hourly rate.
- */
 export type RateStatus = 'healthy' | 'warning' | 'risk'
 
 export function getRateStatus(impliedHourlyRate: number): RateStatus {
@@ -75,10 +77,6 @@ export function getRateStatus(impliedHourlyRate: number): RateStatus {
   return 'risk'
 }
 
-/**
- * Returns the colour tokens for a given rate status.
- * Use these for charts, PDF exports, and any non-Tailwind rendering.
- */
 export function getRateColors(status: RateStatus) {
   return {
     healthy: { fill: colors.healthyBg, stroke: colors.healthy, text: colors.healthyText },
@@ -87,23 +85,20 @@ export function getRateColors(status: RateStatus) {
   }[status]
 }
 
-/**
- * Module identifiers — used for logos, favicons, and routing.
- */
 export const modules = {
   feeframe: {
     name:    'FeeFrame',
-    tagline: 'Fee calculator for financial advisers',
+    tagline: 'Fee clarity for Australian advisers',
     color:   colors.teal,
   },
   feequote: {
     name:    'FeeQuote',
-    tagline: 'Scope & quote',
+    tagline: 'Scope & Quote',
     color:   colors.teal,
   },
-  feereview: {
-    name:    'FeeReview',
-    tagline: 'Annual fee consent & renewal',
+  feeanalysis: {
+    name:    'FeeAnalysis',
+    tagline: 'Profitability Check',
     color:   colors.teal,
   },
 } as const
