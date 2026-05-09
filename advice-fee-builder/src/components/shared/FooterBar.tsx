@@ -1,4 +1,4 @@
-type FooterPage = 'home' | 'feecompare' | 'feequote' | 'feereview' | 'about' | 'contact';
+type FooterPage = 'home' | 'feecompare' | 'feequote' | 'feereview' | 'about' | 'contact' | 'privacy' | 'terms';
 
 const NAV_LINKS: { id: FooterPage; label: string }[] = [
   { id: 'home',       label: 'Home' },
@@ -67,6 +67,28 @@ export default function FooterBar({ currentPage, onNavigate }: { currentPage: Fo
       <p className="sm:hidden text-center text-xs text-gray-400 mt-3">
         Built for Australian advice practices · Free to use · No data stored
       </p>
+
+      {/* Disclaimer */}
+      <div className="max-w-7xl mx-auto mt-4 pt-4 border-t border-gray-100">
+        <p className="text-xs text-gray-400 leading-relaxed text-center sm:text-left">
+          FeeFrame provides information only — not financial product advice. Use of FeeFrame does not create an adviser-client relationship. Always consult a licensed financial adviser for personal advice.
+        </p>
+        <p className="text-xs text-gray-400 mt-1.5 text-center sm:text-left">
+          <button
+            onClick={() => onNavigate('privacy')}
+            className="hover:text-gray-600 transition-colors underline underline-offset-2"
+          >
+            Privacy
+          </button>
+          {' · '}
+          <button
+            onClick={() => onNavigate('terms')}
+            className="hover:text-gray-600 transition-colors underline underline-offset-2"
+          >
+            Terms
+          </button>
+        </p>
+      </div>
     </div>
   );
 }
