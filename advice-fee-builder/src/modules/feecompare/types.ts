@@ -1,5 +1,7 @@
+import type { AdviceComplexity } from '../../lib/benchmarks/types';
+
+export type { AdviceComplexity };
 export type FeeCompareStructure = 'fixed' | 'percentage' | 'subscription';
-export type AdviceComplexity = 'simple' | 'comprehensive';
 
 export interface FeeCompareState {
   fee: number | null;

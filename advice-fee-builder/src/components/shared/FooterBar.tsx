@@ -1,11 +1,11 @@
-type FooterPage = 'home' | 'about' | 'feecompare' | 'feequote' | 'feereview' | 'contact';
+type FooterPage = 'home' | 'feecompare' | 'feequote' | 'feereview' | 'about' | 'contact';
 
 const NAV_LINKS: { id: FooterPage; label: string }[] = [
   { id: 'home',       label: 'Home' },
-  { id: 'about',      label: 'About' },
   { id: 'feecompare', label: 'FeeCompare' },
   { id: 'feequote',   label: 'FeeQuote' },
   { id: 'feereview',  label: 'FeeReview' },
+  { id: 'about',      label: 'About' },
   { id: 'contact',    label: 'Contact' },
 ];
 

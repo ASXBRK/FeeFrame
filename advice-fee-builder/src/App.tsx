@@ -1,7 +1,7 @@
 import { useReducer, useEffect, useCallback, useRef, useState } from 'react';
 import Landing from './components/Landing';
 import Nav from './components/Nav';
-import About from './components/About';
+import About from './modules/about/About';
 import Contact from './components/Contact';
 import FeeQuoteWizard from './modules/feequote/FeeQuoteWizard';
 import FeeReview from './modules/feereview/FeeReview';
@@ -17,7 +17,7 @@ function getViewFromPath(pathname: string): { view: string; page: Page } {
   if (p === '/feequote')  return { view: 'quote',   page: 'quote' };
   if (p === '/feereview') return { view: 'review',  page: 'review' };
   if (p === '/feecompare')return { view: 'compare', page: 'compare' };
-  if (p === '/about')     return { view: 'landing', page: 'about' };
+  if (p === '/about')     return { view: 'about',   page: 'about' };
   if (p === '/contact')   return { view: 'landing', page: 'contact' };
   return { view: 'landing', page: 'landing' };
 }
@@ -265,7 +265,7 @@ export default function App() {
     if (p === 'feequote')       { goTo('quote');   setPage('quote'); }
     else if (p === 'feereview') { goTo('review');  setPage('review'); }
     else if (p === 'feecompare'){ goTo('compare'); setPage('compare'); }
-    else if (p === 'about')     { goTo('landing'); setPage('about'); }
+    else if (p === 'about')     { goTo('about');   setPage('about'); }
     else if (p === 'contact')   { goTo('landing'); setPage('contact'); }
     else                        { goTo('landing'); setPage('landing'); }
   }, [goTo]);
@@ -301,12 +301,21 @@ export default function App() {
     );
   }
 
-  const navPage = (page === 'quote' || page === 'review' || page === 'compare' ? 'landing' : page) as NavPage;
+  if (state.view === 'about') {
+    const goHome = () => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); };
+    return (
+      <About
+        onGoHome={goHome}
+        onNavigate={handleNavigate}
+      />
+    );
+  }
+
+  const navPage = (page === 'quote' || page === 'review' || page === 'compare' || page === 'about' ? 'landing' : page) as NavPage;
 
   return (
     <>
       <Nav current={navPage} onNavigate={handleNavigate} />
-      {page === 'about' && <About />}
       {page === 'contact' && <Contact />}
       {navPage === 'landing' && (
         <Landing

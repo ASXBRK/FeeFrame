@@ -55,10 +55,10 @@ export default function Nav({ current, onNavigate }: { current: NavPage; onNavig
       </button>
       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
         {link('landing', 'Home')}
-        {link('about', 'About')}
         {link('feecompare', 'FeeCompare')}
         {link('feequote', 'FeeQuote')}
         {link('feereview', 'FeeReview')}
+        {link('about', 'About')}
         {link('contact', 'Contact')}
       </div>
     </nav>

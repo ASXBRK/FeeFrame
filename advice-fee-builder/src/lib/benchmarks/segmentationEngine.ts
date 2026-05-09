@@ -1,4 +1,4 @@
-import type { FuaBand, AnchorSet, BenchmarkInput } from './types';
+import type { FuaBand, AnchorSet, BenchmarkInput, AdviceComplexity } from './types';
 import { BENCHMARKS } from './loader';
 
 const X_AXIS_RANGES: Record<FuaBand, [number, number]> = {
@@ -20,8 +20,24 @@ function noData(fuaBand: FuaBand, gapReason: string): AnchorSet {
   return { floor: 0, median: 0, topTwentyPct: 0, ceiling: xAxisMax, xAxisMin, xAxisMax, fuaBand, dataAvailable: false, gapReason };
 }
 
+// For low-FUA bands (under_250k, 250k_to_1m): pick the absolute median for the complexity tier
+function getOngoingMedian(complexity?: AdviceComplexity): number {
+  if (complexity === 'simple')        return BENCHMARKS.ongoing_fee.simple.median_ongoing_fee;
+  if (complexity === 'comprehensive') return BENCHMARKS.ongoing_fee.comprehensive.median_ongoing_fee;
+  return BENCHMARKS.ongoing_fee.typical.median_ongoing_fee;
+}
+
+// For high-FUA bands (1m_to_3m, above_3m): scale FUA-based median by complexity ratio against typical
+function getComplexityMultiplier(complexity?: AdviceComplexity): number {
+  if (!complexity) return 1;
+  const typical = BENCHMARKS.ongoing_fee.typical.median_ongoing_fee;
+  if (complexity === 'simple')        return BENCHMARKS.ongoing_fee.simple.median_ongoing_fee / typical;
+  if (complexity === 'comprehensive') return BENCHMARKS.ongoing_fee.comprehensive.median_ongoing_fee / typical;
+  return 1;
+}
+
 export function deriveAnchors(input: BenchmarkInput): AnchorSet {
-  const { fee, feeStructure, feePercent, clientFUA } = input;
+  const { fee, feeStructure, feePercent, clientFUA, adviceComplexity } = input;
 
   // Subscription below $1,500/yr — only digital-scale data exists, not useful for full-service
   if (feeStructure === 'subscription' && fee < 1_500) {
@@ -41,19 +57,20 @@ export function deriveAnchors(input: BenchmarkInput): AnchorSet {
   let topTwentyPct: number;
 
   if (fuaBand === 'under_250k' || fuaBand === '250k_to_1m') {
-    // Global ongoing_fee data has highest confidence for these bands
+    // Low-FUA bands: ongoing_fee data has highest confidence; complexity picks the segmented median.
+    // Floor + top-20% threshold stay constant per spec.
     floor = 1_500;
-    median = BENCHMARKS.ongoing_fee.typical.median_ongoing_fee;        // 4,668
+    median = getOngoingMedian(adviceComplexity);
     topTwentyPct = BENCHMARKS.ongoing_fee.top_20pct_highly_profitable.value; // 7,700
   } else if (fuaBand === '1m_to_3m') {
     const bd = BENCHMARKS.fua_based_fee['1m_to_3m'];
     floor = Math.round(clientFUA * (bd.range[0] / 100));
-    median = Math.round(clientFUA * (bd.value_pct / 100));
+    median = Math.round(clientFUA * (bd.value_pct / 100) * getComplexityMultiplier(adviceComplexity));
     topTwentyPct = Math.round(clientFUA * (bd.range[1] / 100));
   } else {
     const bd = BENCHMARKS.fua_based_fee['above_3m'];
     floor = Math.round(clientFUA * (bd.range[0] / 100));
-    median = Math.round(clientFUA * (bd.value_pct / 100));
+    median = Math.round(clientFUA * (bd.value_pct / 100) * getComplexityMultiplier(adviceComplexity));
     topTwentyPct = Math.round(clientFUA * (bd.range[1] / 100));
   }
 

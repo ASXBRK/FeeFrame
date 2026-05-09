@@ -59,6 +59,20 @@
         "confidence": "high",
         "gap_reason": "no_published_percentiles"
       },
+      "simple": {
+        "median_ongoing_fee": 3500,
+        "source": "Investment Trends 2024 ABM (cited by SuperGuide)",
+        "year": 2024,
+        "confidence": "medium",
+        "gap_reason": null
+      },
+      "comprehensive": {
+        "median_ongoing_fee": 5800,
+        "source": "Investment Trends 2024 ABM (cited by SuperGuide)",
+        "year": 2024,
+        "confidence": "medium",
+        "gap_reason": null
+      },
       "top_20pct_highly_profitable": {
         "value": 7700,
         "value_min": 7700,
