@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import feeframeLogo from '../assets/logos/feeframe-light.svg';
 import feequoteLogo from '../assets/logos/feequote-light.svg';
+import feecompareLogo from '../assets/logos/feecompare-light.svg';
+import feereviewLogo from '../assets/logos/feereview-light.svg';
 import FooterBar from './shared/FooterBar';
 
 export default function Landing({ onStartCompare, onStartQuote, onStartReview, onNavigate }: { onStartCompare: () => void; onStartQuote: () => void; onStartReview: () => void; onNavigate: (page: string) => void }) {
@@ -202,9 +204,7 @@ export default function Landing({ onStartCompare, onStartQuote, onStartReview, o
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '32px' }}>
                 <div style={{ flex: 1, minWidth: '280px' }}>
                   <div style={{ marginBottom: '24px' }}>
-                    <span style={{ fontFamily: '"DM Sans", sans-serif', fontWeight: 700, fontSize: '48px', color: '#0d9488', letterSpacing: '-1.5px' }}>
-                      [ FeeCompare ]
-                    </span>
+                    <img src={feecompareLogo} alt="FeeCompare" style={{ height: '96px', width: 'auto' }} />
                   </div>
                   <h2 style={{ fontWeight: 700, fontSize: '32px', color: '#111827', letterSpacing: '-0.5px', marginBottom: '16px', lineHeight: 1.2 }}>
                     Is your fee in range?
@@ -249,9 +249,7 @@ export default function Landing({ onStartCompare, onStartQuote, onStartReview, o
                 onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; }}
               >
                 <div style={{ marginBottom: '36px', height: '96px', display: 'flex', alignItems: 'center' }}>
-                  <span style={{ fontFamily: '"DM Sans", sans-serif', fontWeight: 700, fontSize: '40px', color: '#0d9488', letterSpacing: '-1px' }}>
-                    [ FeeReview ]
-                  </span>
+                  <img src={feereviewLogo} alt="FeeReview" style={{ height: '96px', width: 'auto' }} />
                 </div>
                 <h2 style={{ fontWeight: 700, fontSize: '32px', color: '#111827', letterSpacing: '-0.5px', marginBottom: '16px', lineHeight: 1.2 }}>
                   Time to renew?
