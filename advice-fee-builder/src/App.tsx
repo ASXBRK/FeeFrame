@@ -1,4 +1,6 @@
 import { useReducer, useEffect, useCallback, useRef, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import Landing from './components/Landing';
 import Nav from './components/Nav';
 import About from './modules/about/About';
@@ -270,61 +272,50 @@ export default function App() {
     else                        { goTo('landing'); setPage('landing'); }
   }, [goTo]);
 
-  if (state.view === 'quote') {
+  const goHome = () => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); };
+
+  function renderView() {
+    if (state.view === 'quote') {
+      return (
+        <FeeQuoteWizard
+          state={state}
+          dispatch={dispatch}
+          onGoHome={goHome}
+          onNavigate={handleNavigate}
+        />
+      );
+    }
+    if (state.view === 'review') {
+      return <FeeReview onGoHome={goHome} onNavigate={handleNavigate} />;
+    }
+    if (state.view === 'compare') {
+      return <FeeCompare onGoHome={goHome} onNavigate={handleNavigate} />;
+    }
+    if (state.view === 'about') {
+      return <About onGoHome={goHome} onNavigate={handleNavigate} />;
+    }
+    const navPage = (page === 'quote' || page === 'review' || page === 'compare' || page === 'about' ? 'landing' : page) as NavPage;
     return (
-      <FeeQuoteWizard
-        state={state}
-        dispatch={dispatch}
-        onGoHome={() => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); }}
-        onNavigate={handleNavigate}
-      />
+      <>
+        <Nav current={navPage} onNavigate={handleNavigate} />
+        {page === 'contact' && <Contact />}
+        {navPage === 'landing' && (
+          <Landing
+            onStartCompare={() => { history.pushState(null, '', '/feecompare'); goTo('compare'); setPage('compare'); }}
+            onStartQuote={() => { history.pushState(null, '', '/feequote'); goTo('quote'); setPage('quote'); }}
+            onStartReview={() => { history.pushState(null, '', '/feereview'); goTo('review'); setPage('review'); }}
+            onNavigate={handleNavigate}
+          />
+        )}
+      </>
     );
   }
-
-  if (state.view === 'review') {
-    const goHome = () => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); };
-    return (
-      <FeeReview
-        onGoHome={goHome}
-        onNavigate={handleNavigate}
-      />
-    );
-  }
-
-  if (state.view === 'compare') {
-    const goHome = () => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); };
-    return (
-      <FeeCompare
-        onGoHome={goHome}
-        onNavigate={handleNavigate}
-      />
-    );
-  }
-
-  if (state.view === 'about') {
-    const goHome = () => { history.pushState(null, '', '/'); goTo('landing'); setPage('landing'); };
-    return (
-      <About
-        onGoHome={goHome}
-        onNavigate={handleNavigate}
-      />
-    );
-  }
-
-  const navPage = (page === 'quote' || page === 'review' || page === 'compare' || page === 'about' ? 'landing' : page) as NavPage;
 
   return (
     <>
-      <Nav current={navPage} onNavigate={handleNavigate} />
-      {page === 'contact' && <Contact />}
-      {navPage === 'landing' && (
-        <Landing
-          onStartCompare={() => { history.pushState(null, '', '/feecompare'); goTo('compare'); setPage('compare'); }}
-          onStartQuote={() => { history.pushState(null, '', '/feequote'); goTo('quote'); setPage('quote'); }}
-          onStartReview={() => { history.pushState(null, '', '/feereview'); goTo('review'); setPage('review'); }}
-          onNavigate={handleNavigate}
-        />
-      )}
+      {renderView()}
+      <Analytics />
+      <SpeedInsights />
     </>
   );
 }
