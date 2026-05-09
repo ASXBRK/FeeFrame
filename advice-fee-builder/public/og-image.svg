@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#f8fafc"/>
+
+  <!-- Left bracket of wordmark -->
+  <path d="M72 72 L52 72 L52 172 L72 172" fill="none" stroke="#0d9488" stroke-width="6" stroke-linecap="square"/>
+  <!-- FeeFrame wordmark -->
+  <text font-family="'DM Sans', sans-serif" font-size="88" font-weight="700" letter-spacing="-2" fill="#0d9488" x="84" y="162">FeeFrame</text>
+  <!-- Right bracket of wordmark -->
+  <text font-family="'DM Sans', sans-serif" font-size="88" font-weight="700" fill="#0d9488" x="720" y="162">]</text>
+
+  <!-- Tagline -->
+  <text font-family="'DM Sans', sans-serif" font-size="30" font-weight="500" letter-spacing="0.5" fill="#64748b" x="54" y="222">Free tools for Australian financial advisers</text>
+
+  <!-- Divider -->
+  <line x1="54" y1="258" x2="480" y2="258" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- Three tool labels -->
+  <text font-family="'DM Sans', sans-serif" font-size="20" font-weight="600" letter-spacing="1.5" fill="#0d9488" x="54" y="310" text-transform="uppercase">FEECOMPARE</text>
+  <text font-family="'DM Sans', sans-serif" font-size="14" font-weight="400" fill="#94a3b8" x="54" y="334">Benchmark your fee</text>
+
+  <text font-family="'DM Sans', sans-serif" font-size="20" font-weight="600" letter-spacing="1.5" fill="#0d9488" x="54" y="386" text-transform="uppercase">FEEQUOTE</text>
+  <text font-family="'DM Sans', sans-serif" font-size="14" font-weight="400" fill="#94a3b8" x="54" y="410">Build a justified fee</text>
+
+  <text font-family="'DM Sans', sans-serif" font-size="20" font-weight="600" letter-spacing="1.5" fill="#0d9488" x="54" y="462" text-transform="uppercase">FEEREVIEW</text>
+  <text font-family="'DM Sans', sans-serif" font-size="14" font-weight="400" fill="#94a3b8" x="54" y="486">Annual consent &amp; renewal</text>
+
+  <!-- Spectrum chart illustration (right side) -->
+  <!-- Chart background panel -->
+  <rect x="620" y="280" width="520" height="240" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- Chart label -->
+  <text font-family="'DM Sans', sans-serif" font-size="13" font-weight="600" letter-spacing="1.5" fill="#94a3b8" x="644" y="314">FEE BENCHMARK RANGE</text>
+
+  <!-- Spectrum bar track -->
+  <rect x="644" y="340" width="472" height="12" rx="6" fill="#e2e8f0"/>
+  <!-- Filled portion (25th–75th percentile) -->
+  <rect x="762" y="340" width="236" height="12" rx="0" fill="#0d9488" opacity="0.25"/>
+  <!-- Median marker -->
+  <rect x="872" y="328" width="3" height="36" rx="1" fill="#0d9488"/>
+  <!-- Median label -->
+  <text font-family="'DM Sans', sans-serif" font-size="11" font-weight="600" fill="#0d9488" x="863" y="320" text-anchor="middle">Median</text>
+  <!-- Top 20% marker -->
+  <rect x="998" y="328" width="3" height="36" rx="1" fill="#64748b" opacity="0.6"/>
+  <text font-family="'DM Sans', sans-serif" font-size="11" font-weight="500" fill="#64748b" x="1000" y="320" text-anchor="middle">Top 20%</text>
+
+  <!-- Example fee marker triangle -->
+  <polygon points="820,352 810,375 830,375" fill="#0d9488"/>
+  <!-- Your fee label -->
+  <text font-family="'DM Sans', sans-serif" font-size="11" font-weight="600" fill="#0d9488" x="820" y="392" text-anchor="middle">Your fee</text>
+
+  <!-- Axis labels -->
+  <text font-family="'DM Sans', sans-serif" font-size="11" font-weight="400" fill="#94a3b8" x="644" y="378">$0</text>
+  <text font-family="'DM Sans', sans-serif" font-size="11" font-weight="400" fill="#94a3b8" x="1116" y="378" text-anchor="end">$10k+</text>
+
+  <!-- Context line -->
+  <text font-family="'DM Sans', sans-serif" font-size="13" font-weight="400" fill="#64748b" x="644" y="448">Australian market data · 2025 · Auto-scaled to FUA band</text>
+
+  <!-- Footer domain -->
+  <text font-family="'DM Sans', sans-serif" font-size="22" font-weight="600" letter-spacing="-0.3" fill="#0d9488" x="1146" y="596" text-anchor="end">feeframe.com</text>
+</svg>
